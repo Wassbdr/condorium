@@ -1,0 +1,45 @@
+{
+  "eval_id": "demo-plant-doctor",
+  "idea": {
+    "id": "demo-2",
+    "title": "Plant Doctor AI",
+    "text": "My revolutionary app: point your camera at any houseplant and an AI tells you what's wrong and how to fix it. Everyone has plants, everyone will download this!",
+    "provenance": "demo"
+  },
+  "mode": "general",
+  "constraints": "",
+  "intake": {
+    "restatement": "A camera app that diagnoses houseplant problems and suggests remedies.",
+    "implicit_assumptions": [
+      "visual symptoms are sufficient to diagnose most plant problems",
+      "existing plant-ID apps leave a diagnosis gap worth switching for",
+      "users will pay or return often enough to sustain the app"
+    ],
+    "open_question": "What does this diagnose that PictureThis and Planta already don't?"
+  },
+  "round1": {
+    "judge": {"score": 6, "criteria_scores": {"realism": 7, "complexity": 6, "dependencies": 6}, "verdict": "Fine-tuning a vision model on plant-disease datasets is a known path and public datasets exist. The hard part is not the model, it is being usefully better than the incumbents' diagnosis mode.", "strengths": ["public datasets (PlantVillage) exist", "known technical path"], "watchouts": ["incumbent apps already ship diagnosis features"], "proposed_tests": ["benchmark PictureThis on 20 sick plants and count its misses"], "viable_scope": "Diagnosis for the 10 most common houseplants and their 15 most common ailments, nothing else."},
+    "believer": {"score": 6, "criteria_scores": {"potential": 6, "differentiation": 4, "upside_scenario": 7}, "verdict": "As stated this is a generic template — 'an AI app that helps plant owners'. What's missing is a wedge: a care-reminder loop, a local-nursery tie-in, or a species niche the big apps ignore. Planta shows the category monetizes.", "strengths": ["proven category monetization"], "watchouts": ["no stated wedge versus incumbents"], "proposed_tests": ["pick one underserved niche (e.g. orchids) and check incumbent quality there"], "precedents": [{"name": "Planta", "why_comparable": "subscription plant-care app with strong retention in the same audience"}]},
+    "scientist_eval": {"score": null, "criteria_scores": {}, "verdict": "The idea makes no scientific claim — it is a consumer product question, not a research one. No penalty: absence of literature is not a flaw. My opinion is informational only.", "strengths": [], "watchouts": [], "proposed_tests": [], "scientific_verdict": "neutral", "references": []},
+    "skeptic": {"score": 4, "criteria_scores": {"assumptions": 4, "adoption": 4, "hidden_risk": 5}, "verdict": "PictureThis existing is a data point, not a verdict — the real problem is that the pitch contains no reason to switch. Visual-only diagnosis also has a ceiling: root rot looks like overwatering looks like underwatering.", "strengths": ["clear, testable market"], "watchouts": ["no switching trigger identified", "visual symptoms are ambiguous across common ailments", "'everyone has plants' is not a retention argument"], "proposed_tests": ["ask 10 plant owners what their current app failed to diagnose", "test 5 ambiguous symptom photos against a botanist's diagnosis", "check 30-day retention benchmarks for plant apps"]},
+    "investor": {"score": 5, "criteria_scores": {"market": 6, "monetization": 5, "timing": 4}, "verdict": "The category is real but consolidated; nothing changed recently that reopens it. Timing is the weak leg — this would have been a 2019 bet.", "strengths": ["willingness to pay proven by incumbents"], "watchouts": ["no 'why now'"], "proposed_tests": ["find one distribution channel the incumbents don't own"]},
+    "strategist": {"score": 5, "criteria_scores": {"angle": 4, "differentiation": 4, "sequencing": 6}, "verdict": "The angle 'all plants, all problems, everyone' is the default nobody questioned. A weekend team can copy the generic version because the generic version already exists — twice.", "strengths": ["clear first build step if narrowed"], "watchouts": ["broad-consumer angle is the crowded one"], "proposed_tests": ["validate one narrow audience with real pull"], "alternative_angle": "Go B2B: a diagnosis API for plant nurseries and garden centers to offer under their own brand — they have the customer trust and no AI team."}
+  },
+  "round2": {
+    "judge": {"score": 6, "criteria_scores": {"realism": 7, "complexity": 6, "dependencies": 6}, "verdict": "Maintained: the build is real either way; the strategist's B2B angle actually simplifies my dependency picture (one integration partner instead of app-store acquisition).", "strengths": ["viable narrow scope exists"], "watchouts": ["don't build broad-consumer first"], "proposed_tests": ["nursery partner conversation before coding"], "revision": "maintained", "influenced_by": ["strategist"], "viable_scope": "Top-10 houseplants, top-15 ailments, or the nursery API pilot."},
+    "believer": {"score": 6, "criteria_scores": {"potential": 6, "differentiation": 5, "upside_scenario": 7}, "verdict": "Maintained at 6 — the B2B nursery angle is the version I believe in: Planta proved consumers pay, but nurseries paying for white-label diagnosis is the uncrowded upside.", "strengths": ["credible upside via B2B pivot"], "watchouts": ["consumer version stays generic"], "proposed_tests": ["three nursery interviews"], "revision": "maintained, but transferred my conviction to the B2B angle", "influenced_by": ["strategist"], "precedents": [{"name": "Planta", "why_comparable": "same audience, proven subscription economics"}]},
+    "scientist_eval": {"score": null, "criteria_scores": {}, "verdict": "Maintained: still no scientific claim to verify; neutral and informational.", "strengths": [], "watchouts": [], "proposed_tests": [], "revision": "maintained", "influenced_by": [], "scientific_verdict": "neutral", "references": []},
+    "skeptic": {"score": 5, "criteria_scores": {"assumptions": 5, "adoption": 5, "hidden_risk": 5}, "verdict": "Raised to 5: the B2B angle answers my switching-trigger objection (the nursery brings the users). The diagnosis-ambiguity ceiling remains and applies to both angles.", "strengths": ["B2B removes the acquisition problem"], "watchouts": ["visual diagnosis ambiguity is unsolved in both angles"], "proposed_tests": ["the 5-photo botanist comparison stays mandatory"], "revision": "raised 4 to 5: strategist's angle removes the adoption blocker", "influenced_by": ["strategist"]},
+    "investor": {"score": 6, "criteria_scores": {"market": 6, "monetization": 6, "timing": 5}, "verdict": "Raised to 6 on the B2B version only: nurseries have margin pressure and no tech, that is a real 'why now-ish'. Consumer version stays a 5.", "strengths": ["B2B willingness to pay plausible"], "watchouts": ["small deal sizes"], "proposed_tests": ["price test with three nurseries"], "revision": "raised 5 to 6 for the B2B angle", "influenced_by": ["strategist"]},
+    "strategist": {"score": 5, "criteria_scores": {"angle": 4, "differentiation": 4, "sequencing": 6}, "verdict": "Maintained on the idea as submitted: my score rates the pitched angle, and the pitched angle is the crowded default. The alternative is where the committee converged.", "strengths": ["committee aligned on the alternative"], "watchouts": ["as-pitched version stays weak"], "proposed_tests": ["kill the broad version explicitly"], "revision": "maintained", "influenced_by": [], "alternative_angle": "White-label diagnosis API for nurseries and garden centers."}
+  },
+  "synthesis": {
+    "consensus": "Buildable but undifferentiated as pitched; the committee independently converged on the same fix — narrow the audience or go B2B via nurseries. The scientist is neutral: no scientific claim involved.",
+    "disagreements": [
+      {"topic": "is the consumer version worth building at all", "agents": ["believer", "strategist"], "positions": "believer: a niched consumer version can still win; strategist: the consumer angle is structurally the crowded default", "why_it_matters": "it decides which version gets built first", "gap": 1, "critical": false}
+    ],
+    "verdict": "PIVOT",
+    "action": "Interview three plant nurseries this week about paying for white-label AI diagnosis before writing any code."
+  },
+  "debate": {}
+}

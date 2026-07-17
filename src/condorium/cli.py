@@ -269,7 +269,8 @@ def pitch(eval_id: str):
 
 
 @app.command()
-def coach():
+def coach(dry_run: bool = typer.Option(False, "--dry-run",
+                                       help="Show the proposals and diffs, apply nothing")):
     """Propose rubric diffs from measured errors. Human validates each one."""
     from . import coach as coach_mod
 
@@ -285,13 +286,18 @@ def coach():
             f"Cases: {', '.join(p.get('case_ids', []))}\n{p.get('rationale', '')}",
             title="Coach proposal"))
         console.print(p["diff"])
+        if dry_run:
+            continue
         if Confirm.ask("Apply this diff?", default=False):
             coach_mod.apply_proposal(p)
             accepted += 1
             console.print("[green]applied + journaled in agents/CHANGELOG.md[/green]")
         else:
             console.print("[yellow]skipped[/yellow]")
-    console.print(f"{accepted}/{len(proposals)} diffs applied.")
+    if dry_run:
+        console.print(f"[dim]dry run — {len(proposals)} proposal(s) shown, none applied[/dim]")
+    else:
+        console.print(f"{accepted}/{len(proposals)} diffs applied.")
 
 
 @app.command()

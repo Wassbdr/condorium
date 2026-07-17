@@ -5,6 +5,7 @@ Evaluation subgraph (per idea, isolated) -> [Clerk if tournament] -> report.
 from __future__ import annotations
 
 import json
+from concurrent.futures import ThreadPoolExecutor
 
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send, interrupt
@@ -28,7 +29,7 @@ def entry_node(state: PanelState) -> dict:
 def route_entry(state: PanelState) -> list[Send] | str:
     command = state.get("command", "eval")
     if command == "eval":
-        return "interviewer" if state.get("interactive") else "direct_idea"
+        return "interviewer_step" if state.get("interactive") else "direct_idea"
     sources = state.get("sources") or ["hackathon"]
     return [Send(f"gen_{s}", state) for s in sources if f"gen_{s}" in GEN_NODE_NAMES]
 
@@ -44,24 +45,36 @@ def collect_node(state: PanelState) -> dict:
 
 
 def prefilter_node(state: PanelState) -> dict:
-    """One light call per idea, 3 criteria; the USER picks the threshold
-    (interrupt) unless --top was given. Eliminated ideas keep their scores."""
+    """One light call per idea (in parallel), 3 criteria. Scoring only — the
+    threshold interrupt lives in prefilter_gate, so resuming an interrupted
+    tournament never re-pays these calls."""
     ideas = state.get("selected") or []
     if len(ideas) <= 1:
         return {"selected": ideas, "eliminated": []}
     prompt = load_prompt("system/prefilter.md", state.get("lang"))
-    scored = []
-    for idea in ideas:
-        system = render(prompt.body,
-                        context=state.get("context") or state.get("theme") or "(none)",
-                        constraints=state.get("constraints") or "(none)")
+    system = render(prompt.body,
+                    context=state.get("context") or state.get("theme") or "(none)",
+                    constraints=state.get("constraints") or "(none)")
+
+    def score(idea: dict) -> dict:
         s = complete_json(system, f"IDEA:\n{idea.get('title')}\n{idea.get('text')}")
         s = s if isinstance(s, dict) else {}
         total = sum(v for v in (s.get("theme_fit"), s.get("wow_potential"),
                                 s.get("apparent_feasibility")) if isinstance(v, (int, float)))
-        scored.append({**idea, "prefilter": {**s, "total": total}})
-    scored.sort(key=lambda i: -i["prefilter"]["total"])
+        return {**idea, "prefilter": {**s, "total": total}}
 
+    with ThreadPoolExecutor(max_workers=min(8, len(ideas))) as pool:
+        scored = list(pool.map(score, ideas))
+    scored.sort(key=lambda i: -i["prefilter"]["total"])
+    return {"selected": scored, "eliminated": []}
+
+
+def prefilter_gate(state: PanelState) -> dict:
+    """The USER picks the threshold (interrupt) unless --top was given.
+    Eliminated ideas keep their pre-filter scores."""
+    scored = state.get("selected") or []
+    if len(scored) <= 1:
+        return {}
     top = state.get("top")
     if top is None:
         answer = interrupt({
@@ -108,7 +121,11 @@ def make_evaluate_node(lang: str | None = None):
     def evaluate_node(eval_input: dict, config=None) -> dict:
         mode = eval_input.get("mode", "general")
         if mode not in compiled:
-            compiled[mode] = compile_evaluation_graph(mode, eval_input.get("lang"))
+            # checkpointer=True: inherit the parent graph's checkpointer, so
+            # interrupts inside the subgraph (intake validation) resume
+            # without re-running its completed nodes.
+            compiled[mode] = compile_evaluation_graph(
+                mode, eval_input.get("lang"), checkpointer=True)
         provenance = eval_input.pop("_provenance", None)
         result = compiled[mode].invoke(eval_input, config)
         record = {
@@ -167,7 +184,9 @@ def build_main_graph(lang: str | None = None) -> StateGraph:
     g.add_node("entry", entry_node)
     g.add_edge(START, "entry")
 
-    g.add_node("interviewer", cohort.interviewer_node)
+    g.add_node("interviewer_step", cohort.interviewer_step)
+    g.add_node("interviewer_gate", cohort.interviewer_gate)
+    g.add_node("interviewer_done", cohort.interviewer_done)
     g.add_node("direct_idea", cohort.passthrough_idea_node)
     g.add_node("gen_hackathon", cohort.hackathon_generator_node)
     g.add_node("gen_scientist", cohort.scientist_generator_node)
@@ -175,21 +194,28 @@ def build_main_graph(lang: str | None = None) -> StateGraph:
 
     g.add_conditional_edges(
         "entry", route_entry,
-        ["interviewer", "direct_idea", "gen_hackathon", "gen_scientist", "gen_historian"],
+        ["interviewer_step", "direct_idea", "gen_hackathon", "gen_scientist", "gen_historian"],
     )
+    # dialogue cycle: step (LLM) -> gate (interrupt) -> step ... -> done
+    g.add_conditional_edges("interviewer_step", cohort.interviewer_route,
+                            {"interviewer_gate": "interviewer_gate",
+                             "interviewer_done": "interviewer_done"})
+    g.add_edge("interviewer_gate", "interviewer_step")
 
     g.add_node("collect", collect_node)
-    for n in ("interviewer", "direct_idea", "gen_hackathon", "gen_scientist", "gen_historian"):
+    for n in ("interviewer_done", "direct_idea", "gen_hackathon", "gen_scientist", "gen_historian"):
         g.add_edge(n, "collect")
 
     g.add_node("prefilter", prefilter_node)
+    g.add_node("prefilter_gate", prefilter_gate)
     g.add_conditional_edges(
         "collect",
         lambda s: "prefilter" if len(s.get("selected") or []) > 1 else "fanout",
         {"prefilter": "prefilter", "fanout": "fanout"},
     )
     g.add_node("fanout", lambda s: {})
-    g.add_edge("prefilter", "fanout")
+    g.add_edge("prefilter", "prefilter_gate")
+    g.add_edge("prefilter_gate", "fanout")
 
     g.add_node("evaluate", make_evaluate_node(lang))
     g.add_conditional_edges("fanout", route_to_evaluations, ["evaluate"])

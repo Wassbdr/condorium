@@ -98,6 +98,17 @@ class MockLLM:
                                "move": "combination", "inspired_by": ["tech:python"]}],
                     "abstained": False}
         if "THE INTERVIEWER" in system:
+            # scripted dialogue driven by how many user replies the
+            # transcript already contains: Q1, Q2, trade-off, then done
+            replies = system.count('"role": "user"')
+            if replies == 0:
+                return {"action": "ask", "question": "What breaks today?"}
+            if replies == 1:
+                return {"action": "ask", "question": "Who feels it worst?"}
+            if replies == 2:
+                return {"action": "tradeoff",
+                        "wow_option": {"tech": "AR overlay", "wow": 9, "risk": 7},
+                        "mastered_option": {"tech": "plain web", "wow": 5, "risk": 2}}
             return {"action": "done", "idea": {"title": "refined idea",
                                                "text": "problem, audience, tech, wow"}}
         if "Rewrite the idea" in system:

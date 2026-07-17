@@ -2,7 +2,7 @@
 
 > **Your AI thinks every idea is genius — or kills it with "it already exists". This committee does neither.**
 
-[![ci](https://github.com/wassimbadraoui/condorium/actions/workflows/ci.yml/badge.svg)](https://github.com/wassimbadraoui/condorium/actions)
+[![ci](https://github.com/Wassbdr/condorium/actions/workflows/ci.yml/badge.svg)](https://github.com/Wassbdr/condorium/actions)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
 
@@ -24,8 +24,8 @@ The anti-sycophancy claim is not vibes — it is **measured** (`panel bench --sy
 ## Try it in 30 seconds — no API key
 
 ```bash
-uvx --from git+https://github.com/wassimbadraoui/condorium panel demo
-# or: pip install condorium && panel demo
+uvx --from git+https://github.com/Wassbdr/condorium panel demo
+# or: pip install git+https://github.com/Wassbdr/condorium && panel demo
 ```
 
 `panel demo` replays recorded evaluations with the full display — including a "revolutionary" idea getting a calm **PIVOT**, and a scientist honestly declaring "neutral, no penalty".

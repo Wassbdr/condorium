@@ -8,9 +8,17 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from typing import Any
 
 from .config import SETTINGS
+
+# Transient provider failures worth retrying, matched by exception class name
+# so any LiteLLM provider (or a test double) qualifies without importing it.
+_TRANSIENT_ERRORS = {
+    "RateLimitError", "APIConnectionError", "ServiceUnavailableError",
+    "Timeout", "APITimeoutError", "InternalServerError",
+}
 
 
 def _completion(*, model: str, messages: list[dict], timeout: int, **kwargs: Any) -> str:
@@ -21,12 +29,24 @@ def _completion(*, model: str, messages: list[dict], timeout: int, **kwargs: Any
     return resp.choices[0].message.content or ""
 
 
+def _is_transient(exc: Exception) -> bool:
+    return any(cls.__name__ in _TRANSIENT_ERRORS for cls in type(exc).__mro__)
+
+
 def complete_text(system: str, user: str, *, model: str | None = None, timeout: int | None = None) -> str:
-    return _completion(
-        model=model or SETTINGS.model,
-        messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
-        timeout=timeout or SETTINGS.llm_timeout,
-    )
+    attempts = SETTINGS.llm_retries + 1
+    for attempt in range(attempts):
+        try:
+            return _completion(
+                model=model or SETTINGS.model,
+                messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+                timeout=timeout or SETTINGS.llm_timeout,
+            )
+        except Exception as exc:
+            if attempt == attempts - 1 or not _is_transient(exc):
+                raise
+            time.sleep(0.5 * (4**attempt))  # 0.5s, 2s, ...
+    raise RuntimeError("unreachable")
 
 
 _FENCE_RE = re.compile(r"^\s*```(?:json)?\s*|\s*```\s*$", re.MULTILINE)

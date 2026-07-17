@@ -108,16 +108,21 @@ def _research_for_idea(state: EvalState) -> dict:
 # ------------------------------------------------------------------ nodes
 
 def intake_node(state: EvalState) -> dict:
+    """LLM call only — the human-validation interrupt lives in intake_gate so
+    that resuming never re-pays this call (interrupt() replays its node)."""
     prompt = load_prompt("system/intake.md", state.get("lang"))
     idea = state["idea"]
     result = complete_json(prompt.body, f"IDEA:\n{idea.get('title', '')}\n{idea.get('text', '')}")
-    intake = result if isinstance(result, dict) else {}
-    # Base mode (idea comes from the user): human validates the intake.
-    if state.get("interactive") and idea.get("provenance") == "user":
-        answer = interrupt({"type": "intake_validation", "intake": intake})
+    return {"intake": result if isinstance(result, dict) else {}}
+
+
+def intake_gate(state: EvalState) -> dict:
+    """Base mode (idea comes from the user): human validates the intake."""
+    if state.get("interactive") and state["idea"].get("provenance") == "user":
+        answer = interrupt({"type": "intake_validation", "intake": state.get("intake") or {}})
         if isinstance(answer, dict) and answer.get("intake"):
-            intake = answer["intake"]
-    return {"intake": intake}
+            return {"intake": answer["intake"]}
+    return {}
 
 
 def make_round1_node(name: str, prompt: AgentPrompt):
@@ -246,14 +251,16 @@ def build_evaluation_graph(mode: str, lang: str | None = None,
     agents = agents or committee_prompts(mode, lang)
     g = StateGraph(EvalState)
     g.add_node("intake", intake_node)
+    g.add_node("intake_gate", intake_gate)
     g.add_edge(START, "intake")
+    g.add_edge("intake", "intake_gate")
 
     r1_nodes, r2_nodes = [], []
     for name, prompt in agents.items():
         r1, r2 = f"r1_{name}", f"r2_{name}"
         g.add_node(r1, make_round1_node(name, prompt))
         g.add_node(r2, make_round2_node(name, prompt))
-        g.add_edge("intake", r1)
+        g.add_edge("intake_gate", r1)
         r1_nodes.append(r1)
         r2_nodes.append(r2)
 

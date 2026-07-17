@@ -7,7 +7,7 @@ guardrail measurable.
 ## Quick start
 
 ```bash
-git clone https://github.com/wassimbadraoui/condorium && cd condorium
+git clone https://github.com/Wassbdr/condorium && cd condorium
 uv venv && uv pip install -e ".[dev]"
 pytest                    # no API key needed — the LLM is fully mocked
 panel demo                # no API key needed either
@@ -26,7 +26,7 @@ agent sits on the committee. Ground rules:
 
 ## Good first issues
 
-Labeled [`good first issue`](https://github.com/wassimbadraoui/condorium/labels/good%20first%20issue). Ideas that are always welcome:
+Labeled [`good first issue`](https://github.com/Wassbdr/condorium/labels/good%20first%20issue). Ideas that are always welcome:
 
 - new `agents/fr/` translations, or a new language pack (`agents/<lang>/`)
 - more leak patterns in `src/condorium/bench/antileak.py` (with a test)

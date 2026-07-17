@@ -59,6 +59,7 @@ class PanelState(TypedDict, total=False):
     lang: str
     interactive: bool
     raw_input: str
+    interview: dict  # interviewer dialogue: transcript, questions, step
     ideas: Annotated[list[Idea], operator.add]
     selected: list[Idea]
     eliminated: list[Idea]

@@ -36,35 +36,67 @@ def _mk_idea(raw: dict, provenance: str, index: int) -> Idea:
     }
 
 
-def interviewer_node(state: PanelState) -> dict:
-    """Short refinement dialogue: max 5 questions, one at a time, then the
-    quantified tech trade-off. The user answers through interrupt()."""
+# The Interviewer dialogue is a GRAPH CYCLE, not an in-node loop: each LLM
+# call sits in its own completed node (checkpointed, never re-paid on resume)
+# and the interrupt() lives in a gate node that makes no LLM call at all.
+#   interviewer_step (LLM) -> route -> interviewer_gate (interrupt) -> step...
+#                                   -> interviewer_done -> collect
+
+def interviewer_step(state: PanelState) -> dict:
+    """One LLM turn of the refinement dialogue."""
     prompt = generator_prompt("interviewer", state.get("lang"))
-    transcript: list[dict] = [{"role": "user_idea", "content": state.get("raw_input", "")}]
-    questions_asked = 0
-    for _ in range(MAX_INTERVIEW_TURNS):
-        system = render(prompt.body, transcript=json.dumps(transcript, ensure_ascii=False, indent=2))
-        step = complete_json(system, "Next step.")
-        if not isinstance(step, dict):
-            break
-        action = step.get("action")
-        if action == "ask" and questions_asked < 5:
-            questions_asked += 1
-            answer = interrupt({"type": "interview_question", "question": step.get("question", "")})
-            transcript += [{"role": "interviewer", "content": step.get("question", "")},
-                           {"role": "user", "content": str(answer)}]
-        elif action == "tradeoff":
-            choice = interrupt({"type": "tech_tradeoff",
-                                "wow_option": step.get("wow_option"),
-                                "mastered_option": step.get("mastered_option")})
-            transcript += [{"role": "interviewer", "content": json.dumps(step)},
-                           {"role": "user", "content": f"chosen: {choice}"}]
-        else:  # "done", or question budget exhausted
-            idea_raw = step.get("idea") or {"title": "user idea", "text": state.get("raw_input", "")}
-            idea = _mk_idea(idea_raw, "user", 0)
-            idea["text"] = idea_raw.get("text", idea["text"])
-            return {"ideas": [idea]}
-    return {"ideas": [_mk_idea({"title": "user idea", "text": state.get("raw_input", "")}, "user", 0)]}
+    iv = state.get("interview") or {
+        "transcript": [{"role": "user_idea", "content": state.get("raw_input", "")}],
+        "questions": 0, "turns": 0,
+    }
+    system = render(prompt.body,
+                    transcript=json.dumps(iv["transcript"], ensure_ascii=False, indent=2))
+    step = complete_json(system, "Next step.")
+    return {"interview": {**iv, "turns": iv.get("turns", 0) + 1,
+                          "step": step if isinstance(step, dict) else {}}}
+
+
+def interviewer_route(state: PanelState) -> str:
+    iv = state.get("interview") or {}
+    step = iv.get("step") or {}
+    action = step.get("action")
+    if iv.get("turns", 0) >= MAX_INTERVIEW_TURNS:
+        return "interviewer_done"
+    if action == "ask" and iv.get("questions", 0) < 5:
+        return "interviewer_gate"
+    if action == "tradeoff" and not iv.get("tradeoff_done"):
+        return "interviewer_gate"
+    return "interviewer_done"
+
+
+def interviewer_gate(state: PanelState) -> dict:
+    """The user answers through interrupt(); no LLM call in this node."""
+    iv = dict(state.get("interview") or {})
+    step = iv.get("step") or {}
+    transcript = list(iv.get("transcript", []))
+    if step.get("action") == "ask":
+        answer = interrupt({"type": "interview_question", "question": step.get("question", "")})
+        transcript += [{"role": "interviewer", "content": step.get("question", "")},
+                       {"role": "user", "content": str(answer)}]
+        iv["questions"] = iv.get("questions", 0) + 1
+    else:  # tradeoff — THE USER decides
+        choice = interrupt({"type": "tech_tradeoff",
+                            "wow_option": step.get("wow_option"),
+                            "mastered_option": step.get("mastered_option")})
+        transcript += [{"role": "interviewer", "content": json.dumps(step, ensure_ascii=False)},
+                       {"role": "user", "content": f"chosen: {choice}"}]
+        iv["tradeoff_done"] = True
+    iv["transcript"] = transcript
+    iv.pop("step", None)
+    return {"interview": iv}
+
+
+def interviewer_done(state: PanelState) -> dict:
+    step = (state.get("interview") or {}).get("step") or {}
+    idea_raw = step.get("idea") or {"title": "user idea", "text": state.get("raw_input", "")}
+    idea = _mk_idea(idea_raw, "user", 0)
+    idea["text"] = idea_raw.get("text", idea["text"])
+    return {"ideas": [idea]}
 
 
 def passthrough_idea_node(state: PanelState) -> dict:

@@ -41,6 +41,8 @@ class Settings:
     root: Path = field(default_factory=_repo_root)
     llm_timeout: int = 90
     research_timeout: int = 240  # scientist round-1 (papers + web)
+    llm_retries: int = field(
+        default_factory=lambda: int(os.environ.get("CONDORIUM_LLM_RETRIES", "2")))
 
     @property
     def agents_dir(self) -> Path:

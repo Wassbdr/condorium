@@ -166,3 +166,45 @@ def test_fr_prompts_load_with_english_fallback(sandbox, lang):
     assert "LE COACH" in load_prompt("system/coach.md", lang=lang).body
     # unknown language pack -> clean English fallback
     assert "THE COACH" in load_prompt("system/coach.md", lang="de").body
+
+
+class _ProcessKilled(BaseException):
+    """Stands in for a crash / Ctrl-C: not an Exception, so nothing in the
+    pipeline may swallow it."""
+
+
+def test_crashed_run_resumes_without_repaying(mock_llm, sandbox):
+    """A run killed mid-evaluation resumes on the same thread: round-1/2
+    calls already paid are not paid again."""
+    db = sandbox / "ckpt.sqlite"
+
+    def fresh_app():
+        conn = sqlite3.connect(str(db), check_same_thread=False)
+        return compile_main_graph(checkpointer=SqliteSaver(conn))
+
+    original = mock_llm._route
+    crashed = []
+
+    def route(system, user):
+        if "SYNTHESIZER" in system and "closing a targeted debate" not in system and not crashed:
+            crashed.append(True)
+            raise _ProcessKilled
+        return original(system, user)
+
+    mock_llm._route = route
+    config = {"configurable": {"thread_id": "crash-1"}, "recursion_limit": 120}
+    initial = {"command": "eval", "mode": "general", "raw_input": "an idea",
+               "interactive": False, "lang": "en", "run_id": "run-crash"}
+    with pytest.raises(_ProcessKilled):
+        fresh_app().invoke(initial, config)
+
+    def committee_calls():
+        return sum(c["user"].startswith(("ROUND 1", "ROUND 2")) for c in mock_llm.calls)
+
+    paid = committee_calls()
+    assert paid == 12  # 6 agents x 2 rounds, all done before the crash
+    app = fresh_app()  # new process
+    assert app.get_state(config).next  # the run is resumable
+    result = app.invoke(None, config)
+    assert result["evaluations"][0]["synthesis"]["verdict"] == "ITERATE"
+    assert committee_calls() == paid  # nothing re-paid

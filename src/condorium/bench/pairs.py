@@ -15,6 +15,8 @@ _ALIASES = {
     "hackathon": ["hackathon", "hackathon_name", "event", "submission_hackathon"],
     "description": ["description", "about", "story", "text", "tagline"],
     "prizes": ["prizes", "prize", "winner", "awards", "submission_prizes", "is_winner"],
+    "criteria": ["criteria", "judging_criteria", "official_criteria"],
+    "theme": ["theme", "track", "category"],
 }
 
 
@@ -30,6 +32,15 @@ def _pick(row: dict, field: str) -> str:
 def _is_winner(row: dict) -> bool:
     prizes = _pick(row, "prizes").strip().lower()
     return prizes not in ("", "0", "[]", "false", "none", "null")
+
+
+def _entry(role: str, row: dict) -> dict:
+    """Title AND description are cleaned; the original title is kept aside
+    only to exclude the project from its own calibration."""
+    title = _pick(row, "title")
+    return {"role": role, "title": strip_victory_clues(title) or "(untitled project)",
+            "original_title": title,
+            "text": strip_victory_clues(_pick(row, "description"))[:2500]}
 
 
 def load_rows(path: Path) -> list[dict]:
@@ -60,12 +71,9 @@ def build_pairs(dataset: Path, n: int, seed: int) -> list[dict]:
     for i, hackathon in enumerate(candidates[:n]):
         b = by_hackathon[hackathon]
         winner, loser = rng.choice(b["win"]), rng.choice(b["lose"])
-        entries = [
-            {"role": "winner", "title": _pick(winner, "title"),
-             "text": strip_victory_clues(_pick(winner, "description"))[:2500]},
-            {"role": "loser", "title": _pick(loser, "title"),
-             "text": strip_victory_clues(_pick(loser, "description"))[:2500]},
-        ]
+        entries = [_entry("winner", winner), _entry("loser", loser)]
         rng.shuffle(entries)  # the committee never sees which is which
-        pairs.append({"pair_id": f"pair-{i}", "hackathon": hackathon, "entries": entries})
+        pairs.append({"pair_id": f"pair-{i}", "hackathon": hackathon, "entries": entries,
+                      "criteria": _pick(winner, "criteria") or _pick(loser, "criteria"),
+                      "theme": _pick(winner, "theme") or _pick(loser, "theme")})
     return pairs

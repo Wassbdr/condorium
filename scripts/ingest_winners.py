@@ -15,9 +15,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from condorium.knowledge import kgraph, store  # noqa: E402
-from condorium.llm import complete_json  # noqa: E402
-from condorium.prompts import load_prompt, render  # noqa: E402
+from condorium.knowledge import kgraph, store
+from condorium.llm import complete_json
+from condorium.prompts import load_prompt, render
 
 
 def fetch_source(target: str) -> str:

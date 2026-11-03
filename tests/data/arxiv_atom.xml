@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <id>http://arxiv.org/abs/2101.00001v1</id>
+    <published>2021-01-01T00:00:00Z</published>
+    <title>Leaf Disease Detection
+      on Smartphones</title>
+    <summary>We detect plant diseases from phone photos.</summary>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2202.00002v2</id>
+    <published>2022-02-02T00:00:00Z</published>
+    <title>Lightweight CNNs for Crop Health</title>
+    <summary>Small models for field use.</summary>
+  </entry>
+</feed>

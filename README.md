@@ -19,7 +19,8 @@ The anti-sycophancy claim is not vibes — it is **measured** (`panel bench --sy
 | "It already exists" as a verdict | forbidden for the **Skeptic** — competition is a data point; every doubt must ship with a concrete 30-minute test or it is *deleted in code* |
 | Hallucinated "studies show…" | the **Scientist** may only cite papers retrieved by the arXiv/Semantic Scholar APIs *during* the run — off-list references are stripped by the orchestrator, and a `debunked` verdict must come with contradicting sources |
 | "No papers about it" as a penalty | a `neutral` scientific verdict sets `score: null` — excluded from every median and ranking, informational only |
-| Averaged scores that hide the real question | averaging is **forbidden** in the synthesis; disagreements are surfaced, and a major one triggers a targeted debate: exactly 2 agents, exactly 1 round |
+| Averaged scores that hide the real question | averaging is **forbidden** in the synthesis; disagreements are surfaced, and a major one triggers a targeted debate: exactly 2 agents, exactly 1 round — the score gap that triggers it is *computed in code* from the agents' scores, never taken from the model's word |
+| A model that answers `"9"`, `"Go."` or garbage | every output is coerced before a rule reads it (a string score is still capped, a verdict is GO/ITERATE/PIVOT or flagged); an agent whose call fails is *excluded and reported*, never invented — and never takes the run down |
 
 ## Try it in 30 seconds — no API key
 
@@ -38,6 +39,11 @@ export ANTHROPIC_API_KEY=...        # or any LiteLLM provider:
 # export CONDORIUM_MODEL=mistral/mistral-large-latest
 # export CONDORIUM_MODEL=ollama/llama3        (fully local)
 
+# research channels (optional keys, strongly recommended):
+# export TAVILY_API_KEY=...   reliable web search (else keyless DuckDuckGo, often blocked)
+# export S2_API_KEY=...       Semantic Scholar without the 429s
+# python scripts/check_sources.py  -> status of arXiv / Semantic Scholar / web
+
 # evaluate YOUR idea (the Interviewer refines it first — 5 questions max)
 panel eval "an app that ..." --mode hackathon --constraints "24h, team of 3"
 
@@ -52,13 +58,17 @@ panel report <id>      # self-contained HTML       panel dashboard
 panel pitch <id>       # pitch pack from the stored JSON — zero new LLM calls
 panel record <id> --result "2nd place"             # feed the track record
 panel coach            # data-driven prompt diffs — YOU approve each one
+panel resume [<run>]   # resume an interrupted/crashed run — completed calls are not re-paid
+panel init             # copy the bundled prompts into ./agents to edit them
 ```
+
+A research channel that returns nothing says so (`⚠ no research source retrieved — arxiv: ok:0, …`): the Scientist never judges "without sources" silently.
 
 French prompt variants: add `--lang fr`.
 
 ## The pipeline (LangGraph)
 
-`Cohort → [Pre-filter] → Intake → Committee (2 rounds) → Synthesis → [Clerk if tournament]` — one `StateGraph`, native fan-out/fan-in, `interrupt()` for every human decision, SQLite checkpointing (an interrupted tournament resumes without re-paying completed calls). Print the live version: `panel graph`.
+`Cohort → [Pre-filter] → Intake → Committee (2 rounds) → Synthesis → [Clerk if tournament]` — one `StateGraph`, native fan-out/fan-in, `interrupt()` for every human decision, SQLite checkpointing (`panel resume <run_id>` continues an interrupted or crashed run without re-paying completed calls). Print the live version: `panel graph`.
 
 ```mermaid
 flowchart TD
@@ -108,7 +118,12 @@ flowchart TD
 panel bench --sycophancy --n 20
 ```
 
-Each sampled idea is rewritten in 3 tone variants with identical content — *enthusiastic* ("my revolutionary idea!"), *neutral*, *deprecating* ("probably already taken, nothing special") — and each variant goes through the full committee, in isolation, in randomized order. **Formulation bias** = mean score spread between variants, global and per agent. Target: 0. An agent with a high bias has a prompt to harden — and `panel coach` will propose the hardening, backed by the failing cases.
+Each sampled idea is rewritten in 3 tone variants with identical content — *enthusiastic* ("my revolutionary idea!"), *neutral*, *deprecating* ("probably already taken, nothing special") — and each variant goes through the full committee, in isolation, in randomized order. A checker rejects any rewrite that changed the facts (or the bench would measure content, not tone). Two numbers, global and per agent, at a pinned temperature:
+
+- **net formulation bias** = score spread between variants **minus a noise control** (the neutral text evaluated twice — what the committee moves on identical input is noise, not tone);
+- **enthusiastic − deprecating**, with a 95% bootstrap CI: positive = flattered, negative = contrarian.
+
+Target: both near 0. An agent with a high bias has a prompt to harden — and `panel coach` will propose the hardening, backed by the failing cases.
 
 The winner-prediction bench uses real hackathon data:
 
@@ -117,7 +132,13 @@ panel bootstrap --dataset devpost.json     # e.g. a Devpost dump (Kaggle/HF)
 panel bench --dataset devpost.json --n 50 --seed 42
 ```
 
-It builds (winner, non-winner) pairs from the same hackathon, **strips every victory clue** (badges, "winner", prize amounts — the anti-leak pass is unit-tested), evaluates both blind, and reports: winner-identification rate, per-agent precision (learn *which agent to listen to*), and score calibration. Results are seed-reproducible.
+It builds (winner, non-winner) pairs from the same hackathon, **strips every victory clue** from titles and descriptions (badges, "winner", prize amounts — the anti-leak pass is unit-tested), **excludes the pair and its hackathon from the Judge's calibration** (or the winner would calibrate itself), evaluates both blind, and reports, each with a 95% bootstrap CI:
+
+- the committee's winner-identification rate (ties counted as ½ and reported),
+- **the same rate for two baselines on the same pairs** — "the longer description wins" and a single LLM call — because a rate means nothing until it beats them,
+- per-agent precision (learn *which agent to listen to*) and score calibration.
+
+Seed-reproducible, temperature pinned (`--temperature`, default 0), and resumable: cases are appended to `evaluations/*.jsonl` as they finish, `--resume` skips the ones already paid.
 
 ## The learning loop
 
@@ -138,7 +159,7 @@ The Coach never edits a prompt itself. Every accepted diff is journaled with the
 Winners ingested via `panel ingest <url>` or `panel bootstrap --dataset <path>` feed a typed NetworkX graph (`Project`, `Tech`, `Theme`, `Pattern`, `Paper` / `WON`, `USES`, `ABOUT`, `EXPLOITS_PATTERN`, `INSPIRED_BY`) serialized to a plain JSON file — no database. It powers:
 
 - the **Historian**, which hunts unexploited combinations ("this tech won in 3 themes but never in yours") and abstains honestly when the base is empty;
-- **calibration**: the 5 nearest past winners are injected into the Judge's and Jury's prompts in hackathon mode;
+- **calibration**: up to 5 past winners sharing the session theme (`--theme`) or the idea's tech are injected into the Judge's prompt — a winner that shares nothing is never presented as "comparable";
 - the knowledge-graph view in HTML reports.
 
 A weekly refresh is one external cron line: `python scripts/ingest_winners.py <url>`.
@@ -154,7 +175,7 @@ agents/          every prompt, one .md per agent per mode (+ community/, + fr/)
 src/condorium/   the package: graph/ (LangGraph), knowledge/, analytics/, bench/
 knowledge/       winners.json, summaries/, graph.json
 evaluations/     full traces of every run (JSON) + reports
-scripts/         ingest_winners.py, bootstrap_from_dataset.py
+scripts/         ingest_winners.py, bootstrap_from_dataset.py, check_sources.py
 ```
 
 ## Roadmap

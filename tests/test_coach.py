@@ -4,7 +4,6 @@ import json
 import shutil
 
 import pytest
-
 from conftest import REPO
 
 
@@ -137,3 +136,21 @@ def test_non_transient_llm_errors_not_retried(monkeypatch):
     with pytest.raises(AuthenticationError):
         llm.complete_text("s", "u")
     assert len(calls) == 1
+
+
+def test_is_win_reads_outcomes_correctly():
+    from condorium.coach import _is_win
+
+    assert _is_win("1st place") and _is_win("Winner!") and _is_win("victoire")
+    assert not _is_win("2nd place")
+    assert not _is_win("did not win") and not _is_win("pas gagné")
+    assert not _is_win("finalist")
+
+
+def test_proposal_path_confined_to_rubrics(sandbox):
+    from condorium.coach import _proposal_path
+
+    assert _proposal_path("committee/believer.md") is not None
+    assert _proposal_path("system/synthesis.md") is None
+    assert _proposal_path("committee/../system/synthesis.md") is None
+    assert _proposal_path("../pyproject.toml") is None

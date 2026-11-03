@@ -41,3 +41,15 @@ def test_pairs_are_reproducible(tmp_path):
     a = build_pairs(dataset, n=3, seed=7)
     b = build_pairs(dataset, n=3, seed=7)
     assert a == b
+
+
+def test_titles_cleaned_and_original_kept_aside(tmp_path):
+    rows = [{"title": "Grand prize winner FoodMap", "hackathon": "H", "prizes": "1st",
+             "description": "Maps food deserts."},
+            {"title": "BikeLane", "hackathon": "H", "prizes": "", "description": "Bikes."}]
+    dataset = tmp_path / "ds.json"
+    dataset.write_text(json.dumps(rows))
+    entries = build_pairs(dataset, n=1, seed=1)[0]["entries"]
+    winner = next(e for e in entries if e["role"] == "winner")
+    assert not has_leak(winner["title"])
+    assert winner["original_title"] == "Grand prize winner FoodMap"

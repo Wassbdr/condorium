@@ -9,7 +9,10 @@ intake -> round 1 (parallel fan-out, agents blind to each other)
 
 Committee guardrails that must not depend on model obedience are enforced
 HERE, in code: the Believer cap, the scientist citation gate, the skeptic
-doubt-without-test rule, and the neutral-score exclusion.
+doubt-without-test rule, the neutral-score exclusion, and the debate trigger
+(the score gap is computed from round-2 scores, never taken from the model).
+Every model output is coerced (`schemas.py`) before a rule reads it, and a
+failed call degrades that one agent instead of aborting the evaluation.
 """
 
 from __future__ import annotations
@@ -20,16 +23,18 @@ from typing import Any
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
 
-from ..config import SETTINGS
 from ..analytics import traces
+from ..config import SETTINGS
 from ..knowledge.calibration import nearest_winners_block
-from ..llm import complete_json
+from ..llm import safe_complete_json
 from ..prompts import AgentPrompt, committee_prompts, load_prompt, render
+from ..schemas import coerce_debate_update, coerce_opinion, coerce_synthesis
 from ..sources.papers import filter_cited_references, search_papers
 from ..sources.web import search_web
 from ..state import EvalState, median, opinion_scores
 
 MAJOR_GAP = 3
+QUORUM = 4  # fewer numeric round-2 scores than this: the synthesis is flagged degraded
 
 
 # ---------------------------------------------------------------- helpers
@@ -60,7 +65,9 @@ def _render_agent_prompt(prompt: AgentPrompt, state: EvalState) -> str:
     if "{nearest_winners}" in prompt.body:
         idea = state["idea"]
         values["nearest_winners"] = nearest_winners_block(
-            state.get("official_criteria", ""), [idea.get("title", "")]
+            state.get("theme", ""), idea.get("tech") or [],
+            idea_text=f"{idea.get('title', '')}\n{idea.get('text', '')}",
+            exclude=state.get("calibration_exclude"),
         )
     if "{retrieved_sources}" in prompt.body:
         research = state.get("research") or {}
@@ -70,8 +77,7 @@ def _render_agent_prompt(prompt: AgentPrompt, state: EvalState) -> str:
 
 def _normalize(name: str, opinion: dict, state: EvalState, round_no: int) -> dict:
     """Code-enforced guardrails, applied to every parsed opinion."""
-    if not isinstance(opinion, dict):
-        opinion = {"score": None, "verdict": str(opinion)}
+    opinion = coerce_opinion(opinion)
     if name == "skeptic":
         # A doubt without a test is deleted: watchouts beyond the tests list drop.
         watchouts = opinion.get("watchouts") or []
@@ -96,13 +102,37 @@ def _normalize(name: str, opinion: dict, state: EvalState, round_no: int) -> dic
     return opinion
 
 
+def _failed_opinion(error: str, round_no: int) -> dict:
+    """A failed agent is excluded (score null), never invented."""
+    opinion = {"score": None, "verdict": "(agent failed — excluded from this evaluation)",
+               "error": error}
+    if round_no == 2:
+        opinion.update(revision="maintained", influenced_by=[])
+    return opinion
+
+
+def _with_computed_gaps(synthesis: dict, round2: dict) -> dict:
+    """The debate trigger reads the REAL gap between the two named agents'
+    round-2 scores; the model's own figure is kept as `gap_reported`."""
+    scores = opinion_scores(round2)
+    for d in synthesis.get("disagreements") or []:
+        d["gap_reported"] = d.get("gap", 0)
+        agents = [a for a in d.get("agents", []) if a in round2]
+        if len(agents) == 2 and all(a in scores for a in agents):
+            d["gap"] = abs(scores[agents[0]] - scores[agents[1]])
+        else:
+            d["gap"] = 0  # a null (neutral/failed) score is no quality gap
+    return synthesis
+
+
 def _research_for_idea(state: EvalState) -> dict:
     """Dual mandatory channel: paper APIs + web, run during round 1."""
     idea = state["idea"]
     query = " ".join((idea.get("title", "") + " " + idea.get("text", "")).split()[:14])
-    papers = [p.as_dict() for p in search_papers(query)]
-    web = search_web(query)
-    return {"query": query, "sources": papers + web}
+    channels: dict = {}
+    papers = [p.as_dict() for p in search_papers(query, status=channels)]
+    web = search_web(query, status=channels)
+    return {"query": query, "sources": papers + web, "channels": channels}
 
 
 # ------------------------------------------------------------------ nodes
@@ -112,8 +142,12 @@ def intake_node(state: EvalState) -> dict:
     that resuming never re-pays this call (interrupt() replays its node)."""
     prompt = load_prompt("system/intake.md", state.get("lang"))
     idea = state["idea"]
-    result = complete_json(prompt.body, f"IDEA:\n{idea.get('title', '')}\n{idea.get('text', '')}")
-    return {"intake": result if isinstance(result, dict) else {}}
+    result, error = safe_complete_json(
+        prompt.body, f"IDEA:\n{idea.get('title', '')}\n{idea.get('text', '')}")
+    out: dict = {"intake": result if isinstance(result, dict) else {}}
+    if error:
+        out["errors"] = [f"intake: {error}"]
+    return out
 
 
 def intake_gate(state: EvalState) -> dict:
@@ -137,8 +171,11 @@ def make_round1_node(name: str, prompt: AgentPrompt):
         )
         system = _render_agent_prompt(prompt, state)
         user = f"ROUND 1 — evaluate this idea. You have seen no other opinion.\n\n{_idea_block(state)}"
-        opinion = _normalize(name, complete_json(system, user, timeout=timeout), state, 1)
-        return {"round1": {name: opinion}, **extra}
+        raw, error = safe_complete_json(system, user, timeout=timeout)
+        if error:
+            return {"round1": {name: _failed_opinion(error, 1)},
+                    "errors": [f"{name} round 1: {error}"], **extra}
+        return {"round1": {name: _normalize(name, raw, state, 1)}, **extra}
 
     return node
 
@@ -154,7 +191,11 @@ def make_round2_node(name: str, prompt: AgentPrompt):
             f"{_idea_block(state)}\n\nROUND 1 OPINIONS:\n"
             f"{json.dumps(state.get('round1', {}), indent=2, ensure_ascii=False)}"
         )
-        opinion = _normalize(name, complete_json(system, user, timeout=timeout), state, 2)
+        raw, error = safe_complete_json(system, user, timeout=timeout)
+        if error:
+            return {"round2": {name: _failed_opinion(error, 2)},
+                    "errors": [f"{name} round 2: {error}"]}
+        opinion = _normalize(name, raw, state, 2)
         opinion.setdefault("revision", "maintained")
         opinion.setdefault("influenced_by", [])
         return {"round2": {name: opinion}}
@@ -168,13 +209,21 @@ def synthesis_node(state: EvalState) -> dict:
         f"{_idea_block(state)}\n\nROUND 2 OPINIONS:\n"
         f"{json.dumps(state.get('round2', {}), indent=2, ensure_ascii=False)}"
     )
-    synthesis = complete_json(prompt.body, user)
-    return {"synthesis": synthesis if isinstance(synthesis, dict) else {}}
+    raw, error = safe_complete_json(prompt.body, user)
+    if error:
+        return {"synthesis": {"verdict": None, "degraded": True, "error": error},
+                "errors": [f"synthesis: {error}"]}
+    round2 = state.get("round2", {})
+    synthesis = _with_computed_gaps(coerce_synthesis(raw), round2)
+    if len(opinion_scores(round2)) < QUORUM:
+        synthesis["degraded"] = True
+    return {"synthesis": synthesis}
 
 
 def find_major_disagreement(state: EvalState) -> dict | None:
     """The ONLY trigger for a targeted debate: gap >= 3 between two agents on
-    one topic, or a disagreement the synthesizer flagged critical."""
+    one topic (gap computed in code by synthesis_node), or a disagreement the
+    synthesizer flagged critical."""
     known = set(state.get("round2", {}))
     for d in (state.get("synthesis") or {}).get("disagreements") or []:
         agents = [a for a in d.get("agents", []) if a in known]
@@ -201,9 +250,13 @@ def debate_node(state: EvalState) -> dict:
             own_position=json.dumps(round2.get(me, {}).get("verdict", "")),
             other_position=json.dumps(round2.get(other, {}).get("verdict", "")),
         )
-        responses[me] = complete_json(system, "Respond now.")
+        responses[me], error = safe_complete_json(system, "Respond now.")
+        if error:
+            return {"debate": {"topic": disagreement.get("topic"), "agents": [agent_a, agent_b],
+                               "error": error},
+                    "errors": [f"debate ({me}): {error}"]}
     update_prompt = load_prompt("system/debate_update.md", state.get("lang"))
-    update = complete_json(
+    raw_update, error = safe_complete_json(
         render(
             update_prompt.body,
             agent_a=agent_a,
@@ -215,14 +268,16 @@ def debate_node(state: EvalState) -> dict:
         ),
         "Close the debate.",
     )
+    update = coerce_debate_update(raw_update)
     debate = {"topic": disagreement.get("topic"), "agents": [agent_a, agent_b],
               "responses": responses, "update": update}
     synthesis = dict(state.get("synthesis") or {})
-    if isinstance(update, dict):
-        synthesis["debate_outcome"] = update.get("debate_outcome")
-        synthesis["debate_conclusion"] = update.get("conclusion")
-        if update.get("verdict_changed") and update.get("verdict"):
-            synthesis["verdict"] = update["verdict"]
+    if error:
+        return {"debate": {**debate, "error": error}, "errors": [f"debate update: {error}"]}
+    synthesis["debate_outcome"] = update.get("debate_outcome")
+    synthesis["debate_conclusion"] = update.get("conclusion")
+    if update.get("verdict_changed") and update.get("verdict"):  # only a valid GO|ITERATE|PIVOT
+        synthesis["verdict"] = update["verdict"]
     return {"debate": debate, "synthesis": synthesis}
 
 
@@ -238,6 +293,7 @@ def persist_node(state: EvalState) -> dict:
         "round2": state.get("round2", {}),
         "synthesis": state.get("synthesis", {}),
         "debate": state.get("debate", {}),
+        "errors": state.get("errors", []),
     }
     if not state.get("no_persist"):
         traces.save_eval(record)

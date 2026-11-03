@@ -79,11 +79,14 @@ def committee_prompts(mode: str, lang: str | None = None) -> dict[str, AgentProm
                 continue
             if mode not in prompt.modes:
                 continue
-            # Mode-specific file wins over the generic one for the same agent.
-            if prompt.name in agents and len(agents[prompt.name].modes) == 1:
+            # A mode-specific file wins over the generic one for the same
+            # agent, whatever order the files are listed in.
+            current = agents.get(prompt.name)
+            if current and len(current.modes) == 1 and len(prompt.modes) != 1:
                 continue
-            prompt.body = f"{base}\n\n{prompt.body}"
             agents[prompt.name] = prompt
+    for prompt in agents.values():
+        prompt.body = f"{base}\n\n{prompt.body}"
     return agents
 
 

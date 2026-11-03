@@ -17,10 +17,11 @@ dependencies = [
     "rich>=13.7",
     "httpx>=0.27",
     "pyyaml>=6.0",
+    "pydantic>=2.6",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "pytest-mock>=3.14", "ruff>=0.6"]
+dev = ["pytest>=8.0", "pytest-mock>=3.14", "ruff==0.17.3"]
 
 [project.scripts]
 panel = "condorium.cli:main"
@@ -35,9 +36,25 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/condorium"]
 
+# Prompts and demo fixtures ship inside the wheel: `uvx condorium panel demo`
+# must work from any directory (config.agents_dir / fixtures_dir resolve them).
+[tool.hatch.build.targets.wheel.force-include]
+"agents" = "condorium/_bundled/agents"
+"fixtures/demo" = "condorium/_bundled/fixtures/demo"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "C4", "RUF", "BLE", "S"]
+# E501: long prompt-adjacent strings; S311: seeded random is the point (benches);
+# S603/S314: subprocess on our own scripts, XML from the arXiv API only.
+ignore = ["E501", "S311", "S603", "S314"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/condorium/cli.py" = ["B008"]  # typer.Option defaults are the idiom
+"tests/*" = ["S101"]

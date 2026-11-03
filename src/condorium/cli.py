@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Optional
 
 import typer
 from rich.panel import Panel
@@ -48,22 +47,54 @@ def _answer_interrupt(payload: dict):
     return None
 
 
-def _run_graph(initial: dict, thread_id: str) -> dict:
-    from langgraph.types import Command
-
+def _compiled_graph(lang: str | None = None):
     from .graph.build import compile_main_graph
     from .graph.checkpoint import get_checkpointer
 
-    graph = compile_main_graph(initial.get("lang"), checkpointer=get_checkpointer())
-    config = {"configurable": {"thread_id": thread_id}, "recursion_limit": 120}
-    result = graph.invoke(initial, config)
-    while result.get("__interrupt__"):
-        answer = _answer_interrupt(result["__interrupt__"][0].value or {})
-        result = graph.invoke(Command(resume=answer), config)
+    return compile_main_graph(lang, checkpointer=get_checkpointer())
+
+
+def _config(thread_id: str) -> dict:
+    return {"configurable": {"thread_id": thread_id}, "recursion_limit": 120}
+
+
+def _drive(graph, config: dict, first_input) -> dict:
+    """Run (or resume) a thread, answering every interrupt on the way."""
+    from langgraph.types import Command
+
+    run_id = config["configurable"]["thread_id"]
+    try:
+        result = graph.invoke(first_input, config)
+        while result.get("__interrupt__"):
+            answer = _answer_interrupt(result["__interrupt__"][0].value or {})
+            result = graph.invoke(Command(resume=answer), config)
+    except KeyboardInterrupt:
+        console.print(f"\n[yellow]stopped — resume with: panel resume {run_id}[/yellow]")
+        raise typer.Exit(130) from None
+    except Exception:
+        console.print(f"[yellow]run failed — fix the cause, then: panel resume {run_id} "
+                      "(completed calls are not re-paid)[/yellow]")
+        raise
     return result
 
 
+def _run_graph(initial: dict, thread_id: str) -> dict:
+    console.print(f"[dim]run {thread_id}[/dim]")
+    return _drive(_compiled_graph(initial.get("lang")), _config(thread_id), initial)
+
+
+def _resumable_runs(graph) -> list[str]:
+    # collect first: SqliteSaver.list() holds the cursor lock while it yields,
+    # and get_state() needs that same lock
+    threads = {ckpt.config["configurable"]["thread_id"]
+               for ckpt in graph.checkpointer.list(None)
+               if not ckpt.config["configurable"].get("checkpoint_ns")}
+    return sorted(t for t in threads if graph.get_state(_config(t)).next)
+
+
 def _show_results(result: dict) -> None:
+    for warning in result.get("warnings") or []:
+        console.print(f"[yellow]⚠ {warning}[/yellow]")
     for record in result.get("evaluations", []):
         try:
             show_evaluation(traces.load_eval(record["eval_id"]))
@@ -79,9 +110,10 @@ def _show_results(result: dict) -> None:
 
 @app.command()
 def eval(
-    idea: Optional[str] = typer.Argument(None, help="The idea, inline"),
-    file: Optional[Path] = typer.Option(None, "--file", help="Read the idea from a file"),
+    idea: str | None = typer.Argument(None, help="The idea, inline"),
+    file: Path | None = typer.Option(None, "--file", help="Read the idea from a file"),
     mode: str = typer.Option("general", help="general | hackathon"),
+    theme: str = typer.Option("", help="Theme / track (calibrates against past winners)"),
     constraints: str = typer.Option("", help='e.g. "24h, team of 3"'),
     criteria: str = typer.Option("", help="Official criteria (hackathon)"),
     custom_criteria: str = typer.Option("", help="Extra Judge criteria for this session"),
@@ -94,7 +126,7 @@ def eval(
         raise typer.BadParameter("give an idea inline or via --file")
     run_id = traces.new_id("run", "eval")
     result = _run_graph({
-        "command": "eval", "mode": mode, "raw_input": raw,
+        "command": "eval", "mode": mode, "raw_input": raw, "theme": theme,
         "constraints": constraints, "official_criteria": criteria,
         "custom_criteria": custom_criteria, "interactive": interview,
         "lang": lang, "run_id": run_id,
@@ -111,7 +143,7 @@ def generate(
     criteria: str = typer.Option("", help="Official criteria"),
     constraints: str = typer.Option("", help="Team constraints"),
     n: int = typer.Option(5, help="Ideas to generate"),
-    top: Optional[int] = typer.Option(None, help="Pre-filter threshold (skips the question)"),
+    top: int | None = typer.Option(None, help="Pre-filter threshold (skips the question)"),
     mode: str = typer.Option("hackathon"),
     lang: str = typer.Option("en"),
 ):
@@ -129,12 +161,12 @@ def generate(
 @app.command()
 def tournament(
     sources: str = typer.Option("hackathon,scientist,historian", help="Comma-separated generators"),
-    context: Optional[Path] = typer.Option(None, help="Context file (theme, rules...)"),
+    context: Path | None = typer.Option(None, help="Context file (theme, rules...)"),
     theme: str = typer.Option(""),
     duration: str = typer.Option(""),
     criteria: str = typer.Option(""),
     constraints: str = typer.Option(""),
-    top: Optional[int] = typer.Option(None, help="Ideas passing the pre-filter"),
+    top: int | None = typer.Option(None, help="Ideas passing the pre-filter"),
     n: int = typer.Option(5, help="Ideas per generator"),
     mode: str = typer.Option("hackathon"),
     lang: str = typer.Option("en"),
@@ -149,14 +181,39 @@ def tournament(
         "n_ideas": n, "top": top, "lang": lang, "run_id": run_id,
     }, run_id)
     _show_results(result)
-    console.print("[dim]interrupted? re-run the same command — the SqliteSaver "
-                  "checkpoint resumes without re-paying completed calls[/dim]")
+
+
+@app.command()
+def resume(run_id: str | None = typer.Argument(None, help="Run to resume; omit to list them")):
+    """Resume an interrupted or crashed run from its checkpoint — completed calls are not re-paid."""
+    from langgraph.types import Command
+
+    graph = _compiled_graph()
+    if not run_id:
+        pending = _resumable_runs(graph)
+        if not pending:
+            console.print("No unfinished run.")
+        for thread_id in pending:
+            console.print(f"  panel resume {thread_id}")
+        return
+    config = _config(run_id)
+    snapshot = graph.get_state(config)
+    if not snapshot.values:
+        raise typer.BadParameter(f"no checkpoint for run {run_id!r} (see `panel resume`)")
+    if not snapshot.next:
+        console.print("[dim]this run already completed[/dim]")
+        _show_results(snapshot.values)
+        return
+    interrupts = list(getattr(snapshot, "interrupts", ()) or
+                      [i for task in snapshot.tasks for i in task.interrupts])
+    first = Command(resume=_answer_interrupt(interrupts[0].value or {})) if interrupts else None
+    _show_results(_drive(graph, config, first))
 
 
 @app.command()
 def demo():
     """Replay pre-recorded evaluations (no API key needed)."""
-    fixtures = sorted((SETTINGS.root / "fixtures" / "demo").glob("*.json"))
+    fixtures = sorted(SETTINGS.fixtures_dir.glob("*.json"))
     if not fixtures:
         console.print("[red]no fixtures found in fixtures/demo/[/red]")
         raise typer.Exit(1)
@@ -164,6 +221,20 @@ def demo():
         show_evaluation(json.loads(f.read_text(encoding="utf-8")))
     console.print("\n[dim]This was a replay of recorded runs. "
                   "Set an API key (any LiteLLM provider) for live evaluations.[/dim]")
+
+
+@app.command()
+def init():
+    """Copy the bundled prompts into ./agents so you can edit them (and run the coach)."""
+    import shutil
+
+    target = SETTINGS.root / "agents"
+    if (target / "committee").is_dir():
+        console.print(f"[yellow]{target} already exists — nothing copied.[/yellow]")
+        raise typer.Exit(1)
+    shutil.copytree(SETTINGS.agents_dir, target)
+    console.print(f"[green]prompts copied to {target}[/green] — edit them, add "
+                  "community agents in agents/community/, run `panel coach`.")
 
 
 @app.command()
@@ -240,22 +311,28 @@ def stats():
 
 @app.command()
 def bench(
-    dataset: Optional[Path] = typer.Option(None, help="Devpost-style dataset path"),
+    dataset: Path | None = typer.Option(None, help="Devpost-style dataset path"),
     n: int = typer.Option(50),
     seed: int = typer.Option(42),
     sycophancy: bool = typer.Option(False, "--sycophancy", help="Formulation-bias test"),
+    baselines: bool = typer.Option(True, help="Also score the pairs with the baselines "
+                                   "(longer description; single LLM call)"),
+    resume: bool = typer.Option(False, "--resume", help="Skip cases already in the .jsonl"),
+    temperature: float = typer.Option(0.0, help="Pinned for the whole bench (reproducibility)"),
 ):
     """Benchmark the committee: winner identification, or formulation bias."""
     if sycophancy:
         from .bench.sycophancy import readme_table, run_sycophancy
 
-        result = run_sycophancy(dataset, n=n, seed=seed)
+        result = run_sycophancy(dataset, n=n, seed=seed, resume=resume,
+                                temperature=temperature)
     else:
         if not dataset:
             raise typer.BadParameter("--dataset is required (unless --sycophancy)")
         from .bench.run import readme_table, run_bench
 
-        result = run_bench(dataset, n=n, seed=seed)
+        result = run_bench(dataset, n=n, seed=seed, baselines=baselines, resume=resume,
+                           temperature=temperature)
     console.print(readme_table(result))
     console.print("[dim]full results in evaluations/*.json — paste the table in the README[/dim]")
 

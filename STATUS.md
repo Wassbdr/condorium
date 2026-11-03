@@ -1,6 +1,6 @@
 # STATUS — condorium
 
-_Last updated: 2026-07-17 (hardening + publication batch)._
+_Last updated: 2026-11-03 (repair batch after the full audit)._
 
 ## Done ✅
 
@@ -59,31 +59,66 @@ _Last updated: 2026-07-17 (hardening + publication batch)._
       exist verbatim, apply writes file + CHANGELOG)
 - [x] README install claim fixed (git install until PyPI)
 
+**Repair batch (2026-11-03)** — from the full audit; everything keyless-testable
+- [x] Lint: ruff pinned (`==0.17.3`) with an explicit rule set; CI matrix 3.11–3.13
+- [x] **Research channels actually work**: arXiv over https (was a silent 301),
+      keyword queries (AND, then OR), S2 `S2_API_KEY` + one 429 retry, web =
+      Tavily (`TAVILY_API_KEY`) with DuckDuckGo fallback (`uddg` links decoded,
+      anti-bot page detected). Every channel reports `ok:N | empty | error | blocked`
+      into `research.channels`; empty research is shown, and the scientist
+      generator warns instead of silently producing nothing. `scripts/check_sources.py`
+- [x] **Calibration fixed**: it was called with (criteria, title) instead of
+      (theme, techs) → arbitrary winners. Now theme (`--theme`) + declared tech +
+      known techs named in the text; zero-overlap winners are never shown
+- [x] **Bench anti-leak**: the pair and every winner of its hackathon are
+      excluded from calibration; titles cleaned too
+- [x] **Packaging**: prompts + demo fixtures bundled in the wheel
+      (`condorium/_bundled/`), `panel init`; CI job runs the built wheel
+      outside the repo (`panel demo`, `panel graph`, `panel init`)
+- [x] **`panel resume [run_id]`**: lists unfinished runs, resumes interrupts
+      and crashes on the same thread without re-paying (tested cross-process)
+- [x] **Robust outputs**: `schemas.py` (Pydantic) coerces every model output;
+      debate gap computed in code; a failed agent/synthesis/generator/clerk
+      degrades (`errors` / `warnings`, quorum flag) instead of aborting;
+      `CONDORIUM_TEMPERATURE`
+- [x] Coach: outcome parsing fixed ("2nd place" is not a win), proposals
+      confined to `agents/committee|community/`; prompt selection order-independent
+- [x] **Bench rigor**: bootstrap 95% CIs, ties, per-pair errors, `--resume`
+      (jsonl), length + single-call baselines (`agents/system/baseline_judge.md`);
+      sycophancy: noise control, directional metric, equivalence check
+      (`agents/system/equivalence_check.md`), temperature pinned (103 tests)
+
 ## Next up 🔜 (needs a key / external resources)
 
 1. **First live run** (needs a key): `panel eval --file examples/airbnb-2008.md
    --no-interview`, then `panel report <id>`. Watch for: JSON parse retries
-   with real models, scientist timeout budget (240s), interviewer dialogue
-   with a real model.
+   and `errors` in the trace, scientist timeout budget (240s), interviewer
+   dialogue with a real model, cost/latency per idea. Set `TAVILY_API_KEY`
+   and `S2_API_KEY` first (`python scripts/check_sources.py`).
 2. **Real dataset**: download a Devpost dump (e.g. Kaggle/HF
    `devpost-hackathon-projects`), run `panel bootstrap`, then
-   `panel bench --dataset ... --n 50 --seed 42` and
-   `panel bench --sycophancy --n 20`; paste both result tables into the
-   README (they are the project's proof — currently described without numbers).
+   `panel bench --dataset ... --n 50 --seed 42` (committee vs both baselines,
+   with CIs) and `panel bench --sycophancy --n 20` (net bias + direction);
+   paste both tables into the README — they are the project's proof.
 3. **Examples/fixtures**: replace the illustrative demo fixtures with real
    recorded runs, add a real evaluation of the Airbnb 2008 example.
 4. **asciinema GIF** for the top of the README (record `panel demo`).
-5. **PyPI publish 0.1.0**, then restore the plain `pip install condorium`.
+5. **PyPI publish 0.1.0** (the wheel is now self-contained), then restore the
+   plain `pip install condorium`.
 6. **Phase 2**: implement `panel population <id>` (6 personas, ≥2 natural
    skeptics, adoption verdicts, global insight) behind the existing stub.
-7. **Later / nice to have**: more antileak patterns from real dataset
-   observations, `panel stats --json` machine output, per-agent model
-   override via frontmatter.
+7. **Later / nice to have**: cost tracking per run (LiteLLM
+   `completion_cost`), per-agent model override via frontmatter (cheap model
+   for prefilter/intake/baselines), calibration block for the Jury prompt,
+   more antileak patterns from real dataset observations, `panel stats --json`.
 
 ## Known limitations
 
 - Demo fixtures and `examples/` evals are illustrative (hand-written in the
   trace schema), not recorded live runs — see Next up #3.
-- Web search channel is a keyless DuckDuckGo HTML scrape: best-effort, may
-  degrade silently (papers channel alone still satisfies the citation gate).
-- `panel bench` cost scales fast: 2 ideas × ~15 LLM calls per pair.
+- Without `TAVILY_API_KEY` the web channel is a keyless DuckDuckGo scrape that
+  is usually answered with an anti-bot page (reported as `ddg:blocked`);
+  without `S2_API_KEY` Semantic Scholar often returns 429. arXiv alone still
+  satisfies the citation gate.
+- `panel bench` cost scales fast: 2 ideas × ~15 LLM calls per pair, plus 2
+  single-call baselines; the sycophancy bench runs 4 evaluations per idea.

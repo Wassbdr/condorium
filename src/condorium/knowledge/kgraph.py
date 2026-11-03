@@ -103,16 +103,46 @@ def project_similarity(g: nx.MultiDiGraph, a: str, b: str) -> float:
     return score / 3
 
 
+def techs_mentioned(g: nx.MultiDiGraph, text: str) -> list[str]:
+    """Labels of known Tech nodes named in free text (whole word, any case)."""
+    lowered = (text or "").lower()
+    found = []
+    for _, d in g.nodes(data=True):
+        label = d.get("label") or ""
+        if d.get("type") == "Tech" and label and re.search(
+                rf"(?<![a-z0-9]){re.escape(label.lower())}(?![a-z0-9])", lowered):
+            found.append(label)
+    return sorted(found)
+
+
+def _excluded(g: nx.MultiDiGraph, project: str, exclude: dict | None) -> bool:
+    """Bench anti-leak: a project (by title) or any winner of a given
+    hackathon must never serve as its own calibration."""
+    if not exclude:
+        return False
+    if project in {_slug("Project", t) for t in exclude.get("projects") or [] if t}:
+        return True
+    banned = {_slug("Hackathon", h) for h in exclude.get("hackathons") or [] if h}
+    return bool(banned & neighbors_of_type(g, project, "Hackathon"))
+
+
 def nearest_projects_to_context(g: nx.MultiDiGraph, techs: list[str], themes: list[str],
-                                k: int = 5) -> list[dict]:
-    """The k winners closest to a (techs, themes) context — used for calibration."""
+                                k: int = 5, *, min_overlap: int = 0,
+                                exclude: dict | None = None) -> list[dict]:
+    """The k winners closest to a (techs, themes) context — used for calibration.
+
+    `min_overlap=1` drops winners sharing nothing with the context, so an
+    unrelated project is never presented as "comparable"."""
     ctx_tech = {_slug("Tech", t) for t in techs}
     ctx_theme = {_slug("Theme", t) for t in themes}
     scored = []
     for p in projects(g):
+        if _excluded(g, p, exclude):
+            continue
         pt, pth = neighbors_of_type(g, p, "Tech"), neighbors_of_type(g, p, "Theme")
         overlap = len(pt & ctx_tech) + 2 * len(pth & ctx_theme)
-        scored.append((overlap, p))
+        if overlap >= min_overlap:
+            scored.append((overlap, p))
     scored.sort(key=lambda x: (-x[0], x[1]))
     out = []
     for overlap, p in scored[:k]:

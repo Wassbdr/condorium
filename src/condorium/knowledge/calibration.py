@@ -7,12 +7,18 @@ import json
 from . import kgraph, store
 
 
-def nearest_winners_block(theme: str, techs: list[str] | None = None, k: int = 5) -> str:
-    """Human-readable block for the {nearest_winners} placeholder."""
+def nearest_winners_block(theme: str, techs: list[str] | None = None, k: int = 5, *,
+                          idea_text: str = "", exclude: dict | None = None) -> str:
+    """Human-readable block for the {nearest_winners} placeholder.
+
+    Context = the session theme + the idea's declared techs + known techs
+    named in its text. Only winners sharing something with it are shown."""
     g = kgraph.load_graph()
     if g.number_of_nodes() == 0:
         return "(knowledge base is empty — no calibration available)"
-    nearest = kgraph.nearest_projects_to_context(g, techs or [], [theme] if theme else [], k)
+    all_techs = sorted(set(techs or []) | set(kgraph.techs_mentioned(g, idea_text)))
+    nearest = kgraph.nearest_projects_to_context(
+        g, all_techs, [theme] if theme else [], k, min_overlap=1, exclude=exclude)
     winners = {w["id"]: w for w in store.load_winners()}
     lines = []
     for item in nearest:

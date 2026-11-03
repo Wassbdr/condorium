@@ -15,9 +15,21 @@ def _fmt_score(v) -> str:
     return "∅" if v is None else str(v)
 
 
+def research_warning(record: dict) -> str | None:
+    """A scientist that judged without any retrieved source must say so."""
+    research = record.get("research") or {}
+    channels = research.get("channels") or {}
+    if channels and not research.get("sources"):
+        return "no research source retrieved — " + ", ".join(
+            f"{k}: {v}" for k, v in channels.items())
+    return None
+
+
 def show_evaluation(record: dict) -> None:
     idea = record.get("idea", {})
     console.rule(f"[bold]{idea.get('title', record.get('eval_id', '?'))}")
+    if warning := research_warning(record):
+        console.print(f"[yellow]⚠ {warning}[/yellow]")
     intake = record.get("intake") or {}
     if intake:
         console.print(Panel(
@@ -49,8 +61,10 @@ def show_evaluation(record: dict) -> None:
         )
     console.print(table)
 
+    for error in record.get("errors") or []:
+        console.print(f"[yellow]⚠ degraded: {error}[/yellow]")
     syn = record.get("synthesis") or {}
-    verdict = syn.get("verdict", "?")
+    verdict = syn.get("verdict") or "?"
     lines = [f"[{VERDICT_STYLE.get(verdict, 'bold')}]{verdict}[/]  {syn.get('consensus', '')}"]
     for d in syn.get("disagreements") or []:
         crit = " [red](critical)[/red]" if d.get("critical") else ""
@@ -61,6 +75,9 @@ def show_evaluation(record: dict) -> None:
         lines.append(f"\n[bold]Targeted debate[/bold]: {syn['debate_outcome']} — "
                      f"{syn.get('debate_conclusion', '')}")
     lines.append(f"\n[bold]Next action[/bold]: {syn.get('action', '')}")
+    if syn.get("degraded"):
+        lines.append("\n[yellow]⚠ degraded synthesis: too few agents produced a usable "
+                     "score — treat this verdict with caution[/yellow]")
     console.print(Panel("\n".join(lines), title="Synthesis", border_style="magenta"))
 
 

@@ -25,7 +25,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from condorium.knowledge import kgraph, store  # noqa: E402
+from condorium.knowledge import kgraph, store
 
 ALIASES = {
     "title": ["title", "name", "project", "project_name", "winning_project"],
@@ -74,7 +74,7 @@ def load_rows(path: Path, fmt: str) -> list[dict]:
         try:
             import pandas as pd
         except ImportError:
-            raise SystemExit("parquet format needs pandas: uv pip install pandas pyarrow")
+            raise SystemExit("parquet format needs pandas: uv pip install pandas pyarrow") from None
         return pd.read_parquet(path).to_dict("records")
     data = json.loads(path.read_text(encoding="utf-8"))
     return data if isinstance(data, list) else data.get("data", [])

@@ -20,6 +20,7 @@ class Idea(TypedDict, total=False):
     title: str
     text: str
     provenance: str  # user | hackathon | scientist | historian | demo
+    tech: list[str]  # declared stack — feeds calibration
     references: list[dict]  # scientist generator: [{title, url}]
     inspired_by: list[str]  # historian: knowledge-graph node ids
     prefilter: dict
@@ -28,6 +29,7 @@ class Idea(TypedDict, total=False):
 class EvalState(TypedDict, total=False):
     idea: Idea
     mode: str  # general | hackathon
+    theme: str  # session theme — feeds calibration
     constraints: str
     official_criteria: str
     custom_criteria: str
@@ -42,6 +44,8 @@ class EvalState(TypedDict, total=False):
     eval_id: str
     interactive: bool
     no_persist: bool  # bench runs: full pipeline, no trace on disk
+    calibration_exclude: dict  # bench anti-leak: {"projects": [...], "hackathons": [...]}
+    errors: Annotated[list[str], operator.add]  # degraded calls (agent excluded, not invented)
 
 
 class PanelState(TypedDict, total=False):
@@ -66,6 +70,7 @@ class PanelState(TypedDict, total=False):
     evaluations: Annotated[list[dict], operator.add]
     ranking: dict
     run_id: str
+    warnings: Annotated[list[str], operator.add]  # degraded channels / failed calls
 
 
 def opinion_scores(opinions: dict[str, dict]) -> dict[str, int]:

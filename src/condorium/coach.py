@@ -10,7 +10,9 @@ from __future__ import annotations
 
 import difflib
 import json
+import re
 import time
+from pathlib import Path
 
 from .config import SETTINGS
 from .llm import complete_json
@@ -18,6 +20,30 @@ from .prompts import load_prompt, render
 from .record import load_track_record
 
 MIN_CASES = 3
+EDITABLE_FOLDERS = ("committee", "community")
+
+_WIN_RE = re.compile(r"\b(1st|first|1er|1ère|winner|won|win|victoire|gagn\w*|grand prize)\b",
+                     re.IGNORECASE)
+_NEGATION_RE = re.compile(r"\b(not|didn'?t|did not|no|pas|never|lost|perdu)\b", re.IGNORECASE)
+
+
+def _is_win(result: str) -> bool:
+    """'1st place' / 'winner' / 'victoire' -> True; '2nd place', 'did not win',
+    'pas gagné' -> False. A podium that is not first is not a win."""
+    text = result or ""
+    return bool(_WIN_RE.search(text)) and not _NEGATION_RE.search(text)
+
+
+def _proposal_path(agent_file: str) -> Path | None:
+    """The coach may only touch committee/community rubrics."""
+    if not agent_file:
+        return None
+    root = SETTINGS.agents_dir.resolve()
+    path = (SETTINGS.agents_dir / agent_file).resolve()
+    allowed = [root / folder for folder in EDITABLE_FOLDERS]
+    if not any(path.is_relative_to(folder) for folder in allowed) or not path.is_file():
+        return None
+    return path
 
 
 def _collect_errors() -> tuple[list[dict], list[dict], dict]:
@@ -25,12 +51,13 @@ def _collect_errors() -> tuple[list[dict], list[dict], dict]:
     bench_errors = []
     if bench_file.exists():
         report = json.loads(bench_file.read_text(encoding="utf-8"))
-        bench_errors = [c for c in report.get("cases", []) if not c.get("correct")]
+        # ties count as misses; crashed pairs (correct=None) are no evidence
+        bench_errors = [c for c in report.get("cases", []) if c.get("correct") is False]
 
     track_errors = []
     for outcome in load_track_record():
-        verdict, result = outcome.get("verdict"), (outcome.get("result") or "").lower()
-        won = any(k in result for k in ("1st", "1er", "first", "winner", "won", "victoire", "place"))
+        verdict = outcome.get("verdict")
+        won = _is_win(outcome.get("result") or "")
         if (verdict == "GO" and not won) or (verdict in ("ITERATE", "PIVOT") and won):
             track_errors.append({"case_id": f"record-{outcome['eval_id']}", **outcome})
 
@@ -76,8 +103,8 @@ def propose(max_error_chars: int = 30000) -> list[dict]:
     for p in proposals:
         if len(set(p.get("case_ids", []))) < MIN_CASES:
             continue  # anti-overfitting guardrail
-        path = SETTINGS.agents_dir / p.get("agent_file", "")
-        if not path.is_file() or not p.get("rule_in_cause") or not p.get("replacement"):
+        path = _proposal_path(p.get("agent_file", ""))
+        if path is None or not p.get("rule_in_cause") or not p.get("replacement"):
             continue
         old_text = path.read_text(encoding="utf-8")
         if p["rule_in_cause"] not in old_text:
@@ -94,6 +121,9 @@ def propose(max_error_chars: int = 30000) -> list[dict]:
 
 def apply_proposal(proposal: dict) -> None:
     """Called ONLY after explicit human acceptance of this individual diff."""
+    if not SETTINGS.agents_editable:
+        raise RuntimeError("the prompts in use are the read-only copy bundled with the "
+                           "package — run `panel init` to get an editable ./agents first")
     path = SETTINGS.agents_dir / proposal["agent_file"]
     path.write_text(proposal["_new_text"], encoding="utf-8")
     changelog = SETTINGS.agents_dir / "CHANGELOG.md"

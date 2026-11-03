@@ -7,11 +7,14 @@ Tests (and `panel demo`) replace `_completion` — no network, no keys.
 from __future__ import annotations
 
 import json
+import logging
 import re
 import time
 from typing import Any
 
 from .config import SETTINGS
+
+log = logging.getLogger("condorium.llm")
 
 # Transient provider failures worth retrying, matched by exception class name
 # so any LiteLLM provider (or a test double) qualifies without importing it.
@@ -36,11 +39,13 @@ def _is_transient(exc: Exception) -> bool:
 def complete_text(system: str, user: str, *, model: str | None = None, timeout: int | None = None) -> str:
     attempts = SETTINGS.llm_retries + 1
     for attempt in range(attempts):
+        extra = {} if SETTINGS.temperature is None else {"temperature": SETTINGS.temperature}
         try:
             return _completion(
                 model=model or SETTINGS.model,
                 messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
                 timeout=timeout or SETTINGS.llm_timeout,
+                **extra,
             )
         except Exception as exc:
             if attempt == attempts - 1 or not _is_transient(exc):
@@ -87,3 +92,16 @@ def complete_json(
             "Reply again with ONLY the JSON object, no prose, no code fences."
         )
         return parse_json(complete_text(system, retry_user, model=model, timeout=timeout))
+
+
+def safe_complete_json(system: str, user: str, **kwargs: Any) -> tuple[dict | list | None, str | None]:
+    """`complete_json` that degrades instead of raising: -> (result, None) or
+    (None, "<ErrorType>: <message>"). One agent's failure must not take the
+    whole committee — or a whole tournament — down with it. Only Exceptions
+    are caught: a Ctrl-C still stops the run (and `panel resume` picks it up)."""
+    try:
+        return complete_json(system, user, **kwargs), None
+    except Exception as exc:  # noqa: BLE001 — any provider/parse failure degrades
+        error = f"{type(exc).__name__}: {str(exc)[:200]}"
+        log.warning("LLM call failed, degrading: %s", error)
+        return None, error

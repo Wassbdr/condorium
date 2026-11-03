@@ -47,6 +47,8 @@ class MockLLM:
         self.agent_extra: dict[str, dict] = {}    # agent -> extra fields in both rounds
         self.synthesis: dict | None = None
         self.n_gen_ideas = 3
+        self.baseline_score = lambda user: 6      # single-call bench baseline
+        self.variants_equivalent = True            # sycophancy equivalence check
 
     # -- routing -----------------------------------------------------------
     def __call__(self, *, model: str, messages: list[dict], timeout: int, **kw) -> str:
@@ -111,6 +113,11 @@ class MockLLM:
                         "mastered_option": {"tech": "plain web", "wow": 5, "risk": 2}}
             return {"action": "done", "idea": {"title": "refined idea",
                                                "text": "problem, audience, tech, wow"}}
+        if "THE BASELINE JUDGE" in system:
+            return {"score": self.baseline_score(user), "reason": "single call"}
+        if "THE EQUIVALENCE CHECKER" in system:
+            return {"equivalent": self.variants_equivalent,
+                    "differences": [] if self.variants_equivalent else ["neutral: new feature"]}
         if "Rewrite the idea" in system:
             return {"enthusiastic": "MY REVOLUTIONARY IDEA: base.",
                     "neutral": "base.", "deprecating": "a small idea, probably taken: base."}
@@ -161,10 +168,14 @@ def mock_llm(monkeypatch, sandbox):
     mock = MockLLM()
     monkeypatch.setattr(llm, "_completion", mock)
 
-    def fake_papers(q, max_results=8):
+    def fake_papers(q, max_results=8, status=None):
+        if status is not None:
+            status.update({"arxiv": "ok:1", "semantic_scholar": "empty"})
         return [Paper(**dict(FAKE_PAPER))]
 
-    def fake_web(q, max_results=6):
+    def fake_web(q, max_results=6, status=None):
+        if status is not None:
+            status["web"] = "ddg:empty"
         return []
     monkeypatch.setattr(evaluation, "search_papers", fake_papers)
     monkeypatch.setattr(evaluation, "search_web", fake_web)

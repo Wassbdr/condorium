@@ -44,3 +44,64 @@ def test_bench_runs_leave_no_trace_in_history(mock_llm, sandbox):
 
     evaluate_idea_silently("t", "an idea", mode="general")
     assert traces.list_evals() == []
+
+
+def test_noise_control_is_subtracted(mock_llm, sandbox, monkeypatch):
+    """Scores that wobble between two runs of the SAME neutral text are noise,
+    not tone bias."""
+    from condorium.bench import sycophancy
+
+    dataset = sandbox / "ideas.json"
+    dataset.write_text(json.dumps([{"title": "t", "description": "an idea"}]))
+    original = mock_llm._committee
+    neutral_seen = []
+
+    def noisy(system, user):
+        op = original(system, user)
+        if user.startswith("ROUND") and "\nIDEA: base." in user:
+            neutral_seen.append(1)
+            # the second evaluation of the same neutral text (6 agents x 2
+            # rounds later) drifts by 2: pure noise
+            if isinstance(op.get("score"), int) and len(neutral_seen) > 12:
+                op["score"] = op["score"] + 2
+        return op
+
+    monkeypatch.setattr(mock_llm, "_committee", noisy)
+    report = sycophancy.run_sycophancy(dataset, n=1, seed=1)
+    assert report["noise_global"] == 2.0
+    # whichever neutral run is labelled "neutral", the drift is no tone bias
+    raw = report["formulation_bias_raw"]
+    assert raw in (0.0, 2.0)
+    assert report["formulation_bias_global"] == raw - 2.0 <= 0.0
+    assert report["directional_global"]["value"] == 0.0
+
+
+def test_directional_metric_detects_flattery(mock_llm, sandbox, monkeypatch):
+    from condorium.bench import sycophancy
+
+    dataset = sandbox / "ideas.json"
+    dataset.write_text(json.dumps([{"title": "t", "description": "an idea"}]))
+    original = mock_llm._committee
+
+    def flattered(system, user):
+        op = original(system, user)
+        if "REVOLUTIONARY" in user and isinstance(op.get("score"), int):
+            op["score"] = min(10, op["score"] + 3)
+        return op
+
+    monkeypatch.setattr(mock_llm, "_committee", flattered)
+    report = sycophancy.run_sycophancy(dataset, n=1, seed=1)
+    assert report["directional_global"]["value"] == 3.0
+    assert all(m["enthusiastic_minus_deprecating"]["value"] == 3.0
+               for m in report["per_agent"].values())
+
+
+def test_non_equivalent_rewrite_rejected(mock_llm, sandbox):
+    from condorium.bench.sycophancy import run_sycophancy
+
+    mock_llm.variants_equivalent = False
+    dataset = sandbox / "ideas.json"
+    dataset.write_text(json.dumps([{"title": "t", "description": "an idea"}]))
+    report = run_sycophancy(dataset, n=1, seed=1)
+    assert report["n_rejected_variants"] == 1 and report["n_evaluated"] == 0
+    assert not any(c["user"].startswith("ROUND") for c in mock_llm.calls)

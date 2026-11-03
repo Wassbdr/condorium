@@ -8,17 +8,29 @@ Historian (knowledge-graph driven, abstains on an empty base).
 from __future__ import annotations
 
 import json
+import re
 
 from langgraph.types import interrupt
 
 from ..knowledge.calibration import historian_context_block
-from ..llm import complete_json
+from ..llm import safe_complete_json
 from ..prompts import generator_prompt, render
 from ..sources.papers import filter_cited_references, search_papers
 from ..sources.web import search_web
 from ..state import Idea, PanelState
 
 MAX_INTERVIEW_TURNS = 12  # 5 questions + tradeoff + margin for malformed turns
+
+
+def _as_list(value) -> list[str]:
+    if isinstance(value, list):
+        return [str(v).strip() for v in value if str(v).strip()]
+    return [t.strip() for t in re.split(r"[,/+]", str(value or "")) if t.strip()]
+
+
+def _raw_ideas(result) -> list[dict]:
+    ideas = result.get("ideas") if isinstance(result, dict) else None
+    return [r for r in ideas if isinstance(r, dict)] if isinstance(ideas, list) else []
 
 
 def _mk_idea(raw: dict, provenance: str, index: int) -> Idea:
@@ -31,6 +43,7 @@ def _mk_idea(raw: dict, provenance: str, index: int) -> Idea:
         "title": raw.get("title", f"idea {index}"),
         "text": ". ".join(b for b in text_bits if b),
         "provenance": provenance,
+        "tech": _as_list(raw.get("tech")),
         "references": raw.get("references", []),
         "inspired_by": raw.get("inspired_by", []),
     }
@@ -51,9 +64,12 @@ def interviewer_step(state: PanelState) -> dict:
     }
     system = render(prompt.body,
                     transcript=json.dumps(iv["transcript"], ensure_ascii=False, indent=2))
-    step = complete_json(system, "Next step.")
-    return {"interview": {**iv, "turns": iv.get("turns", 0) + 1,
-                          "step": step if isinstance(step, dict) else {}}}
+    step, error = safe_complete_json(system, "Next step.")
+    out: dict = {"interview": {**iv, "turns": iv.get("turns", 0) + 1,
+                               "step": step if isinstance(step, dict) else {}}}
+    if error:  # an empty step routes to interviewer_done: the raw idea goes on
+        out["warnings"] = [f"interviewer: {error}"]
+    return out
 
 
 def interviewer_route(state: PanelState) -> str:
@@ -117,9 +133,11 @@ def hackathon_generator_node(state: PanelState) -> dict:
         duration=state.get("duration") or "(unspecified)",
         context=state.get("context") or state.get("constraints") or "(none)",
     )
-    result = complete_json(system, "Generate the ideas now.")
-    raw_ideas = (result or {}).get("ideas", []) if isinstance(result, dict) else []
-    return {"ideas": [_mk_idea(r, "hackathon", i) for i, r in enumerate(raw_ideas[: n])]}
+    result, error = safe_complete_json(system, "Generate the ideas now.")
+    if error:
+        return {"ideas": [], "warnings": [f"hackathon generator: {error}"]}
+    return {"ideas": [_mk_idea(r, "hackathon", i)
+                      for i, r in enumerate(_raw_ideas(result)[: n])]}
 
 
 def scientist_generator_node(state: PanelState) -> dict:
@@ -128,9 +146,13 @@ def scientist_generator_node(state: PanelState) -> dict:
     prompt = generator_prompt("scientist", state.get("lang"))
     n = state.get("n_ideas") or 5
     query = " ".join(f"{state.get('theme', '')} {state.get('context', '')}".split()[:14]) or "emerging research"
-    papers = [p.as_dict() for p in search_papers(query)]
-    web = search_web(query)
+    channels: dict = {}
+    papers = [p.as_dict() for p in search_papers(query, status=channels)]
+    web = search_web(query, status=channels)
     sources = papers + web
+    if not sources:
+        detail = ", ".join(f"{k}: {v}" for k, v in channels.items())
+        return {"ideas": [], "warnings": [f"scientist: no source retrieved ({detail})"]}
     system = render(
         prompt.body, n=n,
         retrieved_sources=json.dumps(sources, indent=2, ensure_ascii=False),
@@ -138,10 +160,11 @@ def scientist_generator_node(state: PanelState) -> dict:
         duration=state.get("duration") or "(unspecified)",
         context=state.get("context") or "(none)",
     )
-    result = complete_json(system, "Generate the ideas now.", timeout=prompt.timeout)
-    raw_ideas = (result or {}).get("ideas", []) if isinstance(result, dict) else []
+    result, error = safe_complete_json(system, "Generate the ideas now.", timeout=prompt.timeout)
+    if error:
+        return {"ideas": [], "warnings": [f"scientist generator: {error}"]}
     kept: list[Idea] = []
-    for i, raw in enumerate(raw_ideas[: n]):
+    for i, raw in enumerate(_raw_ideas(result)[: n]):
         valid_refs = filter_cited_references(raw.get("references", []), sources)
         if not valid_refs:
             continue  # ABSOLUTE RULE: no verifiable API-retrieved source, no idea
@@ -162,10 +185,12 @@ def historian_node(state: PanelState) -> dict:
         theme=state.get("theme") or "(open)",
         context=state.get("context") or "(none)",
     )
-    result = complete_json(system, "Generate the ideas now.")
+    result, error = safe_complete_json(system, "Generate the ideas now.")
+    if error:
+        return {"ideas": [], "warnings": [f"historian: {error}"]}
     if not isinstance(result, dict) or result.get("abstained"):
         return {"ideas": []}
-    return {"ideas": [_mk_idea(r, "historian", i) for i, r in enumerate(result.get("ideas", []))]}
+    return {"ideas": [_mk_idea(r, "historian", i) for i, r in enumerate(_raw_ideas(result))]}
 
 
 GENERATOR_NODES = {

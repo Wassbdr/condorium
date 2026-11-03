@@ -11,8 +11,9 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send, interrupt
 
 from ..analytics import traces
-from ..llm import complete_json
+from ..llm import safe_complete_json
 from ..prompts import load_prompt, render
+from ..schemas import PREFILTER_CRITERIA, coerce_prefilter, coerce_ranking
 from ..state import PanelState
 from . import cohort
 from .evaluation import compile_evaluation_graph
@@ -57,16 +58,20 @@ def prefilter_node(state: PanelState) -> dict:
                     constraints=state.get("constraints") or "(none)")
 
     def score(idea: dict) -> dict:
-        s = complete_json(system, f"IDEA:\n{idea.get('title')}\n{idea.get('text')}")
-        s = s if isinstance(s, dict) else {}
-        total = sum(v for v in (s.get("theme_fit"), s.get("wow_potential"),
-                                s.get("apparent_feasibility")) if isinstance(v, (int, float)))
+        raw, error = safe_complete_json(system, f"IDEA:\n{idea.get('title')}\n{idea.get('text')}")
+        s = coerce_prefilter(raw)
+        if error:
+            s["error"] = error  # scored 0: ranked last, still eligible if the user wants it
+        total = sum(v for v in (s.get(k) for k in PREFILTER_CRITERIA)
+                    if isinstance(v, (int, float)))
         return {**idea, "prefilter": {**s, "total": total}}
 
     with ThreadPoolExecutor(max_workers=min(8, len(ideas))) as pool:
         scored = list(pool.map(score, ideas))
     scored.sort(key=lambda i: -i["prefilter"]["total"])
-    return {"selected": scored, "eliminated": []}
+    warnings = [f"prefilter '{i.get('title')}': {i['prefilter']['error']}"
+                for i in scored if i["prefilter"].get("error")]
+    return {"selected": scored, "eliminated": [], "warnings": warnings}
 
 
 def prefilter_gate(state: PanelState) -> dict:
@@ -103,6 +108,7 @@ def route_to_evaluations(state: PanelState) -> list[Send]:
         sends.append(Send("evaluate", {
             "idea": committee_idea,
             "mode": state.get("mode", "general"),
+            "theme": state.get("theme", ""),
             "constraints": state.get("constraints", ""),
             "official_criteria": state.get("official_criteria", ""),
             "custom_criteria": state.get("custom_criteria", ""),
@@ -135,8 +141,10 @@ def make_evaluate_node(lang: str | None = None):
             "round1": result.get("round1", {}),
             "round2": result.get("round2", {}),
             "debate": result.get("debate", {}),
+            "errors": result.get("errors", []),
         }
-        return {"evaluations": [record]}
+        warnings = [f"{record['eval_id']}: {e}" for e in record["errors"]]
+        return {"evaluations": [record], "warnings": warnings}
 
     return evaluate_node
 
@@ -150,8 +158,11 @@ def clerk_node(state: PanelState) -> dict:
         for e in state.get("evaluations", [])
     ]
     system = render(prompt.body, syntheses=json.dumps(syntheses, indent=2, ensure_ascii=False))
-    ranking = complete_json(system, "Rank now.")
-    return {"ranking": ranking if isinstance(ranking, dict) else {}}
+    raw, error = safe_complete_json(system, "Rank now.")
+    if error:
+        return {"ranking": {}, "warnings": [f"clerk: {error} — no ranking, "
+                                            "the evaluations themselves are saved"]}
+    return {"ranking": coerce_ranking(raw)}
 
 
 def finalize_node(state: PanelState) -> dict:

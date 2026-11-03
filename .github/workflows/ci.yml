@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
@@ -22,3 +22,20 @@ jobs:
         run: .venv/bin/ruff check src tests scripts
       - name: Test (no network, no keys — LLM fully mocked)
         run: .venv/bin/pytest -q
+
+  package:
+    # the wheel must be self-contained: prompts + demo fixtures bundled
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - name: Build
+        run: uv build
+      - name: Install the wheel in a fresh venv, run it outside the repo
+        run: |
+          uv venv --python 3.12 "$RUNNER_TEMP/venv"
+          uv pip install --python "$RUNNER_TEMP/venv/bin/python" dist/*.whl
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/venv/bin/panel" demo
+          "$RUNNER_TEMP/venv/bin/panel" graph
+          "$RUNNER_TEMP/venv/bin/panel" init && test -f agents/committee/judge.general.md

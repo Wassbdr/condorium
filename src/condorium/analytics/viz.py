@@ -28,7 +28,7 @@ def _page(title: str, divs: list[str]) -> str:
     # plotly.js is inlined once via a zero-size carrier figure -> the HTML
     # file is fully self-contained, no CDN, no server.
     carrier = go.Figure()
-    carrier.update_layout(height=10, margin=dict(l=0, r=0, t=0, b=0),
+    carrier.update_layout(height=10, margin={"l": 0, "r": 0, "t": 0, "b": 0},
                           xaxis_visible=False, yaxis_visible=False)
     plotlyjs = carrier.to_html(full_html=False, include_plotlyjs="inline")
     body = "\n".join(f'<section style="margin:24px 0">{d}</section>' for d in divs)
@@ -52,7 +52,7 @@ def slope_chart(record: dict) -> go.Figure:
                                  mode="lines+markers+text", name=agent,
                                  text=[agent, ""], textposition="middle left"))
     fig.update_layout(title="Deliberation: scores round 1 → round 2",
-                      yaxis=dict(range=[0, 10.5], title="score"), showlegend=False)
+                      yaxis={"range": [0, 10.5], "title": "score"}, showlegend=False)
     return fig
 
 
@@ -69,7 +69,7 @@ def radar_chart(record: dict) -> go.Figure:
         fig.add_trace(go.Scatterpolar(
             r=[cs.get(c) for c in criteria], theta=criteria, fill="toself", name=agent, opacity=0.55))
     fig.update_layout(title="Criteria radar (round 2, all agents superimposed)",
-                      polar=dict(radialaxis=dict(range=[0, 10])))
+                      polar={"radialaxis": {"range": [0, 10]}})
     return fig
 
 
@@ -89,7 +89,7 @@ def influence_graph_fig(matrix: dict) -> go.Figure:
             x1, y1 = pos[tgt]
             fig.add_trace(go.Scatter(
                 x=[x0, x1], y=[y0, y1], mode="lines",
-                line=dict(width=1 + info["count"], color="rgba(120,120,200,0.5)"),
+                line={"width": 1 + info["count"], "color": "rgba(120,120,200,0.5)"},
                 hoverinfo="text",
                 text=f"{src} → {tgt}: {info['count']} revisions, avg Δ {info['mean_amplitude']}",
                 showlegend=False))
@@ -99,9 +99,9 @@ def influence_graph_fig(matrix: dict) -> go.Figure:
     fig.add_trace(go.Scatter(
         x=[pos[a][0] for a in agents], y=[pos[a][1] for a in agents],
         mode="markers+text", text=agents, textposition="top center",
-        marker=dict(size=18, color="#4c6ef5"), showlegend=False))
+        marker={"size": 18, "color": "#4c6ef5"}, showlegend=False))
     fig.update_layout(title="Influence graph (who makes whom revise)",
-                      xaxis=dict(visible=False), yaxis=dict(visible=False))
+                      xaxis={"visible": False}, yaxis={"visible": False})
     return fig
 
 
@@ -126,7 +126,7 @@ def kg_subgraph_fig(node_ids: list[str]) -> go.Figure | None:
     g = kgraph.load_graph()
     if g.number_of_nodes() == 0:
         return None
-    keep = set(n for n in node_ids if n in g)
+    keep = {n for n in node_ids if n in g}
     for n in list(keep):
         keep |= set(g.successors(n)) | set(g.predecessors(n))
     if not keep:
@@ -136,7 +136,7 @@ def kg_subgraph_fig(node_ids: list[str]) -> go.Figure | None:
     fig = go.Figure()
     for u, v, data in sub.edges(data=True):
         fig.add_trace(go.Scatter(x=[pos[u][0], pos[v][0]], y=[pos[u][1], pos[v][1]],
-                                 mode="lines", line=dict(width=1, color="#aaa"),
+                                 mode="lines", line={"width": 1, "color": "#aaa"},
                                  hoverinfo="text", text=data.get("type", ""), showlegend=False))
     colors = {"Project": "#4c6ef5", "Tech": "#40c057", "Theme": "#fab005",
               "Pattern": "#e64980", "Paper": "#15aabf", "Hackathon": "#868e96"}
@@ -144,10 +144,10 @@ def kg_subgraph_fig(node_ids: list[str]) -> go.Figure | None:
         x=[pos[n][0] for n in sub.nodes], y=[pos[n][1] for n in sub.nodes],
         mode="markers+text",
         text=[sub.nodes[n].get("label", n) for n in sub.nodes], textposition="top center",
-        marker=dict(size=14, color=[colors.get(sub.nodes[n].get("type"), "#333") for n in sub.nodes]),
+        marker={"size": 14, "color": [colors.get(sub.nodes[n].get("type"), "#333") for n in sub.nodes]},
         showlegend=False))
     fig.update_layout(title="Knowledge-graph view (nodes relevant to this run)",
-                      xaxis=dict(visible=False), yaxis=dict(visible=False))
+                      xaxis={"visible": False}, yaxis={"visible": False})
     return fig
 
 
@@ -167,7 +167,7 @@ def ranking_fig(run: dict, records: list[dict]) -> go.Figure:
             ys.append(opinion_scores(rec.get("round2", {})).get(agent))
         fig.add_trace(go.Bar(name=agent, x=xs, y=ys))
     fig.update_layout(barmode="group", title="Tournament: verdict decomposition per idea",
-                      yaxis=dict(range=[0, 10.5]))
+                      yaxis={"range": [0, 10.5]})
     return fig
 
 

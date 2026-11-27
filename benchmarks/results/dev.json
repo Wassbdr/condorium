@@ -9,10 +9,10 @@
     "chateval",
     "committee"
   ],
-  "pair_count": 2,
-  "variant_count": 8,
+  "pair_count": 16,
+  "variant_count": 40,
   "position_only": false,
-  "max_calls": 60,
+  "max_calls": null,
   "model": "nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b",
   "jury_models": [
     "nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b",
@@ -21,16 +21,11 @@
   ],
   "temperature": 0.7,
   "committee_protocol": "v1",
-  "live_attempts": 60,
-  "live_calls": 60,
-  "cache_hits": 5,
+  "live_attempts": 561,
+  "live_calls": 561,
+  "cache_hits": 85,
   "rate_limited": false,
-  "limited_methods": [
-    "chateval",
-    "committee",
-    "judge",
-    "jury"
-  ],
+  "limited_methods": [],
   "decisions": [
     {
       "method": "committee",
@@ -49,15 +44,10 @@
         "total_tokens": 2020,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "blind:scientist",
-          "raw": "{\"scores\":{\"a\":{\"Problem fit\":3,\"Feasibility\":2,\"Evidence\":4,\"Trade-offs\":2},\"b\":{\"Problem fit\":4,\"Feasibility\":5,\"Evidence\":4,\"Trade-offs\":3},\"preferred\":\"b\",\"confidence\":5,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"No extra overnight staff can be assigned.\"},{\"proposal\":\"a\",\"quote\":\"Keep the queue current by assigning an additional operator to cover each night shift.\"},{\"proposal\":\"b\",\"quote\":\"Queue work outside the staffed window and assign it to the next scheduled shift.\"},{\"proposal\":\"b\",\"quote\":\"Compare leaks repaired before a road closure with the pre-pilot baseline.\"}]}"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 1,
+      "abstains": 0,
       "target_tokens": null
     },
     {
@@ -119,20 +109,38 @@
       "usage": {
         "calls": 4,
         "prompt_tokens": 1432,
-        "completion_tokens": 707,
-        "total_tokens": 2139,
+        "completion_tokens": 972,
+        "total_tokens": 2404,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
-          "raw": ""
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
       "target_tokens": 2020
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-01",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-01:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2153,
+        "completion_tokens": 396,
+        "total_tokens": 2549,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
     },
     {
       "method": "committee",
@@ -227,6 +235,29 @@
       "target_tokens": 2036
     },
     {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-01",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-01:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2315,
+        "completion_tokens": 481,
+        "total_tokens": 2796,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
       "method": "committee",
       "seed": 0,
       "pair_id": "synthetic-dev-02",
@@ -308,20 +339,38 @@
       "usage": {
         "calls": 4,
         "prompt_tokens": 1472,
-        "completion_tokens": 576,
-        "total_tokens": 2048,
+        "completion_tokens": 945,
+        "total_tokens": 2417,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
-          "raw": "The key difference is that Proposal B requires manufacturer-only conservation logs"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
       "target_tokens": 2048
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-02",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-02:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2263,
+        "completion_tokens": 373,
+        "total_tokens": 2636,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
     },
     {
       "method": "committee",
@@ -405,8 +454,353 @@
       "usage": {
         "calls": 4,
         "prompt_tokens": 1472,
-        "completion_tokens": 689,
-        "total_tokens": 2161,
+        "completion_tokens": 972,
+        "total_tokens": 2444,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2100
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-02",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-02:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2135,
+        "completion_tokens": 376,
+        "total_tokens": 2511,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-03",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-03:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1599,
+        "completion_tokens": 617,
+        "total_tokens": 2216,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-03",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-03:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 2035,
+        "completion_tokens": 348,
+        "total_tokens": 2383,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2216
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-03",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-03:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 407,
+        "completion_tokens": 74,
+        "total_tokens": 481,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-03",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-03:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 1617,
+        "completion_tokens": 710,
+        "total_tokens": 2327,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2216
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-03",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-03:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2111,
+        "completion_tokens": 268,
+        "total_tokens": 2379,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-03",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-03:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1599,
+        "completion_tokens": 727,
+        "total_tokens": 2326,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-03",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-03:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 2035,
+        "completion_tokens": 349,
+        "total_tokens": 2384,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2326
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-03",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-03:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 407,
+        "completion_tokens": 130,
+        "total_tokens": 537,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-03",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-03:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 2020,
+        "completion_tokens": 757,
+        "total_tokens": 2777,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2326
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-03",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-03:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2231,
+        "completion_tokens": 326,
+        "total_tokens": 2557,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-04",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-04:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1599,
+        "completion_tokens": 666,
+        "total_tokens": 2265,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-04",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-04:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 2035,
+        "completion_tokens": 443,
+        "total_tokens": 2478,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2265
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-04",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-04:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 407,
+        "completion_tokens": 68,
+        "total_tokens": 475,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-04",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-04:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "tie",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1213,
+        "completion_tokens": 1447,
+        "total_tokens": 2660,
         "estimated": false
       },
       "failures": [
@@ -417,30 +811,628 @@
       ],
       "debated": false,
       "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": 2265
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-04",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-04:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2077,
+        "completion_tokens": 245,
+        "total_tokens": 2322,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2100
+      "target_tokens": null
     },
     {
       "method": "committee",
       "seed": 0,
-      "pair_id": "synthetic-dev-02",
+      "pair_id": "synthetic-dev-04",
       "source": "synthetic",
-      "variant_id": "synthetic-dev-02:verbosity:ab",
-      "kind": "verbosity",
+      "variant_id": "synthetic-dev-04:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1599,
+        "completion_tokens": 697,
+        "total_tokens": 2296,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-04",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-04:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 2035,
+        "completion_tokens": 299,
+        "total_tokens": 2334,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2296
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-04",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-04:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 407,
+        "completion_tokens": 60,
+        "total_tokens": 467,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-04",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-04:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 1620,
+        "completion_tokens": 938,
+        "total_tokens": 2558,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2296
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-04",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-04:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2491,
+        "completion_tokens": 434,
+        "total_tokens": 2925,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-05",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-05:position:ab",
+      "kind": "position",
       "order": "ab",
       "better": "a",
       "winner": "a",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 1653,
-        "completion_tokens": 794,
-        "total_tokens": 2447,
+        "prompt_tokens": 1545,
+        "completion_tokens": 558,
+        "total_tokens": 2103,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-05",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-05:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 1945,
+        "completion_tokens": 327,
+        "total_tokens": 2272,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2103
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-05",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-05:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 389,
+        "completion_tokens": 59,
+        "total_tokens": 448,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-05",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-05:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1147,
+        "completion_tokens": 1058,
+        "total_tokens": 2205,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2103
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-05",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-05:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2177,
+        "completion_tokens": 332,
+        "total_tokens": 2509,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-05",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-05:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1545,
+        "completion_tokens": 550,
+        "total_tokens": 2095,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-05",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-05:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 1945,
+        "completion_tokens": 368,
+        "total_tokens": 2313,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2095
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-05",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-05:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 389,
+        "completion_tokens": 79,
+        "total_tokens": 468,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-05",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-05:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 1536,
+        "completion_tokens": 845,
+        "total_tokens": 2381,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2095
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-05",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-05:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2265,
+        "completion_tokens": 354,
+        "total_tokens": 2619,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-06",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-06:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1494,
+        "completion_tokens": 549,
+        "total_tokens": 2043,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-06",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-06:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 1860,
+        "completion_tokens": 322,
+        "total_tokens": 2182,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2043
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-06",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-06:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 372,
+        "completion_tokens": 73,
+        "total_tokens": 445,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-06",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-06:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 1480,
+        "completion_tokens": 767,
+        "total_tokens": 2247,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2043
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-06",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-06:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2003,
+        "completion_tokens": 279,
+        "total_tokens": 2282,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-06",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-06:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1494,
+        "completion_tokens": 540,
+        "total_tokens": 2034,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-06",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-06:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 1860,
+        "completion_tokens": 341,
+        "total_tokens": 2201,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2034
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-06",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-06:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 372,
+        "completion_tokens": 69,
+        "total_tokens": 441,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-06",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-06:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1108,
+        "completion_tokens": 937,
+        "total_tokens": 2045,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2034
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-06",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-06:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 1975,
+        "completion_tokens": 240,
+        "total_tokens": 2215,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-07",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-07:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1485,
+        "completion_tokens": 804,
+        "total_tokens": 2289,
         "estimated": false
       },
       "failures": [
         {
-          "turn": "blind:scientist",
-          "raw": "{\"scores\":{\"a\":{\"Problem fit\":5,\"Feasibility\":4,\"Evidence\":3,\"Trade-offs\":3},\"b\":{\"Problem fit\":2,\"Feasibility\":2,\"Evidence\":3,\"Trade-offs\":2},\"preferred\":\"a\",\"confidence\":5,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Use the museum's own case sensor history to set up and operate the pilot.\"},{\"proposal\":\"b\",\"quote\":\"Use manufacturer-only conservation logs as the input required for running the pilot.\"},{\"proposal\":\"a\",\"quote\":\"Compare hours display cases spend outside their humidity range with the pre-pilot baseline.\"},{\"proposal\":\"b\",\"quote\":\"Compare hours display cases spend outside their humidity range with the pre-pilot baseline.\"},{\"proposal\":\"a\",\"quote\":\"A conservator would adjust desiccant replacement using the current wireless sensors.\"},{\"proposal\":\"b\",\"quote\":\"A conservator would adjust desiccant replacement using the current wireless sensors.\"}]}{\"scores\":{\"a\":{\"Problem fit\":5,\"Feasibility\":4,\"Evidence\":3,\"Trade-offs\":3},\"b\":{\"Problem fit\":2,\"Feasibility\":2,\"Evidence\":3,\"Trade-offs\":2},\"preferred\":\"a\",\"confidence\":5,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Use the museum's own case sensor history to set up and operate the pilot.\"},{\"proposal\":\"b\",\"quote\":\"Use manufacturer-only conservation logs as the input required for running the pilot.\"},{\"proposal\":\"a\",\"quote\":\"Compare hours display cases spend outside their humidity range with the pre-pilot baseline.\"},{\"proposal\":\"b\",\"quote\":\"Compare hours display cases spend outside their humidity range with the pre-pilot baseline.\"},{\"proposal\":\"a\",\"quote\":\""
+          "turn": "blind:skeptic",
+          "raw": "{\"scores\":{\"a\":{\"Problem fit\":1,\"Feasibility\":4,\"Evidence\":3,\"Trade-offs\":1},\"b\":{\"Problem fit\":5,\"Feasibility\":4,\"Evidence\":3,\"Trade-offs\":4}},\"preferred\":\"b\",\"confidence\":5,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Policy prohibits transferring identifiable records outside the organization.\"},{\"proposal\":\"a\",\"quote\":\"Send identifiable pilot logs to a hosted analysis vendor for the weekly review.\"},{\"proposal\":\"b\",\"quote\":\"Keep identifiable logs on-premises and share only aggregate pilot counts.\"}]}\n\njson\n{\"scores\":{\"a\":{\"Problem fit\":1,\"Feasibility\":4,\"Evidence\":3,\"Trade-offs\":1},\"b\":{\"Problem fit\":5,\"Feasibility\":4,\"Evidence\":3,\"Trade-offs\":4}},\"preferred\":\"b\",\"confidence\":5,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Policy prohibits transferring identifiable records outside the organization.\"},{\"proposal\":\"a\",\"quote\":\"Send identifiable pilot logs to a hosted analysis vendor for the weekly review.\"},{\"proposal\":\"b\",\"quote\":\"Keep identifiable logs on-premises and share only aggregate pilot counts.\"}]}{\"scores\":{\"a\":{\"Problem fit\":1,\"Feasibility\":4,\"Evidence\":3,\"Trade-offs\":1},\"b\":{\"Problem fit\":5,\"Feasibility\":4,\"Evidence\":3,\"Trade-offs\":4}},\"preferred\":\"b\",\"confidence\":5,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Policy prohibits transferring identifiable records outside the organization.\"},{\"proposal\":\"a\",\"quote\":\"Send identifiable pilot logs to a hosted analysis vendor for the weekly review.\"},{\"proposal\":\"b\",\"quote\":\"Keep identifiable logs on"
         }
       ],
       "debated": false,
@@ -451,41 +1443,3352 @@
     {
       "method": "judge",
       "seed": 0,
-      "pair_id": "synthetic-dev-02",
+      "pair_id": "synthetic-dev-07",
       "source": "synthetic",
-      "variant_id": "synthetic-dev-02:verbosity:ab",
-      "kind": "verbosity",
+      "variant_id": "synthetic-dev-07:position:ab",
+      "kind": "position",
       "order": "ab",
-      "better": "a",
-      "winner": "a",
+      "better": "b",
+      "winner": "b",
       "usage": {
-        "calls": 5,
-        "prompt_tokens": 2125,
-        "completion_tokens": 504,
-        "total_tokens": 2629,
+        "calls": 6,
+        "prompt_tokens": 2214,
+        "completion_tokens": 385,
+        "total_tokens": 2599,
         "estimated": false
       },
       "failures": [],
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2447
+      "target_tokens": 2289
     },
     {
       "method": "judge_1call",
       "seed": 0,
-      "pair_id": "synthetic-dev-02",
+      "pair_id": "synthetic-dev-07",
       "source": "synthetic",
-      "variant_id": "synthetic-dev-02:verbosity:ab",
+      "variant_id": "synthetic-dev-07:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 369,
+        "completion_tokens": 64,
+        "total_tokens": 433,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-07",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-07:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 1828,
+        "completion_tokens": 597,
+        "total_tokens": 2425,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2289
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-07",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-07:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 1928,
+        "completion_tokens": 247,
+        "total_tokens": 2175,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-07",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-07:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1485,
+        "completion_tokens": 558,
+        "total_tokens": 2043,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-07",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-07:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 1845,
+        "completion_tokens": 278,
+        "total_tokens": 2123,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2043
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-07",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-07:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 369,
+        "completion_tokens": 55,
+        "total_tokens": 424,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-07",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-07:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 1465,
+        "completion_tokens": 590,
+        "total_tokens": 2055,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2043
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-07",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-07:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2094,
+        "completion_tokens": 319,
+        "total_tokens": 2413,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-08",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-08:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1614,
+        "completion_tokens": 775,
+        "total_tokens": 2389,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "blind:judge",
+          "raw": "{\"scores\":{\"a\":{\"Problem fit\":5,\"Feasibility\":4,\"Evidence\":4,\"Trade-offs\":3},\"b\":{\"Problem fit\":3,\"Feasibility\":3,\"Evidence\":3,\"Trade-offs\":2}},\"preferred\":\"a\",\"confidence\":5,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Keep the existing tool as the record and reconcile pilot actions to its entries.\"},{\"proposal\":\"b\",\"quote\":\"Replace logging in the existing tool with a separate record maintained by the pilot.\"}]}\n\n**Rubric application**\n\n- **Problem fit:** A respects the constraint that the existing auditable tool remains mandatory, reconciling pilot actions to its entries; B violates that constraint by replacing logging in the existing tool with a separate record.\n- **Feasibility:** A’s plan works within the current system and is more credible given the mandatory audit requirement; B’s separate record creates duplication and conflicts with the stated operating constraint.\n- **Evidence:** Both define the same measurable comparison (minutes outside safe range vs. pre-pilot baseline), but A’s approach stays anchored to the auditable record.\n- **Trade-offs:** A acknowledges the existing tool’s role as the auditable record; B’s replacement approach ignores the material risk of losing audit integrity and does not account for the existing alternative.{\n  \"scores\": {\n    \"a\": {\n      \"Problem fit\": 5,\n      \"Feasibility\": 4,\n      \"Evidence\": 4,\n      \"Trade-offs\": 3\n    },\n    \"b\": {\n      \"Problem fit\": 3,\n      \"Feasibility\": 3,\n      \"Evidence\": 3,\n      \"Trade-offs\": 2\n    }\n  },\n  \"preferred\": \"a\",\n  \"confidence\": 5,\n  \""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-08",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-08:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 6,
+        "prompt_tokens": 2472,
+        "completion_tokens": 377,
+        "total_tokens": 2849,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2389
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-08",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-08:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 412,
+        "completion_tokens": 53,
+        "total_tokens": 465,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-08",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-08:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 2047,
+        "completion_tokens": 615,
+        "total_tokens": 2662,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2389
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-08",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-08:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2199,
+        "completion_tokens": 350,
+        "total_tokens": 2549,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-08",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-08:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1614,
+        "completion_tokens": 601,
+        "total_tokens": 2215,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-08",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-08:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 2060,
+        "completion_tokens": 344,
+        "total_tokens": 2404,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2215
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-08",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-08:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 412,
+        "completion_tokens": 75,
+        "total_tokens": 487,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-08",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-08:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1226,
+        "completion_tokens": 1325,
+        "total_tokens": 2551,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": ""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": 2215
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-08",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-08:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2233,
+        "completion_tokens": 316,
+        "total_tokens": 2549,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1413,
+        "completion_tokens": 567,
+        "total_tokens": 1980,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 1725,
+        "completion_tokens": 354,
+        "total_tokens": 2079,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 1980
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 345,
+        "completion_tokens": 64,
+        "total_tokens": 409,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 1700,
+        "completion_tokens": 692,
+        "total_tokens": 2392,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 1980
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2199,
+        "completion_tokens": 419,
+        "total_tokens": 2618,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1413,
+        "completion_tokens": 553,
+        "total_tokens": 1966,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 1725,
+        "completion_tokens": 321,
+        "total_tokens": 2046,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 1966
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 345,
+        "completion_tokens": 64,
+        "total_tokens": 409,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 1364,
+        "completion_tokens": 744,
+        "total_tokens": 2108,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 1966
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 1951,
+        "completion_tokens": 269,
+        "total_tokens": 2220,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-10",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-10:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1527,
+        "completion_tokens": 640,
+        "total_tokens": 2167,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-10",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-10:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 1915,
+        "completion_tokens": 285,
+        "total_tokens": 2200,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2167
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-10",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-10:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 383,
+        "completion_tokens": 52,
+        "total_tokens": 435,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-10",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-10:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 1519,
+        "completion_tokens": 988,
+        "total_tokens": 2507,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2167
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-10",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-10:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2052,
+        "completion_tokens": 270,
+        "total_tokens": 2322,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-10",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-10:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1527,
+        "completion_tokens": 636,
+        "total_tokens": 2163,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-10",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-10:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 1915,
+        "completion_tokens": 292,
+        "total_tokens": 2207,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2163
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-10",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-10:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 383,
+        "completion_tokens": 64,
+        "total_tokens": 447,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-10",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-10:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 1519,
+        "completion_tokens": 873,
+        "total_tokens": 2392,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2163
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-10",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-10:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2210,
+        "completion_tokens": 341,
+        "total_tokens": 2551,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 2760,
+        "completion_tokens": 891,
+        "total_tokens": 3651,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 3176,
+        "completion_tokens": 852,
+        "total_tokens": 4028,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b:1",
+          "raw": "**Most important difference:** Proposal A tackles expensive hyperparameter tuning through multi-task meta-Bayesian optimization with large-scale empirical validation (tens of thousands of configurations), while Proposal B tackles it through one-pass implicit differentiation hypergradients with no restarts but comparatively limited validation (smaller models/datasets).\n\n**Rubric assessment**\n\n- **Problem fit:** Both address hyperparameter optimization cost. Proposal A explicitly targets the expensive retraining problem with meta-data from similar tasks and respects the BO operating constraints. Proposal B targets the same problem but relaxes it to “any continuous hyperparameter in a differentiable update,” which is broader but less tightly scoped to the stated costly experimentation constraint. Edge to A.\n- **Feasibility:** Proposal A describes a credible plan: build on Wang et al. (2018), handle missing meta-parameter observations across tasks, and validate with a large collected dataset. Proposal B’s claim of “only one training episode” with 2–3× vanilla training time is plausible but the convergence argument is described as “motivating” rather than rigorous, and scaling to high-dimensional independent learning rates raises implementation questions. Edge to A.\n- **Evidence:** Proposal A reports a large multi-task dataset and a clear, quantified result (3× more efficiency than competitors) with an explicit case study. Proposal B reports competitive results across several datasets/models but with smaller-scale validation (one-layer MLP, LSTM, ResNet-18) and no explicit comparison baseline efficiency numbers beyond “2–3x greater than vanilla training.” Edge to A.\n- **Trade-offs:** Proposal A acknowledges limitations (special-case regret bound, reliance on similar-task data) and implicitly contrasts with competing BO methods. Proposal B acknowledges that prior one-pass methods have limitations but does not meaningfully account for material risks of its own approximation (e"
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 3651
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 794,
+        "completion_tokens": 83,
+        "total_tokens": 877,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 3118,
+        "completion_tokens": 1324,
+        "total_tokens": 4442,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": ""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": 3651
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "tie",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 3876,
+        "completion_tokens": 407,
+        "total_tokens": 4283,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "tie",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 4951,
+        "completion_tokens": 1342,
+        "total_tokens": 6293,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "blind:skeptic",
+          "raw": "{\n  \"scores\": {\n    \"a\": {\n      \"Problem fit\": 5,\n      \"Feasibility\": 5,\n      \"Evidence\": 4,\n      \"Trade-offs\": 2\n    },\n    \"b\": {\n      \"Problem fit\": 5,\n      \"Feasibility\": 4,\n      \"Evidence\": 5,\n      \"Trade-offs\": 2\n    }\n  },\n  \"preferred\": \"tie\",\n  \"confidence\": 3,\n  \"evidence\": [\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"applicable to any continuous hyperparameter appearing in a differentiable model weight update, yet requires only one training episode, with no restarts\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"in time only 2-3x greater than vanilla training\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"performs competitively from varied random hyperparameter initialisations on several UCI datasets and Fashion-MNIST (using a one-layer MLP), Penn Treebank (using an LSTM) and CIFAR-10 (using a ResNet-18)\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"we develop practical improvements that (a) boost its performance by leveraging tuning results on multiple tasks without requiring observations for the same meta-parameter points across all tasks\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"collected a large multi-task hyperparameter tuning dataset by training tens of thousands of configurations of near-state-of-the-art models on popular image and text datasets, as well as a protein sequence dataset\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"able to locate good hyperparameters at least"
+        }
+      ],
+      "debated": true,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 7,
+        "prompt_tokens": 5558,
+        "completion_tokens": 1158,
+        "total_tokens": 6716,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 6293
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 794,
+        "completion_tokens": 54,
+        "total_tokens": 848,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 6,
+        "prompt_tokens": 4648,
+        "completion_tokens": 1970,
+        "total_tokens": 6618,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": ""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": 6293
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 3965,
+        "completion_tokens": 441,
+        "total_tokens": 4406,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "iclr-02",
+      "source": "iclr",
+      "variant_id": "iclr-02:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "tie",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 2523,
+        "completion_tokens": 848,
+        "total_tokens": 3371,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "iclr-02",
+      "source": "iclr",
+      "variant_id": "iclr-02:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 3575,
+        "completion_tokens": 415,
+        "total_tokens": 3990,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 3371
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "iclr-02",
+      "source": "iclr",
+      "variant_id": "iclr-02:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 715,
+        "completion_tokens": 71,
+        "total_tokens": 786,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "iclr-02",
+      "source": "iclr",
+      "variant_id": "iclr-02:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 2083,
+        "completion_tokens": 1409,
+        "total_tokens": 3492,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": ""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": 3371
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "iclr-02",
+      "source": "iclr",
+      "variant_id": "iclr-02:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 4235,
+        "completion_tokens": 593,
+        "total_tokens": 4828,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "iclr-02",
+      "source": "iclr",
+      "variant_id": "iclr-02:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 2523,
+        "completion_tokens": 1010,
+        "total_tokens": 3533,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 1,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "iclr-02",
+      "source": "iclr",
+      "variant_id": "iclr-02:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 3575,
+        "completion_tokens": 587,
+        "total_tokens": 4162,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 3533
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "iclr-02",
+      "source": "iclr",
+      "variant_id": "iclr-02:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 715,
+        "completion_tokens": 86,
+        "total_tokens": 801,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "iclr-02",
+      "source": "iclr",
+      "variant_id": "iclr-02:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "tie",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 2084,
+        "completion_tokens": 1494,
+        "total_tokens": 3578,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/poolside/laguna-xs-2.1:1",
+          "raw": "**Problem fit**:  \n- **Proposal A** directly addresses the gap in fine-tuning methods that discard intrinsic data structure, proposing Bi-tuning to integrate both supervised and unsupervised pre-trained representations for downstream tasks. The problem is clearly defined and aligned with the paper’s solution.  \n- **Proposal B** investigates the intrinsic dimension of images and its impact on learning, which is relevant to deep learning in general. However, it does not explicitly address a specific problem or constraint but rather explores a property of data.  \n\n**Feasibility**:  \n- **Proposal A** outlines a concrete framework (Bi-tuning) with two distinct heads (classifier and projector) and a plan to validate via experiments on datasets like CUB. The approach is technically feasible given existing deep learning tools.  \n- **Proposal B** proposes dimension estimation on image datasets and GAN-based validation, which is methodologically sound but depends on the reliability of dimension estimation tools, which may be less established.  \n\n**Evidence**:  \n- **Proposal A** cites \"comprehensive experiments\" showing state-of-the-art results (e.g., 10.7% accuracy gain on CUB), though it does not detail the experimental setup or datasets beyond CUB.  \n- **Proposal B** provides actionable evidence: dimension estimation on real datasets, empirical findings about learnability and generalization, and a GAN-based validation technique. It also shares code, enhancing reproducibility.  \n\n**Trade-offs**:  \n- **Proposal A** acknowledges the trade-off of discarding intrinsic structure in fine-tuning but does not discuss alternative methods or risks like computational overhead from dual heads.  \n- **Proposal B** implicitly considers trade-offs by linking intrinsic dimension to learnability and generalization, though it does not address potential limitations of dimension estimation or alternative data representations.  \n\n**Key difference**: Proposal A focuses on a specific technical gap in fine-tuning and proposes a targeted"
+        },
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": ""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 2,
+      "target_tokens": 3533
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "iclr-02",
+      "source": "iclr",
+      "variant_id": "iclr-02:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 3735,
+        "completion_tokens": 402,
+        "total_tokens": 4137,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "iclr-03",
+      "source": "iclr",
+      "variant_id": "iclr-03:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 2232,
+        "completion_tokens": 731,
+        "total_tokens": 2963,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "iclr-03",
+      "source": "iclr",
+      "variant_id": "iclr-03:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2472,
+        "completion_tokens": 617,
+        "total_tokens": 3089,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2963
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "iclr-03",
+      "source": "iclr",
+      "variant_id": "iclr-03:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 618,
+        "completion_tokens": 51,
+        "total_tokens": 669,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "iclr-03",
+      "source": "iclr",
+      "variant_id": "iclr-03:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "tie",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1829,
+        "completion_tokens": 1189,
+        "total_tokens": 3018,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": ""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": 2963
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "iclr-03",
+      "source": "iclr",
+      "variant_id": "iclr-03:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 3673,
+        "completion_tokens": 523,
+        "total_tokens": 4196,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "iclr-03",
+      "source": "iclr",
+      "variant_id": "iclr-03:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "tie",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 4048,
+        "completion_tokens": 1366,
+        "total_tokens": 5414,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": true,
+      "evidence_dropped": 1,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "iclr-03",
+      "source": "iclr",
+      "variant_id": "iclr-03:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 8,
+        "prompt_tokens": 4944,
+        "completion_tokens": 593,
+        "total_tokens": 5537,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 5414
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "iclr-03",
+      "source": "iclr",
+      "variant_id": "iclr-03:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 618,
+        "completion_tokens": 51,
+        "total_tokens": 669,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "iclr-03",
+      "source": "iclr",
+      "variant_id": "iclr-03:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 6,
+        "prompt_tokens": 3658,
+        "completion_tokens": 2613,
+        "total_tokens": 6271,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": ""
+        },
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:5",
+          "raw": ""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 2,
+      "target_tokens": 5414
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "iclr-03",
+      "source": "iclr",
+      "variant_id": "iclr-03:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 3207,
+        "completion_tokens": 380,
+        "total_tokens": 3587,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "iclr-04",
+      "source": "iclr",
+      "variant_id": "iclr-04:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 2565,
+        "completion_tokens": 980,
+        "total_tokens": 3545,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "blind:scientist",
+          "raw": "{\n  \"scores\": {\n    \"a\": {\n      \"Problem fit\": 5,\n      \"Feasibility\": 5,\n      \"Evidence\": 4,\n      \"Trade-offs\": 4\n    },\n    \"b\": {\n      \"Problem fit\": 3,\n      \"Feasibility\": 4,\n      \"Evidence\": 3,\n      \"Trade-offs\": 2\n    }\n  },\n  \"preferred\": \"a\",\n  \"confidence\": 4,\n  \"evidence\": [\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"Given a pre-trained flow model $p(\\boldsymbol{x})$, we wish to estimate $p(\\boldsymbol{x}_2 \\mid \\boldsymbol{x}_1)$ for some arbitrary partitioning of the variables $\\boldsymbol{x} = (\\boldsymbol{x}_1, \\boldsymbol{x}_2)$.\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"We first show that this task is computationally hard for a large class of flow models.\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"our method trains a new generative model with the property that its composition with the given model approximates the target conditional distribution.\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"Since the resulting approximate posterior remains a flow, it offers exact likelihood evaluation, inversion, and efficient sampling.\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"We provide an extensive empirical evidence showcasing the flexibility of our method on a variety of inference tasks with applications to inverse problems.\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"we explain the failure of naively applying variational inference and show that our method does not suffer from the same issue.\"\n    },\n    {\n"
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 2,
+      "abstains": 1,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "iclr-04",
+      "source": "iclr",
+      "variant_id": "iclr-04:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 3645,
+        "completion_tokens": 623,
+        "total_tokens": 4268,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 3545
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "iclr-04",
+      "source": "iclr",
+      "variant_id": "iclr-04:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 729,
+        "completion_tokens": 59,
+        "total_tokens": 788,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "iclr-04",
+      "source": "iclr",
+      "variant_id": "iclr-04:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2871,
+        "completion_tokens": 1480,
+        "total_tokens": 4351,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": ""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": 3545
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "iclr-04",
+      "source": "iclr",
+      "variant_id": "iclr-04:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 3479,
+        "completion_tokens": 313,
+        "total_tokens": 3792,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "iclr-04",
+      "source": "iclr",
+      "variant_id": "iclr-04:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "tie",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 4638,
+        "completion_tokens": 1379,
+        "total_tokens": 6017,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "blind:skeptic",
+          "raw": "{\n  \"scores\": {\n    \"a\": {\n      \"Problem fit\": 3,\n      \"Feasibility\": 3,\n      \"Evidence\": 4,\n      \"Trade-offs\": 2\n    },\n    \"b\": {\n      \"Problem fit\": 5,\n      \"Feasibility\": 5,\n      \"Evidence\": 4,\n      \"Trade-offs\": 3\n    }\n  },\n  \"preferred\": \"b\",\n  \"confidence\": 4,\n  \"evidence\": [\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"Through theoretical analysis, we show that the function space of ImpFlow is strictly richer than that of ResFlows.\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"We propose a scalable algorithm to train and draw samples from ImpFlows.\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"Empirically, we evaluate ImpFlow on several classification and density modeling tasks, and ImpFlow outperforms ResFlow with a comparable amount of parameters on all the benchmarks.\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"Given a pre-trained flow model p(x), we wish to estimate p(x2 | x1) for some arbitrary partitioning of the variables x = (x1, x2).\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"We first show that this task is computationally hard for a large class of flow models.\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"Specifically, our method trains a new generative model with the property that its composition with the given model approximates the target conditional distribution.\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"We"
+        }
+      ],
+      "debated": true,
+      "evidence_dropped": 1,
+      "abstains": 1,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "iclr-04",
+      "source": "iclr",
+      "variant_id": "iclr-04:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 8,
+        "prompt_tokens": 5832,
+        "completion_tokens": 636,
+        "total_tokens": 6468,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 6017
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "iclr-04",
+      "source": "iclr",
+      "variant_id": "iclr-04:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 729,
+        "completion_tokens": 89,
+        "total_tokens": 818,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "iclr-04",
+      "source": "iclr",
+      "variant_id": "iclr-04:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "tie",
+      "usage": {
+        "calls": 6,
+        "prompt_tokens": 4284,
+        "completion_tokens": 2425,
+        "total_tokens": 6709,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": ""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": 6017
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "iclr-04",
+      "source": "iclr",
+      "variant_id": "iclr-04:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 4034,
+        "completion_tokens": 454,
+        "total_tokens": 4488,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "iclr-05",
+      "source": "iclr",
+      "variant_id": "iclr-05:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "tie",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 2151,
+        "completion_tokens": 971,
+        "total_tokens": 3122,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "blind:judge",
+          "raw": "{\n  \"scores\": {\n    \"a\": {\n      \"Problem fit\": 5,\n      \"Feasibility\": 3,\n      \"Evidence\": 3,\n      \"Trade-offs\": 3\n    },\n    \"b\": {\n      \"Problem fit\": 5,\n      \"Feasibility\": 4,\n      \"Evidence\": 4,\n      \"Trade-offs\": 3\n    }\n  },\n  \"preferred\": \"b\",\n  \"confidence\": 3,\n  \"evidence\": [\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"Previous methods have used variational autoencoders to encode a scene into a low-dimensional vector that can be used as a goal for an agent to discover new skills. Nevertheless, in compositional/multi-object environments it is difficult to disentangle all the factors of variation into such a fixed-length representation of the whole scene.\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"We propose to use object-centric representations as a modular and structured observation space, which is learned with a compositional generative world model.\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"We show that the structure in the representations in combination with goal-conditioned attention policies helps the autonomous agent to discover and learn useful skills.\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"We first demonstrate our approach on a simple domain where the agent learns a compact, lifted representation that generalises across objects. We then apply it to a series of Minecraft tasks to learn object-centric representations, including object types—directly from pixel data—that can be leveraged to solve new tasks quickly.\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"The resulting learned representations enable the use of"
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "iclr-05",
+      "source": "iclr",
+      "variant_id": "iclr-05:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 2955,
+        "completion_tokens": 916,
+        "total_tokens": 3871,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 3122
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "iclr-05",
+      "source": "iclr",
+      "variant_id": "iclr-05:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 591,
+        "completion_tokens": 184,
+        "total_tokens": 775,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "iclr-05",
+      "source": "iclr",
+      "variant_id": "iclr-05:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "tie",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1722,
+        "completion_tokens": 1452,
+        "total_tokens": 3174,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": "**Most important difference:** Proposal A provides a concrete, staged validation plan—starting with a simple domain and progressing to Minecraft tasks—with a clear technical pathway from pixel data to object-centric representations to task-level planning. This makes it stronger on **Feasibility** and **Evidence**. Proposal B better acknowledges prior work and limitations, but offers a less concrete plan for validation.\n\n**Brief comparison:**\n- **Problem fit:** Both fit well; A focuses on planning transfer, B on skill discovery.\n- **Feasibility:** A is stronger due to its explicit experimental progression and defined technical components.\n- **Evidence:** A is stronger because it specifies how the approach will be demonstrated and tested.\n- **Trade-offs:** B is stronger because it explicitly identifies limitations of existing VAE-based methods.\n\nA’s concrete plan and clearer testing path outweigh B"
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": 3122
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "iclr-05",
+      "source": "iclr",
+      "variant_id": "iclr-05:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 3256,
+        "completion_tokens": 441,
+        "total_tokens": 3697,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "critic:0",
+          "raw": "[[A]]\n\nProposal A demonstrates stronger problem fit and feasibility. It explicitly addresses long-horizon planning with a concrete demonstration path (simple domain to Minecraft) and clearly defines sample efficiency as its testable outcome. Proposal B focuses on skill discovery and compositional manipulation, which does not align as directly with the stated goal of high-level planning. Proposal B also relies on the unstated assumption that a compositional generative world model can be learned reliably from pixels without labeled object data—a significant operational drawback given the complexity of such models.\n\nProposal A is not without risks—lifted representations may fail to capture continuous dynamics—but it acknowledges the transfer assumption and outlines a clearer evaluation strategy. Proposal B under-specifies how goal-conditioned attention policies translate into executable plans and offers no concrete test for planning performance.\n\n[[A]]"
+        },
+        {
+          "turn": "scientist:1",
+          "raw": "[[A]]\n\nProposal A's strongest point is its concrete, staged evaluation path—moving from a simple domain to Minecraft with sample efficiency as a clear, testable outcome—whereas Proposal B lacks a concrete test for planning performance. Proposal A also better respects the operating constraint of high-level planning, while Proposal B relies on unstated assumptions about reliably learning compositional generative world models from pixels.[[A]]"
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "iclr-05",
+      "source": "iclr",
+      "variant_id": "iclr-05:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 2151,
+        "completion_tokens": 1078,
+        "total_tokens": 3229,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "blind:skeptic",
+          "raw": "{\n  \"scores\": {\n    \"a\": {\n      \"Problem fit\": 3,\n      \"Feasibility\": 2,\n      \"Evidence\": 2,\n      \"Trade-offs\": 1\n    },\n    \"b\": {\n      \"Problem fit\": 4,\n      \"Feasibility\": 3,\n      \"Evidence\": 3,\n      \"Trade-offs\": 2\n    }\n  },\n  \"preferred\": \"b\",\n  \"confidence\": 3,\n  \"evidence\": [\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"We propose to use object-centric representations as a modular and structured observation space, which is learned with a compositional generative world model.\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"Previous methods have used variational autoencoders to encode a scene into a low-dimensional vector that can be used as a goal for an agent to discover new skills.\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"We show that the structure in the representations in combination with goal-conditioned attention policies helps the autonomous agent to discover and learn useful skills.\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"We propose a method for autonomously learning an object-centric representation of a continuous and high-dimensional environment that is suitable for planning.\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"We then apply it to a series of Minecraft tasks to learn object-centric representations, including object types—directly from pixel data—that can be leveraged to solve new tasks quickly.\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"The resulting learned representations enable the use of a task-level planner, resulting in an agent capable of forming"
+        },
+        {
+          "turn": "blind:scientist",
+          "raw": "{\"scores\":{\"a\":{\"Problem fit\":4,\"Feasibility\":4,\"Evidence\":3,\"Trade-offs\":2},\"b\":{\"Problem fit\":5,\"Feasibility\":4,\"Evidence\":3,\"Trade-offs\":2}},\"preferred\":\"b\",\"confidence\":4,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"We propose to use object-centric representations as a modular and structured observation space, which is learned with a compositional generative world model.\"},{\"proposal\":\"b\",\"quote\":\"We propose a method for autonomously learning an object-centric representation of a continuous and high-dimensional environment that is suitable for planning.\"},{\"proposal\":\"b\",\"quote\":\"We first demonstrate our approach on a simple domain where the agent learns a compact, lifted representation that generalises across objects. We then apply it to a series of Minecraft tasks to learn object-centric representations, including object types—directly from pixel data—that can be leveraged to solve new tasks quickly.\"}]}\n\n{\"scores\":{\"a\":{\"Problem fit\":4,\"Feasibility\":4,\"Evidence\":3,\"Trade-offs\":2},\"b\":{\"Problem fit\":5,\"Feasibility\":4,\"Evidence\":3,\"Trade-offs\":2}},\"preferred\":\"b\",\"confidence\":4,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"We propose to use object-centric representations as a modular and structured observation space, which is learned with a compositional generative world model.\"},{\"proposal\":\"b\",\"quote\":\"We propose a method for autonomously learning an object-centric representation of a continuous and high-dimensional environment that is suitable for planning.\"},{\"proposal\":\"b\",\"quote\":\"We first demonstrate our approach on a simple domain where the agent learns a compact, lifted representation that generalises across objects. We then apply it to a"
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 2,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "iclr-05",
+      "source": "iclr",
+      "variant_id": "iclr-05:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 2955,
+        "completion_tokens": 538,
+        "total_tokens": 3493,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 3229
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "iclr-05",
+      "source": "iclr",
+      "variant_id": "iclr-05:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 591,
+        "completion_tokens": 59,
+        "total_tokens": 650,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "iclr-05",
+      "source": "iclr",
+      "variant_id": "iclr-05:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2313,
+        "completion_tokens": 1368,
+        "total_tokens": 3681,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": ""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": 3229
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "iclr-05",
+      "source": "iclr",
+      "variant_id": "iclr-05:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2874,
+        "completion_tokens": 291,
+        "total_tokens": 3165,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "iclr-06",
+      "source": "iclr",
+      "variant_id": "iclr-06:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 2301,
+        "completion_tokens": 843,
+        "total_tokens": 3144,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "iclr-06",
+      "source": "iclr",
+      "variant_id": "iclr-06:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2564,
+        "completion_tokens": 841,
+        "total_tokens": 3405,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 3144
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "iclr-06",
+      "source": "iclr",
+      "variant_id": "iclr-06:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 641,
+        "completion_tokens": 384,
+        "total_tokens": 1025,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "iclr-06",
+      "source": "iclr",
+      "variant_id": "iclr-06:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1887,
+        "completion_tokens": 1676,
+        "total_tokens": 3563,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": ""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": 3144
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "iclr-06",
+      "source": "iclr",
+      "variant_id": "iclr-06:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 3365,
+        "completion_tokens": 485,
+        "total_tokens": 3850,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "iclr-06",
+      "source": "iclr",
+      "variant_id": "iclr-06:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 2301,
+        "completion_tokens": 838,
+        "total_tokens": 3139,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "blind:scientist",
+          "raw": "{\n  \"scores\": {\n    \"a\": {\n      \"Problem fit\": 3,\n      \"Feasibility\": 3,\n      \"Evidence\": 3,\n      \"Trade-offs\": 2\n    },\n    \"b\": {\n      \"Problem fit\": 5,\n      \"Feasibility\": 5,\n      \"Evidence\": 5,\n      \"Trade-offs\": 4\n    }\n  },\n  \"preferred\": \"b\",\n  \"confidence\": 4,\n  \"evidence\": [\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"Unfortunately, the number of available structures is orders of magnitude lower than the number of available protein sequences.\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"We show how these representations can be used to directly solve different tasks in the field of structural bioinformatics, such as protein function and protein structural similarity prediction.\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"Moreover, we show how fine-tuned networks, pre-trained with our algorithm, lead to significantly improved task performance.\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"We tackle rigid body protein-protein docking, i.e., computationally predicting the 3D structure of a protein-protein complex from the individual unbound structures, assuming no conformational change within the proteins happens during binding.\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"We mathematically guarantee a basic principle: the predicted complex is always identical regardless of the initial locations and orientations of the two structures.\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"Empirically, we achieve significant running time improvements and often outperform existing docking software despite not relying on heavy candidate sampling, structure refinement, or templates.\"\n    }\n "
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 1,
+      "abstains": 1,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "iclr-06",
+      "source": "iclr",
+      "variant_id": "iclr-06:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2564,
+        "completion_tokens": 703,
+        "total_tokens": 3267,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 3139
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "iclr-06",
+      "source": "iclr",
+      "variant_id": "iclr-06:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 641,
+        "completion_tokens": 184,
+        "total_tokens": 825,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "iclr-06",
+      "source": "iclr",
+      "variant_id": "iclr-06:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1887,
+        "completion_tokens": 1317,
+        "total_tokens": 3204,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": ""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": 3139
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "iclr-06",
+      "source": "iclr",
+      "variant_id": "iclr-06:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 3354,
+        "completion_tokens": 440,
+        "total_tokens": 3794,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-07",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-07:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1668,
+        "completion_tokens": 533,
+        "total_tokens": 2201,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-07",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-07:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 2150,
+        "completion_tokens": 281,
+        "total_tokens": 2431,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2201
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-07",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-07:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 430,
+        "completion_tokens": 54,
+        "total_tokens": 484,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-07",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-07:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 1710,
+        "completion_tokens": 505,
+        "total_tokens": 2215,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2201
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-07",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-07:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2186,
+        "completion_tokens": 266,
+        "total_tokens": 2452,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-08",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-08:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1926,
+        "completion_tokens": 537,
+        "total_tokens": 2463,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-08",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-08:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 2580,
+        "completion_tokens": 386,
+        "total_tokens": 2966,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2463
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-08",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-08:verbosity:ab",
       "kind": "verbosity",
       "order": "ab",
       "better": "a",
       "winner": "a",
       "usage": {
         "calls": 1,
-        "prompt_tokens": 425,
-        "completion_tokens": 61,
-        "total_tokens": 486,
+        "prompt_tokens": 516,
+        "completion_tokens": 46,
+        "total_tokens": 562,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-08",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-08:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1539,
+        "completion_tokens": 1016,
+        "total_tokens": 2555,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2463
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-08",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-08:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2756,
+        "completion_tokens": 363,
+        "total_tokens": 3119,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 3555,
+        "completion_tokens": 875,
+        "total_tokens": 4430,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "b",
+      "winner": "tie",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 4236,
+        "completion_tokens": 490,
+        "total_tokens": 4726,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 4430
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 1059,
+        "completion_tokens": 197,
+        "total_tokens": 1256,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 3120,
+        "completion_tokens": 1342,
+        "total_tokens": 4462,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": ""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": 4430
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 5188,
+        "completion_tokens": 428,
+        "total_tokens": 5616,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1587,
+        "completion_tokens": 567,
+        "total_tokens": 2154,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 2015,
+        "completion_tokens": 359,
+        "total_tokens": 2374,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2154
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 403,
+        "completion_tokens": 84,
+        "total_tokens": 487,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 1597,
+        "completion_tokens": 983,
+        "total_tokens": 2580,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2154
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2381,
+        "completion_tokens": 394,
+        "total_tokens": 2775,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 2838,
+        "completion_tokens": 1044,
+        "total_tokens": 3882,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "blind:skeptic",
+          "raw": "{\n  \"scores\": {\n    \"a\": {\n      \"Problem fit\": 5,\n      \"Feasibility\": 5,\n      \"Evidence\": 5,\n      \"Trade-offs\": 1\n    },\n    \"b\": {\n      \"Problem fit\": 5,\n      \"Feasibility\": 5,\n      \"Evidence\": 5,\n      \"Trade-offs\": 2\n    }\n  },\n  \"preferred\": \"a\",\n  \"confidence\": 3,\n  \"evidence\": [\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"Building on the meta BO method from Wang et al. (2018), we develop practical improvements that (a) boost its performance by leveraging tuning results on multiple tasks without requiring observations for the same meta-parameter points across all tasks, and (b) retain its regret bound for a special case of our method.\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"we collected a large multi-task hyperparameter tuning dataset by training tens of thousands of configurations of near-state-of-the-art models on popular image and text datasets, as well as a protein sequence dataset.\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"Our results show that on average, our method is able to locate good hyperparameters at least 3 times more efficiently than the best competing methods.\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"We extend these existing methods to develop an approximate hypergradient-based hyperparameter optimiser which is applicable to any continuous hyperparameter appearing in a differentiable model weight update, yet requires only one training episode, with no restarts.\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"Our method performs competitively from varied random hyperparameter initialisations"
+        },
+        {
+          "turn": "blind:scientist",
+          "raw": "{\"scores\":{\"a\":{\"Problem fit\":5,\"Feasibility\":5,\"Evidence\":5,\"Trade-offs\":3},\"b\":{\"Problem fit\":5,\"Feasibility\":4,\"Evidence\":4,\"Trade-offs\":4}},\"preferred\":\"a\",\"confidence\":4,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"We extend these existing methods to develop an approximate hypergradient-based hyperparameter optimiser which is applicable to any continuous hyperparameter appearing in a differentiable model weight update, yet requires only one training episode, with no restarts.\"},{\"proposal\":\"a\",\"quote\":\"Our results show that on average, our method is able to locate good hyperparameters at least 3 times more efficiently than the best competing methods.\"},{\"proposal\":\"a\",\"quote\":\"Building on the meta BO method from Wang et al. (2018), we develop practical improvements that (a) boost its performance by leveraging tuning results on multiple tasks without requiring observations for the same meta-parameter points across all tasks, and (b) retain its regret bound for a special case of our method.\"},{\"proposal\":\"b\",\"quote\":\"We also provide a motivating argument for convergence to the true hypergradient, and perform tractable gradient-based optimisation of independent learning rates for each model parameter.\"},{\"proposal\":\"b\",\"quote\":\"Our method performs competitively from varied random hyperparameter initialisations on several UCI datasets and Fashion-MNIST (using a one-layer MLP), Penn Treebank (using an LSTM) and CIFAR-10 (using a ResNet-18), in time only 2-3x greater than vanilla training.\"}]}\n\n{\"scores\":{\"a\":{\"Problem fit\":5,\"Feasibility\":5,\"Evidence\":5,\"Trade-offs\":3},\"b\":{\"Problem fit\":5,\""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 2,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 3280,
+        "completion_tokens": 848,
+        "total_tokens": 4128,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 3882
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 820,
+        "completion_tokens": 100,
+        "total_tokens": 920,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 3224,
+        "completion_tokens": 1491,
+        "total_tokens": 4715,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": ""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": 3882
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "iclr-01",
+      "source": "iclr",
+      "variant_id": "iclr-01:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 4427,
+        "completion_tokens": 532,
+        "total_tokens": 4959,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "iclr-05",
+      "source": "iclr",
+      "variant_id": "iclr-05:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "b",
+      "winner": "tie",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 2229,
+        "completion_tokens": 840,
+        "total_tokens": 3069,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "iclr-05",
+      "source": "iclr",
+      "variant_id": "iclr-05:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2468,
+        "completion_tokens": 890,
+        "total_tokens": 3358,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 3069
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "iclr-05",
+      "source": "iclr",
+      "variant_id": "iclr-05:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 617,
+        "completion_tokens": 281,
+        "total_tokens": 898,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "iclr-05",
+      "source": "iclr",
+      "variant_id": "iclr-05:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "b",
+      "winner": "tie",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1802,
+        "completion_tokens": 1376,
+        "total_tokens": 3178,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": ""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": 3069
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "iclr-05",
+      "source": "iclr",
+      "variant_id": "iclr-05:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "b",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 3535,
+        "completion_tokens": 417,
+        "total_tokens": 3952,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "iclr-02",
+      "source": "iclr",
+      "variant_id": "iclr-02:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "a",
+      "winner": "tie",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 2589,
+        "completion_tokens": 814,
+        "total_tokens": 3403,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "blind:scientist",
+          "raw": "{\"scores\":{\"a\":{\"Problem fit\":3,\"Feasibility\":4,\"Evidence\":5,\"Trade-offs\":2},\"b\":{\"Problem fit\":4,\"Feasibility\":4,\"Evidence\":4,\"Trade-offs\":2}},\"preferred\":\"b\",\"confidence\":3,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"We find that common natural image datasets indeed have very low intrinsic dimension relative to the high number of pixels in the images.\"},{\"proposal\":\"a\",\"quote\":\"we develop a technique for validating our dimension estimation tools on synthetic data generated by GANs allowing us to actively manipulate the intrinsic dimension by controlling the image generation process.\"},{\"proposal\":\"b\",\"quote\":\"It follows natural intuition that both discriminative knowledge and intrinsic structure of the downstream task can be useful for fine-tuning, however, existing fine-tuning methods mainly leverage the former and discard the latter.\"},{\"proposal\":\"b\",\"quote\":\"Comprehensive experiments confirm that Bi-tuning achieves state-of-the-art results for fine-tuning tasks of both supervised and unsupervised pre-trained models by large margins (e.g.~10.7% absolute rise in accuracy on CUB in low-data regime).\"}]}}"
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "iclr-02",
+      "source": "iclr",
+      "variant_id": "iclr-02:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2948,
+        "completion_tokens": 496,
+        "total_tokens": 3444,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 3403
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "iclr-02",
+      "source": "iclr",
+      "variant_id": "iclr-02:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 737,
+        "completion_tokens": 82,
+        "total_tokens": 819,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "iclr-02",
+      "source": "iclr",
+      "variant_id": "iclr-02:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "a",
+      "winner": "tie",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 2151,
+        "completion_tokens": 1293,
+        "total_tokens": 3444,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": ""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": 3403
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "iclr-02",
+      "source": "iclr",
+      "variant_id": "iclr-02:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 3213,
+        "completion_tokens": 208,
+        "total_tokens": 3421,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1491,
+        "completion_tokens": 503,
+        "total_tokens": 1994,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 1855,
+        "completion_tokens": 304,
+        "total_tokens": 2159,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 1994
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 371,
+        "completion_tokens": 66,
+        "total_tokens": 437,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 1470,
+        "completion_tokens": 952,
+        "total_tokens": 2422,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 1994
+    },
+    {
+      "method": "chateval",
+      "seed": 0,
+      "pair_id": "synthetic-dev-09",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-09:tone:ab",
+      "kind": "tone",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 2034,
+        "completion_tokens": 306,
+        "total_tokens": 2340,
         "estimated": false
       },
       "failures": [],

@@ -4,33 +4,32 @@ Cells show the estimate and a 95% percentile interval from 2,000 pair-bootstrap 
 
 ## Dev
 
-2 pairs, 8 variants, seeds [0], nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b, temperature 0.7, committee protocol v1.
-Live calls: 60; live attempts: 60; cache hits: 5.
-Call limit reached. Results are partial for: chateval, committee, judge, jury.
-Parse failures: 5. See the per-decision JSON for raw outputs.
+16 pairs, 40 variants, seeds [0], nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b, temperature 0.7, committee protocol v1.
+Live calls: 561; live attempts: 561; cache hits: 85.
+Parse failures: 35. See the per-decision JSON for raw outputs.
 
 | Method | Seed | Decisions | Accuracy | Synthetic | ICLR | Position flip | Slot A | Verbosity delta | Tone delta |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| judge_1call | pooled | 5 | 100% [100%, 100%] | 100% [100%, 100%] | n/a | 0% [0%, 0%] | 50% [50%, 50%] | +0 pp [+0 pp, +0 pp] | n/a |
-| judge_1call | 0 | 5 | 100% [100%, 100%] | 100% [100%, 100%] | n/a | 0% [0%, 0%] | 50% [50%, 50%] | +0 pp [+0 pp, +0 pp] | n/a |
-| judge | pooled | 5 | 100% [100%, 100%] | 100% [100%, 100%] | n/a | 0% [0%, 0%] | 50% [50%, 50%] | +0 pp [+0 pp, +0 pp] | n/a |
-| judge | 0 | 5 | 100% [100%, 100%] | 100% [100%, 100%] | n/a | 0% [0%, 0%] | 50% [50%, 50%] | +0 pp [+0 pp, +0 pp] | n/a |
-| jury | pooled | 4 | 100% [100%, 100%] | 100% [100%, 100%] | n/a | 0% [0%, 0%] | 50% [50%, 50%] | n/a | n/a |
-| jury | 0 | 4 | 100% [100%, 100%] | 100% [100%, 100%] | n/a | 0% [0%, 0%] | 50% [50%, 50%] | n/a | n/a |
-| chateval | pooled | 0 | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| chateval | 0 | 0 | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| committee | pooled | 5 | 100% [100%, 100%] | 100% [100%, 100%] | n/a | 0% [0%, 0%] | 50% [50%, 50%] | +0 pp [+0 pp, +0 pp] | n/a |
-| committee | 0 | 5 | 100% [100%, 100%] | 100% [100%, 100%] | n/a | 0% [0%, 0%] | 50% [50%, 50%] | +0 pp [+0 pp, +0 pp] | n/a |
+| judge_1call | pooled | 40 | 78% [59%, 94%] | 100% [100%, 100%] | 42% [17%, 67%] | 19% [0%, 38%] | 53% [44%, 62%] | +25 pp [+0 pp, +75 pp] | +0 pp [+0 pp, +0 pp] |
+| judge_1call | 0 | 40 | 78% [59%, 94%] | 100% [100%, 100%] | 42% [17%, 67%] | 19% [0%, 38%] | 53% [44%, 62%] | +25 pp [+0 pp, +75 pp] | +0 pp [+0 pp, +0 pp] |
+| judge | pooled | 40 | 72% [50%, 91%] | 100% [100%, 100%] | 25% [0%, 58%] | 6% [0%, 19%] | 53% [50%, 59%] | +12 pp [+0 pp, +38 pp] | +25 pp [+0 pp, +75 pp] |
+| judge | 0 | 40 | 72% [50%, 91%] | 100% [100%, 100%] | 25% [0%, 58%] | 6% [0%, 19%] | 53% [50%, 59%] | +12 pp [+0 pp, +38 pp] | +25 pp [+0 pp, +75 pp] |
+| jury | pooled | 40 | 73% [55%, 91%] | 98% [92%, 100%] | 33% [17%, 62%] | 31% [12%, 56%] | 38% [25%, 47%] | +25 pp [+0 pp, +75 pp] | +12 pp [+0 pp, +38 pp] |
+| jury | 0 | 40 | 73% [55%, 91%] | 98% [92%, 100%] | 33% [17%, 62%] | 31% [12%, 56%] | 38% [25%, 47%] | +25 pp [+0 pp, +75 pp] | +12 pp [+0 pp, +38 pp] |
+| chateval | pooled | 40 | 70% [48%, 89%] | 100% [100%, 100%] | 21% [0%, 46%] | 12% [0%, 31%] | 53% [50%, 59%] | -12 pp [-38 pp, +0 pp] | +12 pp [-38 pp, +75 pp] |
+| chateval | 0 | 40 | 70% [48%, 89%] | 100% [100%, 100%] | 21% [0%, 46%] | 12% [0%, 31%] | 53% [50%, 59%] | -12 pp [-38 pp, +0 pp] | +12 pp [-38 pp, +75 pp] |
+| committee | pooled | 40 | 77% [58%, 91%] | 100% [100%, 100%] | 38% [25%, 62%] | 31% [12%, 56%] | 47% [41%, 50%] | +0 pp [+0 pp, +0 pp] | +0 pp [+0 pp, +0 pp] |
+| committee | 0 | 40 | 77% [58%, 91%] | 100% [100%, 100%] | 38% [25%, 62%] | 31% [12%, 56%] | 47% [41%, 50%] | +0 pp [+0 pp, +0 pp] | +0 pp [+0 pp, +0 pp] |
 
 | Method | Seed | Decisions | Tokens / decision | Calls / decision | Debate rate | Quotes dropped / decision | Abstains / decision |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| judge_1call | pooled | 5 | 435.0 [425.5, 441.3] | 1.0 [1.0, 1.0] | n/a | n/a | n/a |
-| judge_1call | 0 | 5 | 435.0 [425.5, 441.3] | 1.0 [1.0, 1.0] | n/a | n/a | n/a |
-| judge | pooled | 5 | 2,290.0 [2,087.0, 2,425.3] | 5.2 [5.0, 5.3] | n/a | n/a | n/a |
-| judge | 0 | 5 | 2,290.0 [2,087.0, 2,425.3] | 5.2 [5.0, 5.3] | n/a | n/a | n/a |
-| jury | pooled | 4 | 2,138.2 [2,104.5, 2,172.0] | 4.2 [4.0, 4.5] | n/a | n/a | n/a |
-| jury | 0 | 4 | 2,138.2 [2,104.5, 2,172.0] | 4.2 [4.0, 4.5] | n/a | n/a | n/a |
-| chateval | pooled | 0 | n/a | n/a | n/a | n/a | n/a |
-| chateval | 0 | 0 | n/a | n/a | n/a | n/a | n/a |
-| committee | pooled | 5 | 2,130.2 [2,028.0, 2,198.3] | 3.0 [3.0, 3.0] | 0% [0%, 0%] | 0.0 [0.0, 0.0] | 0.4 [0.3, 0.5] |
-| committee | 0 | 5 | 2,130.2 [2,028.0, 2,198.3] | 3.0 [3.0, 3.0] | 0% [0%, 0%] | 0.0 [0.0, 0.0] | 0.4 [0.3, 0.5] |
+| judge_1call | pooled | 40 | 608.9 [507.1, 714.9] | 1.0 [1.0, 1.0] | n/a | n/a | n/a |
+| judge_1call | 0 | 40 | 608.9 [507.1, 714.9] | 1.0 [1.0, 1.0] | n/a | n/a | n/a |
+| judge | pooled | 40 | 3,093.9 [2,564.3, 3,647.4] | 5.1 [4.9, 5.3] | n/a | n/a | n/a |
+| judge | 0 | 40 | 3,093.9 [2,564.3, 3,647.4] | 5.1 [4.9, 5.3] | n/a | n/a | n/a |
+| jury | pooled | 40 | 3,135.8 [2,625.5, 3,709.5] | 3.9 [3.6, 4.2] | n/a | n/a | n/a |
+| jury | 0 | 40 | 3,135.8 [2,625.5, 3,709.5] | 3.9 [3.6, 4.2] | n/a | n/a | n/a |
+| chateval | pooled | 40 | 3,163.8 [2,729.9, 3,621.3] | 4.0 [4.0, 4.0] | n/a | n/a | n/a |
+| chateval | 0 | 40 | 3,163.8 [2,729.9, 3,621.3] | 4.0 [4.0, 4.0] | n/a | n/a | n/a |
+| committee | pooled | 40 | 2,845.3 [2,366.3, 3,355.7] | 3.1 [3.0, 3.3] | 8% [0%, 16%] | 0.1 [0.0, 0.3] | 0.3 [0.1, 0.5] |
+| committee | 0 | 40 | 2,845.3 [2,366.3, 3,355.7] | 3.1 [3.0, 3.3] | 8% [0%, 16%] | 0.1 [0.0, 0.3] | 0.3 [0.1, 0.5] |

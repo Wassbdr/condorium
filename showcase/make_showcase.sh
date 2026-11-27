@@ -12,12 +12,11 @@
 # demo replays a recorded trace, so the GIF/MP4/poster are deterministic.
 #
 #   bash showcase/make_showcase.sh          # replay assets + json from committed results
-#   LIVE=1 bash showcase/make_showcase.sh   # also re-measure the bench live (~1,900 LLM calls)
+#   LIVE=1 bash showcase/make_showcase.sh   # also re-measure the bench live (<= 1,560 LLM calls, ~1.5 h)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-TRACE="${DEMO_TRACE:-fixtures/demo/03-hype-lottery.json}"
-[ -f "$TRACE" ] || TRACE=fixtures/demo/01-transit-copilot.json
+TRACE="${DEMO_TRACE:-fixtures/demo/01-transit-copilot.json}"
 MODEL="${CONDORIUM_MODEL:-nvidia_nim/nvidia/nemotron-3.5-lightning-30b-a3b}"
 
 for tool in uv vhs ttyd ffmpeg ffprobe; do
@@ -33,14 +32,15 @@ panel demo >/dev/null   # both recorded runs replay offline
 
 if [ "${LIVE:-0}" = "1" ]; then
   : "${NVIDIA_NIM_API_KEY:?LIVE=1 needs NVIDIA_NIM_API_KEY}"
-  CONDORIUM_MODEL="$MODEL" CONDORIUM_MAX_CALLS=620 \
-    panel bench --versus --n 3 --tone 2 --seeds 0,1,2 --workers 3 \
+  # paced under the NIM free-tier rate limit; hard stop at 1,560 calls
+  CONDORIUM_MODEL="$MODEL" CONDORIUM_MAX_CALLS=1560 CONDORIUM_RPM=36 \
+    panel bench --versus --n 3 --tone 1 --seeds 0,1,2 \
     --out showcase/results/versus_results.json
 fi
 
 python showcase/poster.py "$TRACE" showcase/results/versus_results.json showcase/poster.png
 DEMO_TRACE="$TRACE" vhs showcase/demo.tape
-python showcase/build_json.py "$TRACE"
+python showcase/build_json.py "$TRACE"   # also fills the README result blocks
 
 # acceptance checks for the portfolio site
 python - <<'PY'

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from collections import Counter
 from collections.abc import Iterable
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -20,7 +21,7 @@ MODEL = "nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b"
 TEMPERATURE = 0.7
 MAX_TOKENS = 384
 ROLES = ("judge", "skeptic", "scientist")
-PROTOCOL = "v2.1"
+PROTOCOL = "v3"
 _FOLDER = "committee/pairwise"
 _MAX_REQUIREMENTS = 5
 Winner = Literal["a", "b", "tie"]
@@ -199,43 +200,99 @@ def _rating(value: object) -> int | None:
     return value if type(value) is int and 1 <= value <= 5 else None
 
 
+_ESCAPE = re.compile(r'\\(?:\\|u[0-9a-fA-F]{4}|[A-Za-z]+|.)')
+
+
+def _escape_latex(text: str) -> str:
+    def escape(match: re.Match[str]) -> str:
+        token = match[0]
+        if len(token) == 6 and token.startswith("\\u"):
+            return token
+        return token if token in {"\\\\", '\\"', "\\/", "\\b", "\\f", "\\n", "\\r", "\\t"} else (
+            "\\" + token
+        )
+
+    return _ESCAPE.sub(escape, text)
+
+
+def _flatten_review(data: dict) -> dict:
+    if data.keys() == {"scores"}:
+        fields = data["scores"]
+        required = {"a", "b", "preferred", "confidence", "evidence"}
+        if isinstance(fields, dict) and required <= fields.keys() <= required | {
+            "checks", "requirements", "violations",
+        }:
+            return {"scores": {"a": fields["a"], "b": fields["b"]},
+                    **{key: value for key, value in fields.items() if key not in ("a", "b")}}
+    return data
+
+
+def _recover_review(text: str, *, edits: int = 2) -> dict | None:
+    decoder = json.JSONDecoder()
+    try:
+        data, _ = decoder.raw_decode(text)
+    except json.JSONDecodeError as exc:
+        if exc.msg == "Invalid \\escape":
+            text = _escape_latex(text)
+            try:
+                data, _ = decoder.raw_decode(text)
+            except json.JSONDecodeError as repaired_error:
+                exc = repaired_error
+            else:
+                return data if isinstance(data, dict) else None
+        if exc.msg != "Expecting ',' delimiter" or text[exc.pos:exc.pos + 1] != "}":
+            return None
+        prefix, suffix = text[:exc.pos], text[exc.pos + 1:]
+        if edits and '"checks"' in prefix:
+            if suffix.lstrip().startswith((",", "]")):
+                fixed = prefix + "]" + suffix
+            else:
+                fixed = prefix + "]}" + suffix
+            if (recovered := _recover_review(fixed, edits=edits - 1)) is not None:
+                return recovered
+        if not suffix.lstrip().startswith(","):
+            for closer in ("]}", "]]}", "]}}", "]]}}"):
+                try:
+                    data = decoder.decode(prefix + closer)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(data, dict) and next(
+                    reversed(_flatten_review(data)), None,
+                ) in {"checks", "evidence"}:
+                    return data
+        return None
+    return data if isinstance(data, dict) else None
+
+
 def _review_json(raw: str) -> dict:
     try:
         data = parse_json(raw)
     except ValueError:
         data = None
     if isinstance(data, dict):
-        return data
+        return _flatten_review(data)
 
     text = raw.strip()
     leading = text
     if leading.startswith("```"):
         leading = leading[3:].removeprefix("json").lstrip()
-    try:
-        data, _ = json.JSONDecoder().raw_decode(leading)
-    except json.JSONDecodeError:
-        pass
-    else:
-        if isinstance(data, dict):
-            return data
+    if (data := _recover_review(leading)) is not None:
+        return _flatten_review(data)
 
     try:
         json.loads(text)
     except json.JSONDecodeError as exc:
         prefix, suffix = text[:exc.pos].rstrip(), text[exc.pos:].lstrip()
-        if not prefix.startswith(suffix):
+        if not prefix.startswith(suffix) and not (
+            suffix[:1].isalpha() and "\n\n" in text[:exc.pos][-4:]
+        ):
             return {}
         try:
             envelope = json.loads(prefix + "}")
         except json.JSONDecodeError:
             return {}
-        if isinstance(envelope, dict) and envelope.keys() == {"scores"}:
-            fields = envelope["scores"]
-            required = {"a", "b", "preferred", "confidence", "evidence"}
-            if (isinstance(fields, dict) and required <= fields.keys()
-                    <= required | {"checks", "requirements", "violations"}):
-                return {"scores": {"a": fields["a"], "b": fields["b"]},
-                        **{key: value for key, value in fields.items() if key not in ("a", "b")}}
+        if isinstance(envelope, dict) and (result := _flatten_review(envelope)) is not envelope:
+            return result
     return {}
 
 
@@ -245,6 +302,26 @@ def _quote(value: object) -> str:
 
 def _violation_sides(review: Review) -> frozenset[Side]:
     return frozenset(v.proposal for v in review.violations)
+
+
+def _order_key(item: Item) -> tuple[bytes, str, str]:
+    return hashlib.sha256(_quote(item["text"]).encode()).digest(), item["text"], item["title"]
+
+
+def _swap_winner(winner: Winner | None) -> Winner | None:
+    if winner == "a" or winner == "b":
+        return opposite(winner)
+    return winner
+
+
+def _swap_review(review: Review) -> Review:
+    return replace(
+        review,
+        preferred=_swap_winner(review.preferred),
+        scores={opposite(side): values for side, values in review.scores.items()},
+        evidence=[replace(e, proposal=opposite(e.proposal)) for e in review.evidence],
+        violations=[replace(v, proposal=opposite(v.proposal)) for v in review.violations],
+    )
 
 
 def _normalize(role: str, raw: str, a: Item, b: Item, rubric: Rubric,
@@ -326,19 +403,26 @@ def compare(
     brief: str = "",
     requirement_cache: RequirementCache | None = None,
 ) -> Comparison:
-    """Run blind reviews and at most one round of targeted debate."""
+    """Compare in content order, then translate each result into the caller's slots."""
     folder = _FOLDER
-    proposals = _committee_input(a, b, rubric, brief)
+    caller_swapped = _order_key(b) < _order_key(a)
+    if caller_swapped:
+        a, b = b, a
+    orders = ((a, b), (b, a))
+    proposals = [_committee_input(first, second, rubric, brief) for first, second in orders]
     contract = load_prompt(f"{folder}/_contract.md").body
     criteria = _criteria(rubric)
 
     def assess(role: str, index: int, system: str, user: str, max_tokens: int,
-               initial: Review | None = None) -> Review:
+               reversed_order: bool, initial: Review | None = None) -> Review:
         review_seed = sample_seed(seed, "committee", variant_id, index)
         raw = complete_text(system, user, model=model, temperature=temperature,
                             seed=review_seed, max_tokens=max_tokens, max_retries=0, num_retries=0)
-        review = _normalize(role, raw, a, b, rubric, requirements.quotes, initial)
-        return replace(review, preferred=None) if review.parse_failure is not None else review
+        first, second = orders[reversed_order]
+        review = _normalize(role, raw, first, second, rubric, requirements.quotes, initial)
+        if review.parse_failure is not None:
+            review = replace(review, preferred=None)
+        return _swap_review(review) if reversed_order else review
 
     def quote_data(review: Review) -> str:
         return json.dumps({"evidence": [asdict(e) for e in review.evidence],
@@ -349,16 +433,17 @@ def compare(
             requirements = (requirement_cache or RequirementCache()).get(
                 _problem_brief(a, b, brief), criteria, model,
             )
-        user = proposals
         max_tokens = 172
         if requirements.quotes:
             contract += "\n" + load_prompt(f"{folder}/checks.md").body
-            user += "\n\n" + render(load_prompt(f"{folder}/checks_input.md").body,
-                                     requirements=json.dumps(requirements.quotes, ensure_ascii=False))
+            checks = render(load_prompt(f"{folder}/checks_input.md").body,
+                            requirements=json.dumps(requirements.quotes, ensure_ascii=False))
+            proposals = [f"{proposals_text}\n\n{checks}" for proposals_text in proposals]
             max_tokens = min(480, 200 + 60 * len(requirements.quotes))
         initial = [pool.submit(copy_context().run, assess, role, index,
                                load_prompt(f"{folder}/{role}.md").body + "\n" + contract,
-                               user, max_tokens) for index, role in enumerate(ROLES)]
+                               proposals[role == "scientist"], max_tokens, role == "scientist")
+                   for index, role in enumerate(ROLES)]
         reviews = [future.result() for future in initial]
         winner = majority(review.preferred for review in reviews)
         debate: list[Review] = []
@@ -373,13 +458,23 @@ def compare(
             template = load_prompt(f"{folder}/debate_input.md").body
             turns = []
             for index, (own, other) in enumerate(((first, second), (second, first)), len(ROLES)):
-                user = render(template, criteria=criteria, own_preference=own.preferred,
+                reversed_order = index != len(ROLES)
+                first_item, second_item = orders[reversed_order]
+                if reversed_order:
+                    own, other = _swap_review(own), _swap_review(other)
+                user = render(template, criteria=criteria, a_title=first_item["title"],
+                              b_title=second_item["title"], own_preference=own.preferred,
                               other_preference=other.preferred, own_quotes=quote_data(own),
                               other_quotes=quote_data(other))
                 turns.append(pool.submit(copy_context().run, assess, own.role, index, system,
-                                         user, 144, own))
+                                         user, 144, reversed_order, own))
             debate = [future.result() for future in turns]
             final = {review.role: review.preferred for review in reviews + debate}
             winner = majority(final.values())
-        return Comparison(winner or "tie", reviews, debate, usage.as_dict(), requirements.quotes,
+        if caller_swapped:
+            winner = _swap_winner(winner)
+            reviews = [_swap_review(review) for review in reviews]
+            debate = [_swap_review(review) for review in debate]
+        return Comparison((winner or "tie") if a != b else "tie",
+                          reviews, debate, usage.as_dict(), requirements.quotes,
                           requirements.parse_failure, extraction.total_tokens)

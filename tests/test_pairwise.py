@@ -13,6 +13,7 @@ from condorium.compare import (
     RequirementCache,
     _committee_input,
     _normalize,
+    _order_key,
     compare,
     proposal_input,
     sample_seed,
@@ -31,6 +32,13 @@ def _review(preferred, evidence, checks=()):
     })
 
 
+def _fixture_slots(user):
+    first = f"Title: {A['title']}\n" in user.split("Proposal B\n", 1)[0]
+    if "Other reviewer's verified evidence" in user:
+        first = f"Proposal A: {A['title']}\n" in user
+    return ("a", "b") if first else ("b", "a")
+
+
 def test_committee_debates_only_opposing_roles_and_checks_quotes(monkeypatch):
     calls = []
 
@@ -38,31 +46,35 @@ def test_committee_debates_only_opposing_roles_and_checks_quotes(monkeypatch):
         system, user = [m["content"] for m in messages]
         calls.append((system, user))
         llm.record_usage(10, 2)
+        a, b = _fixture_slots(user)
         if "Other reviewer's verified evidence" in user:
             assert "invented" not in user
-            return _review("a", [{"proposal": "a", "quote": "Use actual data"}])
+            return _review(a, [{"proposal": a, "quote": "Use actual data"}])
         if "Rubric Judge" in system:
-            return _review("a", [{"proposal": "a", "quote": "Use actual  data"}])
+            return _review(a, [{"proposal": a, "quote": "Use actual  data"}])
         if "Skeptic" in system:
-            return _review("b", [{"proposal": "b", "quote": "simple checklist"},
-                                 {"proposal": "a", "quote": "invented"}])
-        return _review("b", [{"proposal": "b", "quote": "compare the baseline"}])
+            return _review(b, [{"proposal": b, "quote": "simple checklist"},
+                               {"proposal": a, "quote": "invented"}])
+        return _review(b, [{"proposal": b, "quote": "compare the baseline"}])
 
     monkeypatch.setattr(llm, "_completion", completion)
     result = compare(A, B, RUBRIC)
     assert result.winner == "a"
     assert [r.preferred for r in result.initial] == ["a", "b", None]
-    assert [r.role for r in result.debate] == ["judge", "skeptic"]
+    assert {r.role for r in result.debate} == {"judge", "skeptic"}
     assert result.dropped == 2 and result.abstains == 1
     assert result.usage["total_tokens"] == 60
     blind = [user for _, user in calls if "verified evidence" not in user]
-    assert len(blind) == 3 and len(set(blind)) == 1
+    assert len(blind) == 3 and len(set(blind)) == 2
     assert len(calls) == 5
+    debated = [user for _, user in calls if "verified evidence" in user]
+    assert {_fixture_slots(user)[0] for user in debated} == {"a", "b"}
 
 
 def test_committee_majority_and_all_abstain_do_not_debate(monkeypatch):
-    def valid(**_):
-        return _review("b", [{"proposal": "b", "quote": "checklist"}])
+    def valid(*, messages, **_):
+        _, b = _fixture_slots(messages[1]["content"])
+        return _review(b, [{"proposal": b, "quote": "checklist"}])
 
     monkeypatch.setattr(llm, "_completion", valid)
     result = compare(A, B, RUBRIC)
@@ -127,8 +139,6 @@ def test_committee_violation_veto_and_disagreement_without_debate(
     monkeypatch, agree, expected,
 ):
     brief = "Use aggregate data only."
-    a_violation = [0, "a", 0, "Use actual data", ""]
-    b_violation = [0, "b", 0, "Use a simple checklist", ""]
     ballots = []
 
     def completion(*, messages, **_):
@@ -138,8 +148,11 @@ def test_committee_violation_veto_and_disagreement_without_debate(
         assert f"Problem brief:\n{brief}" in user
         ballots.append(user)
         llm.record_usage(10, 3)
-        preferred = "a" if agree else "b"
-        evidence = [{"proposal": "a", "quote": "Use actual data"}]
+        a, b = _fixture_slots(user)
+        a_violation = [0, a, 0, "Use actual data", ""]
+        b_violation = [0, b, 0, "Use a simple checklist", ""]
+        preferred = a if agree else b
+        evidence = [{"proposal": a, "quote": "Use actual data"}]
         if "Rubric Judge" in system:
             return _review(preferred, evidence, [a_violation])
         if "Skeptic" in system:
@@ -164,10 +177,75 @@ def test_committee_sends_shared_problem_once(monkeypatch):
         user = messages[1]["content"]
         assert user.count(shared) == 1
         assert f"Problem brief:\n{shared}" in user
-        return _review("a", [{"proposal": "a", "quote": shared}])
+        slot, _ = _fixture_slots(user)
+        return _review(slot, [{"proposal": slot, "quote": shared}])
 
     monkeypatch.setattr(llm, "_completion", completion)
     assert compare(a, b, RUBRIC).winner == "a"
+
+
+def test_committee_mirrors_results_and_reuses_identical_requests_when_swapped(monkeypatch):
+    brief = "Only share totals."
+    requests = {}
+
+    def complete(*, messages, seed, **kwargs):
+        requests[seed] = messages, kwargs
+        system, user = [m["content"] for m in messages]
+        if "at most five" in system:
+            return json.dumps([brief])
+        a, b = _fixture_slots(user)
+        if "Scientist" in system:
+            assert a != ("a" if _order_key(A) < _order_key(B) else "b")
+        else:
+            assert a == ("a" if _order_key(A) < _order_key(B) else "b")
+        return json.dumps({
+            "preferred": a, "confidence": 4, "scores": {a: [1, 2, 3, 4], b: [4, 3, 2, 1]},
+            "evidence": [{"proposal": a, "quote": "Use actual data"}],
+            "checks": [[0, a, 0, "Use actual data", ""]],
+        })
+
+    monkeypatch.setattr(llm, "_completion", complete)
+    forward = compare(A, B, RUBRIC, seed=7, brief=brief)
+    captured = requests.copy()
+    requests.clear()
+    backward = compare(B, A, RUBRIC, seed=7, brief=brief)
+    assert len(requests) == 4 and requests == captured
+    assert forward.winner == "b" and backward.winner == "a"
+    for x, y in zip(forward.initial, backward.initial, strict=True):
+        assert x.preferred == "b" and y.preferred == "a"
+        assert x.scores["a"] == y.scores["b"] and x.scores["b"] == y.scores["a"]
+        assert x.evidence[0].proposal == x.violations[0].proposal == "a"
+        assert y.evidence[0].proposal == y.violations[0].proposal == "b"
+    monkeypatch.setattr(llm, "_completion",
+                        lambda **_: _review("a", [{"proposal": "a", "quote": "Use actual data"}]))
+    assert compare(A, A, RUBRIC, model="custom").winner == "tie"
+
+
+@pytest.mark.parametrize("style", ["end", "middle", "nested"])
+def test_committee_recovers_bad_checks_bracket_without_accepting_fabricated_quotes(style):
+    evidence = [{"proposal": "a", "quote": "Use actual data"}]
+    checks = [[0, "a", 0, "Use actual data", ""], [0, "b", 0, "invented", ""]]
+    review = json.loads(_review("a", evidence, checks))
+    check_json = json.dumps(checks)
+    if style == "middle":
+        review = {"checks": checks, **review}
+    if style == "nested":
+        review = {"scores": review.pop("scores") | review}
+    raw = json.dumps(review).replace(check_json, check_json[:-1] + "}", 1)
+    result = _normalize("skeptic", raw, A, B, RUBRIC, ("Hard limit",))
+    assert result.parse_failure is None and result.preferred == "b"
+    assert len(result.violations) == result.violations_dropped == 1
+    assert result.violations[0].proposal_quote == "Use actual data"
+
+
+def test_committee_recovers_latex_escapes_and_still_checks_evidence_verbatim():
+    a = {"title": A["title"], "text": r"Show \boldsymbol{x} \mid t and 10\%."}
+    evidence = [{"proposal": "a", "quote": a["text"]},
+                {"proposal": "b", "quote": r"Invented \ell_2"}]
+    raw = _review("a", evidence).replace("\\\\", "\\")
+    result = _normalize("scientist", raw, a, B, RUBRIC)
+    assert result.parse_failure is None and result.preferred == "a"
+    assert result.dropped == 1 and [e.quote for e in result.evidence] == [a["text"]]
 
 
 @pytest.mark.parametrize("repeat", [False, True])
@@ -356,8 +434,8 @@ def test_two_pair_cli_run_replays_all_methods_offline(sandbox, monkeypatch):
     assert warm.exit_code == 0, (warm.output, warm.exception)
     path = root / "results/dev.json"
     live = json.loads(path.read_text())
-    assert len(live["decisions"]) == 40 and live["cache_hits"] == 8
-    assert live["live_calls"] == live["live_attempts"] >= 98
+    assert len(live["decisions"]) == 40 and live["cache_hits"] >= 14
+    assert live["live_calls"] == live["live_attempts"] >= 92
     monkeypatch.setenv("CONDORIUM_OFFLINE", "1")
 
     def forbidden(**_):
@@ -539,7 +617,7 @@ def test_new_committee_replays_reference_budget_and_preserves_omitted_rows(monke
     new = pairwise.run_pairwise(*args, **options, previous_report=old,
                                 methods=("judge", "committee"))
     assert new["reference_budget"] == "v1"
-    assert len(changed) == 6 and new["live_calls"] == 7
+    assert len(changed) == 3 and new["live_calls"] == 4
     assert sorted(row["usage"]["total_tokens"] for row in new["decisions"]
                   if row["method"] == "committee") == [300, 302]
     def reference_rows(report):

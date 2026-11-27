@@ -47,6 +47,13 @@ to export the current graph as Mermaid.
    scheduler. A weekly ingest, if configured, is an external cron job that
    runs [`scripts/ingest_winners.py`](../scripts/ingest_winners.py).
 
+## Pairwise ordering
+
+The pairwise committee orders proposals by content, using the opposite order for the
+scientist and one debate reviewer. Swapping the two input arguments does not change
+which proposal wins: the committee makes the same requests and translates the result
+back to the caller's labels.
+
 ## Runtime and tests
 
 User-facing text, CLI verbs and result fields are English. French translations

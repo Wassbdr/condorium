@@ -224,8 +224,11 @@ def run_pairwise(
             decisions: dict[str, Decision]
             try:
                 if method == "committee":
-                    comparison = compare(variant["a"], variant["b"], rubric, seed=seed,
-                                         variant_id=variant_id, requirement_cache=requirement_cache)
+                    comparison = compare(
+                        variant["a"], variant["b"], rubric, seed=seed,
+                        variant_id=f"{variant['pair_id']}:{variant['kind']}",
+                        requirement_cache=requirement_cache,
+                    )
                     target = comparison.usage["total_tokens"] - comparison.extraction_tokens
                     failures = [
                         ParseFailure(f"{stage}:{r.role}", r.parse_failure)
@@ -275,16 +278,24 @@ def run_pairwise(
                 })
         return rows, limited
 
+    grouped_variants: dict[str, list[Variant]] = {}
+    for variant in variants:
+        grouped_variants.setdefault(variant["pair_id"], []).append(variant)
+
+    def work_pair(group: Sequence[Variant], seed: int) -> dict[str, tuple[list[dict], set[str]]]:
+        return {variant_key(v): work(v, seed) for v in group}
+
     records = []
     limited_methods: set[str] = set()
     with call_budget(max_calls) as budget, usage_meter(scoped=True) as meter:
         with ThreadPoolExecutor(max_workers=workers) as pool:
-            tasks = [pool.submit(copy_context().run, work, variant, seed)
-                     for seed in seeds for variant in variants]
-            for task in tasks:
-                rows, limited = task.result()
-                records.extend(rows)
-                limited_methods.update(limited)
+            for seed in seeds:
+                tasks = {pair: pool.submit(copy_context().run, work_pair, group, seed)
+                         for pair, group in grouped_variants.items()}
+                for variant in variants:
+                    rows, limited = tasks[variant["pair_id"]].result()[variant_key(variant)]
+                    records.extend(rows)
+                    limited_methods.update(limited)
     reported_methods = list(methods)
     if replay_references and previous_report:
         selected_keys = {(seed, variant_key(v)) for seed in seeds for v in variants}

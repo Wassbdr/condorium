@@ -11,8 +11,8 @@ console = Console()
 VERDICT_STYLE = {"GO": "bold green", "ITERATE": "bold yellow", "PIVOT": "bold red"}
 
 
-def _fmt_score(v) -> str:
-    return "∅" if v is None else str(v)
+def format_score(score: object) -> str:
+    return "∅" if score is None else str(score)
 
 
 def show_evaluation(record: dict) -> None:
@@ -44,7 +44,7 @@ def show_evaluation(record: dict) -> None:
         if o2.get("scientific_verdict"):
             flags.append(o2["scientific_verdict"])
         table.add_row(
-            name, _fmt_score(o1.get("score")), _fmt_score(o2.get("score")),
+            name, format_score(o1.get("score")), format_score(o2.get("score")),
             " ".join(flags), (o2.get("verdict") or o1.get("verdict") or "")[:200],
         )
     console.print(table)
@@ -108,7 +108,7 @@ def show_deliberation(record: dict, pause: float = 0.0, source: str = "") -> Non
     blind.add_column("One-line view")
     for name in names:
         o1 = r1.get(name, {})
-        blind.add_row(name, _fmt_score(o1.get("score")), _clip(o1.get("verdict")))
+        blind.add_row(name, format_score(o1.get("score")), _clip(o1.get("verdict")))
     console.print(blind)
     step()
 
@@ -134,7 +134,7 @@ def show_deliberation(record: dict, pause: float = 0.0, source: str = "") -> Non
         o1, o2 = r1.get(name, {}), r2.get(name, {})
         s1, s2 = o1.get("score"), o2.get("score")
         moved = "" if s1 == s2 else ("[green]▲[/]" if (s2 or 0) > (s1 or 0) else "[red]▼[/]")
-        deliberation.add_row(name, _fmt_score(s1), f"{_fmt_score(s2)} {moved}",
+        deliberation.add_row(name, format_score(s1), f"{format_score(s2)} {moved}",
                              _clip(o2.get("verdict"), reserved=33))
     console.print(deliberation)
     step()

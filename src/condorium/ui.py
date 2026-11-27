@@ -11,17 +11,21 @@ import time
 from collections.abc import Iterator
 from pathlib import Path
 
+from .comparison import (
+    Rubric,
+    compare,
+    comparison_error,
+    comparison_model,
+    default_rubric_path,
+    format_comparison,
+)
 from .config import SETTINGS
-from .display import believer_cap
+from .display import believer_cap, format_score
 
 REPLAY_NOTE = ("> **Replay of a recorded run** — no LLM is called, no API key is needed. "
                "The opinions below were recorded from a past live run.")
 LIVE_NOTE = "> **Live run** — every opinion below is being generated now by `{model}`."
 ORDER = ("judge", "believer", "scientist_eval", "skeptic", "investor", "strategist", "jury")
-
-
-def _score(v) -> str:
-    return "∅" if v is None else str(v)
 
 
 def render(record: dict, note: str, status: str = "") -> str:
@@ -37,11 +41,12 @@ def render(record: dict, note: str, status: str = "") -> str:
                 "|---|---|---|---|"]
         for n in names:
             o1, o2 = r1.get(n) or {}, r2.get(n) or {}
-            s2 = _score(o2.get("score")) if o2 else "…"
+            s1 = format_score(o1.get("score")) if o1 else "…"
+            s2 = format_score(o2.get("score")) if o2 else "…"
             if o2.get("capped"):
                 s2 = f"**{o2['score']}** (capped from {o2.get('uncapped_score')})"
             view = (o2.get("verdict") or o1.get("verdict") or "").replace("|", "/")[:140]
-            out.append(f"| {n} | {_score(o1.get('score')) if o1 else '…'} | {s2} | {view} |")
+            out.append(f"| {n} | {s1} | {s2} | {view} |")
     limit = believer_cap(record) if "believer" in r2 else None
     if limit is not None:
         b = r2["believer"]
@@ -104,6 +109,18 @@ def live(title: str, text: str, mode: str = "general") -> Iterator[str]:
     yield render(rec, note, "evaluation finished")
 
 
+def run_comparison(a: str, b: str, rubric_text: str) -> str:
+    model = comparison_model()
+    try:
+        criteria = Rubric.from_yaml(rubric_text)
+        return format_comparison(compare(a, b, criteria, model=model))
+    except Exception as exc:
+        error = comparison_error(exc, model)
+        if error is None:
+            raise
+        return f"Error: {error}"
+
+
 def build_app():
     import gradio as gr
 
@@ -135,4 +152,12 @@ def build_app():
                     yield f"**Live run failed:** `{type(exc).__name__}: {str(exc)[:300]}`"
 
             go.click(run_live, [title, text, mode], live_out)
+        with gr.Tab("Compare"):
+            first = gr.Textbox(label="Proposal A", lines=5)
+            second = gr.Textbox(label="Proposal B", lines=5)
+            rubric = gr.Code(label="Rubric", language="yaml", interactive=True,
+                             value=default_rubric_path().read_text(encoding="utf-8"))
+            compare_button = gr.Button("Compare proposals", variant="primary")
+            result = gr.Textbox(label="Comparison result", lines=12, interactive=False)
+            compare_button.click(run_comparison, [first, second, rubric], result)
     return app

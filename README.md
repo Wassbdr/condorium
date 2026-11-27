@@ -75,9 +75,11 @@ More: the full [LangGraph pipeline](#the-pipeline-langgraph) (cohort generators,
 uv pip install -e ".[ui]" && .venv/bin/panel ui     # http://localhost:7860
 ```
 
-Two tabs: **Replay (no key)** re-plays a recorded run agent by agent; **Live** streams a real evaluation node by node (set `CONDORIUM_MODEL` and the provider key).
+**Replay (no key)** plays a recorded run agent by agent. **Live** streams a real evaluation. **Compare** evaluates two proposals against a rubric you can edit in the browser.
 
 ## Real usage
+
+For `panel compare`, see the [tutorial](docs/tutorial.md) for custom rubrics, batch input, and offline replay.
 
 ```bash
 export ANTHROPIC_API_KEY=...        # or any LiteLLM provider:

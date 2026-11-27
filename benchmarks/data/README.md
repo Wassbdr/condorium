@@ -69,3 +69,31 @@ All pairs use [`proposal`](../rubrics/proposal.yaml). A rubric is YAML or
 JSON with a `name` and a non-empty `criteria` list. Each criterion has a
 unique `name` and a one-line `description`. Use
 `condorium.bench.pairset.load_rubric(path)` to validate it.
+
+## Run the benchmark
+
+After fetching the ICLR text, run `make bench-dev` for protocol changes or
+`make bench` for the held-out split. For example:
+
+```sh
+panel bench pairwise --split dev --seeds 0,1,2 --methods judge,jury,chateval,committee
+```
+
+The runner writes per-decision JSON to `benchmarks/results/<split>.json`
+and a report to `benchmarks/results.md`. It resumes through request
+responses in `benchmarks/cache/` or `CONDORIUM_CACHE`. Set
+`CONDORIUM_OFFLINE=1` to reject cache misses. For a live NIM run, set
+`NIM_API_KEY` or `NVIDIA_NIM_API_KEY`. Use `--max-calls` to cap live attempts
+and keep `CONDORIUM_RPM` at 15 or below when sharing a key. Do not publish
+responses that quote unlicensed ICLR text.
+
+The references are the pairwise judge from [MT-Bench](https://arxiv.org/abs/2306.05685),
+[PoLL](https://arxiv.org/abs/2404.18796) majority voting across three model
+families, and [ChatEval](https://arxiv.org/abs/2308.07201) with four turns.
+The judge and jury sample until they meet the committee's token spend
+or use three votes if the committee was not run. The jury always includes
+its three families. Discrete votes can overshoot the target; per-decision
+records include the target and actual usage. ChatEval keeps its four-turn
+protocol and is not token-matched. The first judge sample is reported
+separately, and its shared Nemotron request with the jury counts only once
+against live traffic.

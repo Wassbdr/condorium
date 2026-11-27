@@ -13,6 +13,8 @@ import re
 import threading
 import time
 from contextlib import contextmanager
+from contextvars import ContextVar
+from dataclasses import dataclass
 from fnmatch import fnmatchcase
 from pathlib import Path
 from typing import Any, NamedTuple
@@ -48,18 +50,21 @@ class UsageMeter:
         self.prompt_tokens = 0
         self.completion_tokens = 0
         self.estimated = False
+        self.cache_hits = 0
         self._lock = threading.Lock()
 
     @property
     def total_tokens(self) -> int:
         return self.prompt_tokens + self.completion_tokens
 
-    def add(self, prompt_tokens: int, completion_tokens: int, estimated: bool = False) -> None:
+    def add(self, prompt_tokens: int, completion_tokens: int, estimated: bool = False,
+            *, cached: bool = False) -> None:
         with self._lock:
             self.calls += 1
             self.prompt_tokens += int(prompt_tokens or 0)
             self.completion_tokens += int(completion_tokens or 0)
             self.estimated = self.estimated or estimated
+            self.cache_hits += int(cached)
 
     def as_dict(self) -> dict:
         return {"calls": self.calls, "prompt_tokens": self.prompt_tokens,
@@ -70,11 +75,19 @@ class UsageMeter:
 _meters: list[UsageMeter] = []
 _meters_lock = threading.Lock()
 _reported = threading.local()
+_scoped_meters: ContextVar[tuple[UsageMeter, ...]] = ContextVar("scoped_meters", default=())
 
 
 @contextmanager
-def usage_meter():
+def usage_meter(*, scoped: bool = False):
     meter = UsageMeter()
+    if scoped:
+        token = _scoped_meters.set((*_scoped_meters.get(), meter))
+        try:
+            yield meter
+        finally:
+            _scoped_meters.reset(token)
+        return
     with _meters_lock:
         _meters.append(meter)
     try:
@@ -104,11 +117,11 @@ def _take_usage(messages: list[dict], reply: str) -> _Usage:
     return _Usage(*usage, False)
 
 
-def _account(usage: _Usage) -> None:
+def _account(usage: _Usage, *, cached: bool = False) -> None:
     with _meters_lock:
         meters = list(_meters)
-    for meter in meters:
-        meter.add(*usage)
+    for meter in (*meters, *_scoped_meters.get()):
+        meter.add(*usage, cached=cached)
 
 
 class OfflineCacheMiss(RuntimeError):
@@ -198,7 +211,26 @@ def _is_transient(exc: Exception) -> bool:
 
 
 class CallBudgetExceeded(RuntimeError):
-    """Raised before a provider call once CONDORIUM_MAX_CALLS is spent."""
+    """Raised before a provider call once its live attempt limit is spent."""
+
+
+@dataclass
+class CallBudget:
+    limit: int | None
+    attempts: int = 0
+
+
+_budget: ContextVar[CallBudget | None] = ContextVar("call_budget", default=None)
+
+
+@contextmanager
+def call_budget(limit: int | None):
+    budget = CallBudget(limit)
+    token = _budget.set(budget)
+    try:
+        yield budget
+    finally:
+        _budget.reset(token)
 
 
 _calls_made = 0
@@ -215,6 +247,9 @@ def _spend_call() -> None:
     limit = os.environ.get("CONDORIUM_MAX_CALLS")
     rpm = float(os.environ.get("CONDORIUM_RPM") or 15)
     with _calls_lock:
+        budget = _budget.get()
+        if budget and budget.limit is not None and budget.attempts >= budget.limit:
+            raise CallBudgetExceeded(f"Live call limit of {budget.limit} reached")
         if limit and _calls_made >= int(limit):
             raise CallBudgetExceeded(f"CONDORIUM_MAX_CALLS={limit} reached")
         if rpm > 0:
@@ -225,6 +260,8 @@ def _spend_call() -> None:
         else:
             _next_slot = 0.0
         _calls_made += 1
+        if budget:
+            budget.attempts += 1
         if ledger := os.environ.get("CONDORIUM_CALL_LOG"):
             with open(ledger, "a", encoding="utf-8") as fh:
                 fh.write(f"{time.time():.0f}\n")
@@ -258,7 +295,7 @@ def complete_text(
     path = Path(cache_dir).resolve() / f"{quote(model, safe='')}.jsonl" if cache_dir else None
     key = _request_key(request) if path else ""
     if path and (entry := _cached_response(path, key)) is not None:
-        _account(_Usage(**entry["usage"]))
+        _account(_Usage(**entry["usage"]), cached=True)
         return entry["response"]
     if os.environ.get("CONDORIUM_OFFLINE") == "1":
         raise OfflineCacheMiss(

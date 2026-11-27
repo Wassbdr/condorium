@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Optional
 
@@ -16,6 +17,8 @@ from .display import console, show_evaluation, show_prefilter, show_ranking
 
 app = typer.Typer(help="A calibrated idea committee: no flattery, no lazy rejection.",
                   no_args_is_help=True, pretty_exceptions_show_locals=False)
+bench_app = typer.Typer(invoke_without_command=True)
+app.add_typer(bench_app, name="bench")
 
 
 # ------------------------------------------------------ interrupt handling
@@ -258,8 +261,9 @@ def stats():
     console.print_json(json.dumps(full_stats(), ensure_ascii=False))
 
 
-@app.command()
+@bench_app.callback()
 def bench(
+    ctx: typer.Context,
     dataset: Optional[Path] = typer.Option(None, help="Devpost-style dataset path"),
     n: int = typer.Option(50),
     seed: int = typer.Option(42),
@@ -275,6 +279,8 @@ def bench(
 ):
     """Benchmark the committee: winner identification, formulation bias, or
     committee vs single judge (`--versus`)."""
+    if ctx.invoked_subcommand is not None:
+        return
     if versus:
         from .bench.versus import readme_table as versus_table
         from .bench.versus import run_versus
@@ -300,6 +306,49 @@ def bench(
         result = run_bench(dataset, n=n, seed=seed)
     console.print(readme_table(result))
     console.print("[dim]full results in evaluations/*.json — paste the table in the README[/dim]")
+
+
+@bench_app.command("pairwise")
+def bench_pairwise(
+    split: str = typer.Option("test", help="dev or test"),
+    seeds: str = typer.Option("0,1,2", help="Comma-separated run seeds"),
+    methods: str = typer.Option("judge,jury,chateval,committee", help="Comma-separated methods"),
+    max_calls: Optional[int] = typer.Option(None, min=0, help="Maximum live provider attempts"),
+    limit: Optional[int] = typer.Option(None, min=1, help="Use the first N pairs in the split"),
+    position_only: bool = typer.Option(False, help="Run both orders without verbosity or tone"),
+    results_dir: Optional[Path] = typer.Option(None, help="Directory for per-split JSON results"),
+):
+    """Compare all four methods on the seeded proposal pairs."""
+    from .bench.pairset import load_rubric
+    from .bench.pairwise import load_pairs, run_pairwise
+    from .bench.pairwise_metrics import write_results
+    from .llm import OfflineCacheMiss
+
+    if split not in ("dev", "test"):
+        raise typer.BadParameter("Choose dev or test.", param_hint="--split")
+    try:
+        seed_values = tuple(int(seed.strip()) for seed in seeds.split(","))
+    except ValueError as exc:
+        raise typer.BadParameter("Use comma-separated integers, such as 0,1,2.",
+                                 param_hint="--seeds") from exc
+    root = SETTINGS.root / "benchmarks"
+    os.environ.setdefault("CONDORIUM_CACHE", str(root / "cache"))
+    output = results_dir or root / "results"
+    try:
+        report = run_pairwise(
+            load_pairs(root / "data", split=split, limit=limit),
+            load_rubric(root / "rubrics/proposal.yaml"),
+            split=split, seeds=seed_values, methods=tuple(m.strip() for m in methods.split(",")),
+            limit=limit, position_only=position_only, max_calls=max_calls,
+        )
+        write_results(report, output)
+    except (OSError, ValueError, OfflineCacheMiss) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from exc
+    typer.echo(f"Wrote {len(report['decisions'])} decisions to {output / f'{split}.json'}. "
+               f"Live calls: {report['live_calls']}; cache hits: {report['cache_hits']}.")
+    if report["limited_methods"]:
+        typer.echo("Call limit reached. Rerun with the same cache to finish.", err=True)
 
 
 @app.command()

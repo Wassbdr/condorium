@@ -18,6 +18,7 @@ def fake_reviews(monkeypatch):
         return json.dumps({
             "preferred": "a", "confidence": 4,
             "scores": {side: {"cost": 4} for side in ("a", "b")},
+            "violations": [],
             "evidence": [{"proposal": "a", "quote": "Reuse existing equipment."},
                          {"proposal": "a", "quote": "A fabricated claim."}],
         })

@@ -6,6 +6,7 @@ import json
 import re
 from collections.abc import Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import nullcontext
 from contextvars import copy_context
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -14,6 +15,7 @@ from typing import Any, Literal
 from ..compare import (
     MAX_TOKENS,
     MODEL,
+    PROTOCOL,
     TEMPERATURE,
     Winner,
     compare,
@@ -21,7 +23,14 @@ from ..compare import (
     proposal_input,
     sample_seed,
 )
-from ..llm import CallBudgetExceeded, call_budget, complete_text, is_rate_limit, usage_meter
+from ..llm import (
+    CallBudgetExceeded,
+    OfflineCacheMiss,
+    call_budget,
+    complete_text,
+    is_rate_limit,
+    usage_meter,
+)
 from ..prompts import load_prompt, render
 from .pairset import (
     DATASET_VERSION,
@@ -58,13 +67,15 @@ class Decision:
     evidence_dropped: int = 0
     abstains: int = 0
     target_tokens: int | None = None
+    violations_kept: int = 0
+    violations_dropped: int = 0
 
 
 def parse_verdict(raw: str) -> Winner | None:
     markers = _VERDICT.findall(raw)
-    if len(markers) == 1:
+    if markers:
         verdicts: dict[str, Winner] = {"a": "a", "b": "b", "c": "tie"}
-        return verdicts[markers[0].lower()]
+        return verdicts[markers[-1].lower()]
     return None
 
 
@@ -166,6 +177,7 @@ def run_pairwise(
     limit: int | None = None,
     position_only: bool = False,
     workers: int = 5,
+    previous_report: dict | None = None,
 ) -> dict:
     """Evaluate each variant and seed independently, sharing only the request cache."""
     selected = [p for p in pairs if p["split"] == split][:limit]
@@ -180,9 +192,24 @@ def run_pairwise(
     if missing:
         raise ValueError(f"Missing pairwise rubrics: {', '.join(sorted(missing))}")
     variants = position_variants(selected) if position_only else build_variants(selected)
+    reference_targets: dict[tuple[int, str], int] = {}
+    if (previous_report and previous_report.get("dataset_version") == DATASET_VERSION
+            and previous_report.get("split") == split and previous_report.get("model") == MODEL
+            and previous_report.get("jury_models") == list(JURY_MODELS)
+            and (previous_report.get("committee_protocol") == "v1"
+                 or previous_report.get("reference_budget") == "v1")):
+        for row in previous_report["decisions"]:
+            if row["method"] in ("judge", "jury") and type(row.get("target_tokens")) is int:
+                reference_targets[row["seed"], row["variant_id"]] = row["target_tokens"]
+
+    def variant_key(variant: Variant) -> str:
+        return f"{variant['pair_id']}:{variant['kind']}:{variant['order']}"
+
+    replay_references = all((seed, variant_key(v)) in reference_targets
+                            for seed in seeds for v in variants)
 
     def work(variant: Variant, seed: int) -> tuple[list[dict], set[str]]:
-        variant_id = f"{variant['pair_id']}:{variant['kind']}:{variant['order']}"
+        variant_id = variant_key(variant)
         pair = selected_by_id[variant["pair_id"]]
         rubric = rubrics[pair["rubric"]]
         proposals = proposal_input(variant["a"], variant["b"], rubric)
@@ -205,16 +232,29 @@ def run_pairwise(
                         for r in reviews if r.parse_failure is not None
                     ]
                     decisions = {method: Decision(
-                        comparison.winner, comparison.usage, failures, bool(comparison.debate),
-                        comparison.dropped, comparison.abstains,
-                    )}
-                elif method == "chateval":
-                    decisions = {method: run_chateval(proposals, variant_id, seed)}
+                            comparison.winner, comparison.usage, failures, bool(comparison.debate),
+                            comparison.dropped, comparison.abstains,
+                            violations_kept=comparison.violations_kept,
+                            violations_dropped=comparison.violations_dropped,
+                        )}
                 else:
-                    decisions = run_votes(method, proposals, variant_id, seed, target)
+                    with call_budget(0) if replay_references else nullcontext():
+                        if method == "chateval":
+                            decisions = {method: run_chateval(proposals, variant_id, seed)}
+                        else:
+                            budget = (reference_targets[seed, variant_id]
+                                      if replay_references else target)
+                            decisions = run_votes(method, proposals, variant_id, seed, budget)
                     if method not in decisions:
+                        if replay_references:
+                            raise CallBudgetExceeded("Reference cache miss")
                         limited.add(method)
-            except CallBudgetExceeded:
+            except (CallBudgetExceeded, OfflineCacheMiss) as exc:
+                if replay_references and method != "committee":
+                    raise OfflineCacheMiss(f"Incomplete reference cache: {method}, {variant_id}, "
+                                           f"seed {seed}. The prior report was not replaced.") from exc
+                if isinstance(exc, OfflineCacheMiss):
+                    raise
                 limited.add(method)
                 continue
             except Exception as exc:
@@ -241,13 +281,27 @@ def run_pairwise(
                 rows, limited = task.result()
                 records.extend(rows)
                 limited_methods.update(limited)
+    reported_methods = list(methods)
+    if replay_references and previous_report:
+        selected_keys = {(seed, variant_key(v)) for seed in seeds for v in variants}
+        present = {(row["method"], row["seed"], row["variant_id"]) for row in records}
+        for row in previous_report["decisions"]:
+            method, seed, variant_id = row["method"], row["seed"], row["variant_id"]
+            if (method != "committee" and (seed, variant_id) in selected_keys
+                    and (method, seed, variant_id) not in present):
+                records.append(row)
+                name = "judge" if method == "judge_1call" else method
+                if name not in reported_methods:
+                    reported_methods.append(name)
     return {
-        "split": split, "seeds": list(seeds), "methods": list(methods),
+        "split": split, "seeds": list(seeds), "methods": reported_methods,
         "pair_count": len(selected), "variant_count": len(variants),
         "dataset_version": DATASET_VERSION,
         "position_only": position_only, "max_calls": max_calls,
         "model": MODEL, "jury_models": list(JURY_MODELS),
-        "temperature": TEMPERATURE, "committee_protocol": "v1", "live_attempts": budget.attempts,
+        "temperature": TEMPERATURE, "committee_protocol": PROTOCOL,
+        "reference_budget": "v1" if replay_references else PROTOCOL,
+        "live_attempts": budget.attempts,
         "live_calls": meter.calls - meter.cache_hits, "cache_hits": meter.cache_hits,
         "rate_limited": budget.rate_limited, "limited_methods": sorted(limited_methods),
         "decisions": records,

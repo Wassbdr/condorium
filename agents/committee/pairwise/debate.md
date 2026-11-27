@@ -1,3 +1,2 @@
-Reconsider your vote in light of the other reviewer's evidence. You may keep or change
-your vote. Return the same JSON fields, citing supporting excerpts directly from the
-proposals, not from any reviewer.
+Resolve disputed requirements or preferences using the original text. Return the same
+JSON fields. Do not quote the other reviewer as evidence.

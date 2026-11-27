@@ -13,12 +13,13 @@ import yaml
 
 from .bench.pairset import Criterion, Item
 from .bench.pairset import Rubric as ProtocolRubric
-from .compare import MODEL, TEMPERATURE, Comparison, Evidence, Review, Winner
+from .compare import MODEL, TEMPERATURE, Comparison, Evidence, Review, Violation, Winner
 from .compare import compare as _compare
 from .config import BUNDLED_DIR, SETTINGS
 from .llm import OfflineCacheMiss, is_rate_limit
 
-__all__ = ["Comparison", "Criterion", "Evidence", "Item", "Review", "Rubric", "Winner", "compare"]
+__all__ = ["Comparison", "Criterion", "Evidence", "Item", "Review", "Rubric", "Violation",
+           "Winner", "compare"]
 
 
 def _mapping(value: object, keys: set[str], field: str) -> Mapping[str, object]:
@@ -126,6 +127,7 @@ def compare(
     temperature: float = TEMPERATURE,
     seed: int = 0,
     variant_id: str = "",
+    brief: str = "",
 ) -> Comparison:
     """Compare two items with checked evidence and return the verdict and reviews.
 
@@ -133,11 +135,13 @@ def compare(
     CONDORIUM_CACHE and CONDORIUM_OFFLINE to replay recorded requests.
     The comparison includes the winner, blind reviews, debate reviews, and
     token usage. A review records a role's preference and checked evidence.
+    Pass a shared problem statement or hard constraints in `brief` when they
+    are not already present in both items or the rubric.
     """
     protocol_rubric: ProtocolRubric = {"name": rubric.name, "criteria": list(rubric.criteria)}
     return _compare(item_from_value(a, "A"), item_from_value(b, "B"), protocol_rubric,
                     model=comparison_model(model), temperature=temperature, seed=seed,
-                    variant_id=variant_id)
+                    variant_id=variant_id, brief=brief)
 
 
 def item_from_value(value: object, label: str) -> Item:
@@ -195,4 +199,8 @@ def format_comparison(result: Comparison) -> str:
                 lines.append(f"  {review.role}: {review.preferred or 'abstain'}")
                 for evidence in review.evidence:
                     lines.append(f'    Proposal {evidence.proposal.upper()}: "{evidence.quote}"')
+                for violation in review.violations:
+                    lines.append(f'    Proposal {violation.proposal.upper()} violation: '
+                                 f'"{violation.requirement_quote}" vs "{violation.proposal_quote}" '
+                                 f'({violation.reason})')
     return "\n".join(lines)

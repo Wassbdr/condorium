@@ -9,7 +9,7 @@ from condorium import llm
 from condorium.bench import pairset, pairwise
 from condorium.bench.pairwise_metrics import metrics, render_results, write_results
 from condorium.cli import app
-from condorium.compare import _normalize, compare, proposal_input, sample_seed
+from condorium.compare import _committee_input, _normalize, compare, proposal_input, sample_seed
 
 ROOT = Path(__file__).resolve().parents[1]
 RUBRIC = pairset.load_rubric(ROOT / "benchmarks/rubrics/proposal.yaml")
@@ -17,9 +17,9 @@ A = {"title": "Plan", "text": "Use actual\n data and compare the baseline."}
 B = {"title": "Alternative", "text": "Use a simple checklist."}
 
 
-def _review(preferred, evidence):
+def _review(preferred, evidence, violations=()):
     return json.dumps({
-        "preferred": preferred, "confidence": 4, "evidence": evidence,
+        "preferred": preferred, "confidence": 4, "evidence": evidence, "violations": violations,
         "scores": {side: {c["name"]: 3 for c in RUBRIC["criteria"]} for side in ("a", "b")},
     })
 
@@ -64,6 +64,86 @@ def test_committee_majority_and_all_abstain_do_not_debate(monkeypatch):
     result = compare(A, B, RUBRIC)
     assert result.winner == "tie" and not result.debate and result.abstains == 3
     assert all(r.parse_failure == "not JSON" for r in result.initial)
+
+
+def test_violation_quotes_must_match_requirement_and_cited_proposal():
+    shared = "Only aggregate data may leave."
+    a = {"title": A["title"], "text": f"{shared} Use actual logs."}
+    b = {"title": B["title"], "text": f"{shared} Use totals."}
+    valid = {"proposal": "A", "requirement_quote": "Only aggregate\n data may leave.",
+             "proposal_quote": "Use actual logs.", "reason": "Sharing raw logs."}
+    checks = [valid, valid | {"proposal": "B"}, valid | {"requirement_quote": "Made up."},
+              valid | {"requirement_quote": "Use actual logs."}, valid | {"reason": ""}, None]
+    review = _normalize("judge", _review("a", [{"proposal": "a", "quote": "Use actual logs."}],
+                                        checks), a, b, RUBRIC)
+    assert review.preferred == "b"
+    assert review.parse_failure is None
+    assert review.violations_dropped == 5
+    assert [v.requirement_quote for v in review.violations] == [shared]
+
+    both = valid | {"proposal": "B", "proposal_quote": "Use totals."}
+    review = _normalize("judge", _review("a", [{"proposal": "a", "quote": "Use actual logs."}],
+                                        [valid, both]), a, b, RUBRIC)
+    assert review.preferred == "a" and len(review.violations) == 2
+
+
+def test_violation_can_cite_rubric_or_explicit_brief():
+    criterion = RUBRIC["criteria"][0]["description"]
+    violation = {"proposal": "a", "proposal_quote": "Use actual data", "reason": "Too broad."}
+    raw = _review("a", [{"proposal": "a", "quote": "Use actual data"}], [
+        violation | {"requirement_quote": criterion},
+        violation | {"requirement_quote": "Use aggregate data only."},
+    ])
+    result = _normalize("skeptic", raw, A, B, RUBRIC, brief="Use aggregate data only.")
+    assert len(result.violations) == 2 and result.violations_dropped == 0
+
+
+@pytest.mark.parametrize(("agree", "expected", "calls"), [(True, "b", 3), (False, "a", 5)])
+def test_committee_violation_consensus_veto_and_disagreement_debate(
+    monkeypatch, agree, expected, calls,
+):
+    brief = "Use aggregate data only."
+    a_violation = {"proposal": "A", "requirement_quote": brief,
+                   "proposal_quote": "Use actual data", "reason": "Uses raw records."}
+    b_violation = a_violation | {"proposal": "B", "proposal_quote": "Use a simple checklist"}
+    ballots = []
+
+    def completion(*, messages, **_):
+        system, user = [m["content"] for m in messages]
+        assert f"Problem brief:\n{brief}" in user
+        ballots.append(user)
+        llm.record_usage(10, 3)
+        preferred = "a" if agree else "b"
+        evidence = [{"proposal": "a", "quote": "Use actual data"}]
+        if "Other reviewer's verified evidence" in user:
+            assert "Other reviewer's verified violation quotes" in user
+            return _review("a", evidence)
+        if "Rubric Judge" in system:
+            return _review(preferred, evidence, [a_violation])
+        if "Skeptic" in system:
+            return _review(preferred, evidence, [a_violation] if agree else [b_violation])
+        return _review(preferred, evidence)
+
+    monkeypatch.setattr(llm, "_completion", completion)
+    result = compare(A, B, RUBRIC, brief=brief)
+    assert result.winner == expected
+    assert len(ballots) == calls and bool(result.debate) is not agree
+    assert result.violations_kept == 2 and result.violations_dropped == 0
+
+
+def test_committee_sends_shared_problem_once(monkeypatch):
+    shared = "Only share totals."
+    a = {"title": A["title"], "text": f"{shared}\n\n{A['text']}"}
+    b = {"title": B["title"], "text": f"{shared}\n\n{B['text']}"}
+
+    def completion(*, messages, **_):
+        user = messages[1]["content"]
+        assert user.count(shared) == 1
+        assert f"Problem brief:\n{shared}" in user
+        return _review("a", [{"proposal": "a", "quote": shared}])
+
+    monkeypatch.setattr(llm, "_completion", completion)
+    assert compare(a, b, RUBRIC).winner == "a"
 
 
 @pytest.mark.parametrize("repeat", [False, True])
@@ -150,7 +230,15 @@ def test_judge_fallback_and_jury_matched_votes(monkeypatch):
     assert calls[0]["temperature"] == 0.7
     assert len({sample_seed(seed, "judge", "variant", 0) for seed in range(3)}) == 3
     assert pairwise.parse_verdict("Reason\n[[b]]") == "b"
-    assert pairwise.parse_verdict("[[A]] or [[B]]") is None
+    assert pairwise.parse_verdict("[[A]] or [[B]]") == "b"
+
+
+@pytest.mark.parametrize(("raw", "expected"), [
+    ("Preliminary [[A]]. Final [[ b ]].", "b"), ("[[B]] then [[c]]", "tie"),
+    ("[[A]] copied twice: [[A]]", "a"), ("", None), ("No final marker.", None),
+])
+def test_verdict_uses_last_marker(raw, expected):
+    assert pairwise.parse_verdict(raw) == expected
 
 
 @pytest.mark.parametrize(("third_reply", "expected"), [("", "tie"), ("[[A]]", "a")])
@@ -296,17 +384,25 @@ def test_mixed_pair_cli_sends_each_rubric_to_all_methods(sandbox, monkeypatch):
         proposal_input(pair[a], pair[b], rubrics[pair["rubric"]]): (pair["rubric"], pair[a]["title"])
         for pair in (synthetic, paper) for a, b in (("a", "b"), ("b", "a"))
     }
+    expected_committee = {
+        _committee_input(pair[a], pair[b], rubrics[pair["rubric"]], ""):
+        (pair["rubric"], pair[a]["title"])
+        for pair in (synthetic, paper) for a, b in (("a", "b"), ("b", "a"))
+    }
     received = set()
 
     def completion(*, messages, model, **_):
         system, user = [m["content"] for m in messages]
-        [prompt] = [prompt for prompt in expected if prompt in user]
-        rubric, title = expected[prompt]
+        is_committee = "confidence" in system and "scores" in system
+        prompts = expected_committee if is_committee else expected
+        [prompt] = [prompt for prompt in prompts if prompt in user]
+        rubric, title = prompts[prompt]
         llm.record_usage(10, 5)
-        if "confidence" in system and "scores" in system:
+        if is_committee:
             received.add((rubric, "committee"))
             return json.dumps({
-                "preferred": "a", "confidence": 4, "evidence": [{"proposal": "a", "quote": title}],
+                "preferred": "a", "confidence": 4, "violations": [],
+                "evidence": [{"proposal": "a", "quote": title}],
                 "scores": {side: {c["name"]: 3 for c in rubrics[rubric]["criteria"]}
                            for side in ("a", "b")},
             })
@@ -385,7 +481,49 @@ def test_matched_judge_cap_preserves_single_vote(monkeypatch):
     assert decisions["judge_1call"].usage["calls"] == 1
 
 
-def test_exhausted_rate_limit_preserves_results_and_stops_live_calls(monkeypatch):
+def test_new_committee_replays_reference_budget_and_preserves_omitted_rows(monkeypatch, tmp_path):
+    monkeypatch.setenv("CONDORIUM_CACHE", str(tmp_path))
+    monkeypatch.setattr(llm, "_completion", _bench_completion)
+    pairs = pairset.synthetic_pairs()[:1]
+    args = (pairs, {"proposal": RUBRIC})
+    options = {"split": "dev", "seeds": (0,), "position_only": True}
+    old = pairwise.run_pairwise(*args, **options)
+    old["committee_protocol"] = "v1"
+    changed = []
+
+    def completion(*, messages, **kwargs):
+        system = messages[0]["content"]
+        assert "confidence" in system and "scores" in system
+        changed.append(kwargs["model"])
+        llm.record_usage(99, 1)
+        return _review("b", [{"proposal": "b", "quote": pairs[0]["b"]["title"]}])
+
+    monkeypatch.setattr(llm, "_completion", completion)
+    monkeypatch.setenv("CONDORIUM_CACHE", str(tmp_path / "missing"))
+    with pytest.raises(llm.OfflineCacheMiss, match="Incomplete reference cache: judge"):
+        pairwise.run_pairwise(*args, **options, previous_report=old, max_calls=0, workers=1)
+    monkeypatch.setenv("CONDORIUM_CACHE", str(tmp_path))
+
+    real_input = pairwise.compare
+
+    def fresh_compare(a, b, rubric, **kwargs):
+        return real_input(a, b, rubric, **kwargs, brief="Use the audit log.")
+
+    monkeypatch.setattr(pairwise, "compare", fresh_compare)
+    new = pairwise.run_pairwise(*args, **options, previous_report=old,
+                                methods=("judge", "committee"))
+    assert new["reference_budget"] == "v1"
+    assert len(changed) == new["live_calls"] == 6
+    assert {row["usage"]["total_tokens"] for row in new["decisions"]
+            if row["method"] == "committee"} == {300}
+    def reference_rows(report):
+        return {(row["method"], row["variant_id"]): row for row in report["decisions"]
+                if row["method"] != "committee"}
+
+    assert reference_rows(new) == reference_rows(old)
+
+
+def test_exhausted_rate_limit_preserves_results_and_stops_live_calls(monkeypatch, tmp_path):
     class RateLimitError(Exception):
         status_code = 429
 
@@ -398,6 +536,8 @@ def test_exhausted_rate_limit_preserves_results_and_stops_live_calls(monkeypatch
 
     monkeypatch.setattr(llm, "_completion", limited)
     monkeypatch.setattr(llm.time, "sleep", waits.append)
+    ledger = tmp_path / "calls.log"
+    monkeypatch.setenv("CONDORIUM_CALL_LOG", str(ledger))
     result = pairwise.run_pairwise(
         pairset.synthetic_pairs()[:1], {"proposal": RUBRIC}, split="dev", seeds=(0,), max_calls=80,
         position_only=True, workers=1,
@@ -407,6 +547,9 @@ def test_exhausted_rate_limit_preserves_results_and_stops_live_calls(monkeypatch
     assert result["live_attempts"] == 3 + llm.SETTINGS.llm_retries + 1
     assert waits == [min(300, 15 * 2**i) for i in range(llm.SETTINGS.llm_retries)]
     assert [row["method"] for row in result["decisions"]] == ["committee"]
+    assert [line for line in ledger.read_text().splitlines() if line.startswith("429")] == [
+        f"429 {pairwise.MODEL}"
+    ] * (llm.SETTINGS.llm_retries + 1)
 
 
 def test_pairwise_cli_exits_75_after_saving_rate_limited_report(monkeypatch, tmp_path):

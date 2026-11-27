@@ -339,6 +339,8 @@ def bench_pairwise(
     os.environ.setdefault("CONDORIUM_RPM", "30")
     output = results_dir or root / "results"
     try:
+        previous = output / f"{checked_split}.json"
+        previous_report = json.loads(previous.read_text(encoding="utf-8")) if previous.is_file() else None
         pairs = load_pairs(root / "data", split=checked_split, limit=limit)
         rubric_ids = {pair["rubric"] for pair in pairs if pair["split"] == checked_split}
         rubrics = {name: load_rubric(root / f"rubrics/{name}.yaml")
@@ -347,6 +349,7 @@ def bench_pairwise(
             pairs, rubrics,
             split=checked_split, seeds=seed_values, methods=tuple(m.strip() for m in methods.split(",")),
             limit=limit, position_only=position_only, max_calls=max_calls,
+            previous_report=previous_report,
         )
         write_results(report, output, iterations_path=root / "iterations.yaml")
     except (OSError, ValueError, OfflineCacheMiss) as exc:

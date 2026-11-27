@@ -15,7 +15,8 @@ import yaml
 BOOTSTRAP_DRAWS = 2000
 BOOTSTRAP_SEED = 42
 QUALITY = ("accuracy", "synthetic", "iclr", "position_flip", "slot_a", "verbosity", "tone")
-COST = ("tokens", "calls", "debate", "dropped", "abstains")
+COST = ("tokens", "calls", "debate", "dropped", "abstains", "violations_kept",
+        "violations_dropped")
 
 
 @dataclass(frozen=True)
@@ -66,6 +67,9 @@ def metrics(rows: Sequence[dict]) -> dict[str, Estimate | None]:
             observations["debate"][pair].append(float(row["debated"]))
             observations["dropped"][pair].append(row["evidence_dropped"])
             observations["abstains"][pair].append(row["abstains"])
+            for name in ("violations_kept", "violations_dropped"):
+                if name in row:
+                    observations[name][pair].append(row[name])
         if row["kind"] == "position":
             observations["slot_a"][pair].append(float(row["winner"] == "a"))
 
@@ -112,6 +116,8 @@ def _render_split(report: dict) -> str:
     ]
     if report["position_only"]:
         lines.append("Position-only run. Verbosity and tone were not measured.")
+    if report.get("reference_budget") == "v1":
+        lines.append("References replay the protocol v1 token targets from the same evaluation set.")
     if report["limited_methods"]:
         skipped = ", ".join(report["limited_methods"])
         if report.get("rate_limited"):
@@ -136,7 +142,8 @@ def _render_split(report: dict) -> str:
         (QUALITY, ("Accuracy", "Synthetic", "ICLR", "Position flip", "Slot A",
                    "Verbosity delta", "Tone delta")),
         (COST, ("Tokens / decision", "Calls / decision", "Debate rate",
-                "Quotes dropped / decision", "Abstains / decision")),
+                "Quotes dropped / decision", "Abstains / decision", "Violations kept / decision",
+                "Violations dropped / decision")),
     ):
         header = ("Method", "Seed", "Decisions", *names)
         lines.append("| " + " | ".join(header) + " |")
@@ -166,7 +173,10 @@ def _render_iterations(iterations: Sequence[dict]) -> str:
             "| " + " | ".join(columns) + " |",
             "| " + " | ".join("---" for _ in columns) + " |",
         ])
-        comparable = all(iteration[key] == previous.get(key) for key in ("split", "seeds"))
+        comparable = (
+            all(iteration[key] == previous.get(key) for key in ("split", "seeds"))
+            and iteration.get("dataset_version", 1) == previous.get("dataset_version", 1)
+        )
         for method, values in iteration["metrics"].items():
             old = previous["metrics"].get(method, {}) if comparable else {}
             for key, label in fields:

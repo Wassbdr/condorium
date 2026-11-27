@@ -100,3 +100,14 @@ def test_pick_and_ties():
     assert versus.pick(versus.strength("PIVOT", 6), versus.strength("PIVOT", 7)) == 0.0
     assert versus.pick(versus.strength("GO", 7), versus.strength("GO", 7)) == 0.5
     assert versus._majority_verdict([{"verdict": "GO"}, {"verdict": "PIVOT"}]) == "PIVOT"
+
+
+def test_call_budget_guard(mock_llm, monkeypatch):
+    from condorium import llm
+
+    monkeypatch.setattr(llm, "_calls_made", 0)
+    monkeypatch.setenv("CONDORIUM_MAX_CALLS", "2")
+    llm.complete_text("s", "u")
+    llm.complete_text("s", "u")
+    with pytest.raises(llm.CallBudgetExceeded):
+        llm.complete_text("s", "u")

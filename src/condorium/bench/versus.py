@@ -18,15 +18,17 @@ code path.
 from __future__ import annotations
 
 import json
+import math
 import random
 import statistics
 import time
 from collections import Counter
 from collections.abc import Callable
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
 
 from ..config import SETTINGS
-from ..llm import complete_json, usage_meter
+from ..llm import CallBudgetExceeded, complete_json, usage_meter
 from ..prompts import load_prompt, render
 from ..state import median, opinion_scores
 from .antileak import strip_victory_clues
@@ -34,7 +36,7 @@ from .pairs import _pick, build_pairs, load_rows
 from .run import VERDICT_RANK, evaluate_idea_silently
 
 SYSTEMS = ("committee", "judge_matched", "judge_1call")
-MAX_JUDGE_SAMPLES = 40
+MAX_JUDGE_SAMPLES = 56
 
 
 # ----------------------------------------------------------- evaluators
@@ -78,13 +80,22 @@ def _majority_verdict(samples: list[dict]) -> str | None:
 
 
 def run_single_judge(title: str, text: str, mode: str, token_budget: int,
-                     seed: int, constraints: str = "") -> dict:
+                     seed: int, constraints: str = "", parallel: int = 8) -> dict:
+    """Sample one judge until it has spent `token_budget` tokens (the
+    committee's spend on this entry). Batches run concurrently; the stop
+    rule is the same as sequential sampling: stop once the budget is met."""
     samples: list[dict] = []
-    with usage_meter() as meter:
-        while len(samples) < MAX_JUDGE_SAMPLES:
-            samples.append(_judge_call(title, text, mode, constraints, seed * 1000 + len(samples)))
-            if meter.total_tokens >= token_budget:
-                break
+
+    def call(i: int) -> dict:
+        return _judge_call(title, text, mode, constraints, seed * 1000 + i)
+
+    with usage_meter() as meter, ThreadPoolExecutor(max_workers=parallel) as pool:
+        samples.append(call(0))
+        while meter.total_tokens < token_budget and len(samples) < MAX_JUDGE_SAMPLES:
+            per_call = meter.total_tokens / len(samples) or 1
+            need = max(1, math.ceil((token_budget - meter.total_tokens) / per_call))
+            batch = range(len(samples), min(len(samples) + need, MAX_JUDGE_SAMPLES))
+            samples.extend(pool.map(call, batch))
         usage = meter.as_dict()
     first_tokens = usage["total_tokens"] // max(1, len(samples))
     scores = [s["score"] for s in samples if s["score"] is not None]
@@ -187,9 +198,15 @@ def run_seed(dataset: Path, n_pairs: int, n_tone: int, seed: int, mode: str = "h
                       if c["entries"][role]["title"] in variants]
         rng.shuffle(candidates)
         tone_cases = []
+        truncated = False
         for case, role in candidates[:n_tone]:
             neutral = case["entries"][role]
-            hyped = evaluate_entry(neutral["title"], variants[neutral["title"]], mode, seed)
+            try:
+                hyped = evaluate_entry(neutral["title"], variants[neutral["title"]], mode, seed)
+            except CallBudgetExceeded:
+                truncated = True  # keep the finished pairs, report fewer tone cases
+                log(f"seed {seed}: call budget reached, tone cases truncated")
+                break
             log(f"seed {seed} tone {neutral['title']}: committee "
                 f"{neutral['committee']['verdict']}->{hyped['committee']['verdict']} judge "
                 f"{neutral['judge']['verdict']}->{hyped['judge']['verdict']}")
@@ -203,7 +220,7 @@ def run_seed(dataset: Path, n_pairs: int, n_tone: int, seed: int, mode: str = "h
             tone_cases.append(tone)
     finally:
         SETTINGS.llm_seed = previous_seed
-    return {"seed": seed, "pairs": pair_cases, "tone": tone_cases}
+    return {"seed": seed, "pairs": pair_cases, "tone": tone_cases, "tone_truncated": truncated}
 
 
 def summarize(seed_runs: list[dict]) -> dict:
@@ -275,18 +292,42 @@ def summarize(seed_runs: list[dict]) -> dict:
     }
 
 
+def _print(msg: str) -> None:
+    print(msg, flush=True)
+
+
 def run_versus(dataset: Path, n_pairs: int = 6, n_tone: int = 3, seeds: tuple[int, ...] = (0, 1, 2),
                mode: str = "hackathon", out: Path | None = None,
-               log: Callable[[str], None] = lambda _: None) -> dict:
+               log: Callable[[str], None] = lambda _: None, workers: int = 1) -> dict:
+    """Run every seed (optionally one process per seed: the usage meter is
+    process-global, so seeds never share a meter) and write the report."""
     out = out or SETTINGS.evaluations_dir / "versus_results.json"
-    runs = []
-    for seed in seeds:
-        runs.append(run_seed(dataset, n_pairs, n_tone, seed, mode, log))
+    runs: list[dict] = []
+
+    def write() -> dict:
         report = {"model": SETTINGS.model, "mode": mode, "dataset": str(dataset),
-                  "summary": summarize(runs), "runs": runs}
+                  "n_pairs": n_pairs, "n_tone": n_tone, "seeds": list(seeds),
+                  "summary": summarize(sorted(runs, key=lambda r: r["seed"])),
+                  "runs": sorted(runs, key=lambda r: r["seed"])}
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(report, indent=1, ensure_ascii=False), encoding="utf-8")
-    return report
+        return report
+
+    if workers > 1 and len(seeds) > 1:
+        import multiprocessing
+
+        ctx = multiprocessing.get_context("spawn")
+        with ProcessPoolExecutor(max_workers=workers, mp_context=ctx) as pool:
+            futures = [pool.submit(run_seed, dataset, n_pairs, n_tone, seed, mode, _print)
+                       for seed in seeds]
+            for fut in futures:
+                runs.append(fut.result())
+                write()
+    else:
+        for seed in seeds:
+            runs.append(run_seed(dataset, n_pairs, n_tone, seed, mode, log))
+            write()
+    return write()
 
 
 def _pct(x: float | None) -> str:

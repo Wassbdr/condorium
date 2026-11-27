@@ -7,6 +7,7 @@ Tests (and `panel demo`) replace `_completion` — no network, no keys.
 from __future__ import annotations
 
 import json
+import os
 import re
 import threading
 import time
@@ -105,6 +106,23 @@ def _is_transient(exc: Exception) -> bool:
     return any(cls.__name__ in _TRANSIENT_ERRORS for cls in type(exc).__mro__)
 
 
+class CallBudgetExceeded(RuntimeError):
+    """Raised before a provider call once CONDORIUM_MAX_CALLS is spent."""
+
+
+_calls_made = 0
+_calls_lock = threading.Lock()
+
+
+def _spend_call() -> None:
+    global _calls_made
+    limit = os.environ.get("CONDORIUM_MAX_CALLS")
+    with _calls_lock:
+        if limit and _calls_made >= int(limit):
+            raise CallBudgetExceeded(f"CONDORIUM_MAX_CALLS={limit} reached")
+        _calls_made += 1
+
+
 def complete_text(system: str, user: str, *, model: str | None = None, timeout: int | None = None,
                   seed: int | None = None) -> str:
     attempts = SETTINGS.llm_retries + 1
@@ -113,6 +131,7 @@ def complete_text(system: str, user: str, *, model: str | None = None, timeout: 
     extra = {"seed": seed} if seed is not None else {}
     for attempt in range(attempts):
         try:
+            _spend_call()
             _reported.usage = None
             reply = _completion(
                 model=model or SETTINGS.model,

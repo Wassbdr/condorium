@@ -245,14 +245,17 @@ _calls_lock = threading.Lock()
 
 
 _next_slot = 0.0
+_next_model_slot: dict[str, float] = {}
 
 
-def _spend_call() -> None:
+def _spend_call(model: str) -> None:
     """Budget guard (CONDORIUM_MAX_CALLS), client-side pacing (CONDORIUM_RPM)
     and an optional append-only ledger of every attempt (CONDORIUM_CALL_LOG)."""
     global _calls_made, _next_slot
     limit = os.environ.get("CONDORIUM_MAX_CALLS")
     rpm = float(os.environ.get("CONDORIUM_RPM") or 15)
+    model_key = re.sub(r"[^A-Z0-9]", "_", model.upper())
+    model_rpm = float(os.environ.get(f"CONDORIUM_RPM_{model_key}") or 0)
     with _calls_lock:
         budget = _budget.get()
         if budget and budget.rate_limited:
@@ -261,13 +264,16 @@ def _spend_call() -> None:
             raise CallBudgetExceeded(f"Live call limit of {budget.limit} reached")
         if limit and _calls_made >= int(limit):
             raise CallBudgetExceeded(f"CONDORIUM_MAX_CALLS={limit} reached")
-        if rpm > 0:
-            wait = _next_slot - time.monotonic()
-            if wait > 0:
-                time.sleep(wait)
-            _next_slot = time.monotonic() + 60.0 / rpm
+        wait = max(_next_slot if rpm > 0 else 0.0,
+                   _next_model_slot.get(model, 0.0) if model_rpm > 0 else 0.0) - time.monotonic()
+        if wait > 0:
+            time.sleep(wait)
+        now = time.monotonic()
+        _next_slot = now + 60.0 / rpm if rpm > 0 else 0.0
+        if model_rpm > 0:
+            _next_model_slot[model] = now + 60.0 / model_rpm
         else:
-            _next_slot = 0.0
+            _next_model_slot.pop(model, None)
         _calls_made += 1
         if budget:
             budget.attempts += 1
@@ -314,7 +320,7 @@ def complete_text(
 
     for attempt in range(attempts):
         try:
-            _spend_call()
+            _spend_call(model)
             _reported.usage = None
             reply = _completion(**request)
         except Exception as exc:

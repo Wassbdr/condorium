@@ -174,3 +174,23 @@ def test_default_pacing_and_appends_are_shared_by_threads(cache, completion, mon
     [path] = cache.glob("*.jsonl")
     assert len({json.loads(line)["key"] for line in path.read_text().splitlines()}) == 3
     assert len(completion) == 3
+
+
+def test_per_model_pacing_coexists_with_the_global_limit(cache, completion, monkeypatch):
+    now, waits = 10.0, []
+
+    def sleep(delay):
+        nonlocal now
+        waits.append(delay)
+        now += delay
+
+    monkeypatch.setenv("CONDORIUM_RPM", "60")
+    monkeypatch.setenv("CONDORIUM_RPM_NVIDIA_NIM_NVIDIA_SLOW_MODEL", "20")
+    monkeypatch.setattr(llm, "_next_slot", 0.0)
+    monkeypatch.setattr(llm, "_next_model_slot", {})
+    monkeypatch.setattr(llm.time, "monotonic", lambda: now)
+    monkeypatch.setattr(llm.time, "sleep", sleep)
+    for user, model in enumerate(("nvidia_nim/nvidia/slow-model", STEP,
+                                  "nvidia_nim/nvidia/slow-model")):
+        llm.complete_text("s", str(user), model=model)
+    assert waits == [1.0, 2.0]

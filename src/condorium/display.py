@@ -64,6 +64,12 @@ def show_evaluation(record: dict) -> None:
     console.print(Panel("\n".join(lines), title="Synthesis", border_style="magenta"))
 
 
+def _clip(text: str | None, reserved: int = 26) -> str:
+    width = max(24, console.width - reserved)
+    text = " ".join((text or "").split())
+    return text if len(text) <= width else text[: width - 1] + "…"
+
+
 def believer_cap(record: dict) -> float | None:
     """The cap `_normalize` applies to the believer in round 2."""
     from .state import median, opinion_scores
@@ -97,12 +103,12 @@ def show_deliberation(record: dict, pause: float = 0.0, source: str = "") -> Non
     r1, r2 = record.get("round1", {}), record.get("round2", {})
     names = [n for n in r1 if n in r2] + [n for n in r2 if n not in r1]
     blind = Table(title="Round 1 — blind (no agent sees another)", title_justify="left")
-    blind.add_column("Agent", style="cyan")
-    blind.add_column("R1", justify="right")
-    blind.add_column("One-line view", max_width=80)
+    blind.add_column("Agent", style="cyan", no_wrap=True, min_width=14)
+    blind.add_column("R1", justify="right", no_wrap=True, min_width=2)
+    blind.add_column("One-line view")
     for name in names:
         o1 = r1.get(name, {})
-        blind.add_row(name, _fmt_score(o1.get("score")), (o1.get("verdict") or "")[:110])
+        blind.add_row(name, _fmt_score(o1.get("score")), _clip(o1.get("verdict")))
     console.print(blind)
     step()
 
@@ -120,16 +126,16 @@ def show_deliberation(record: dict, pause: float = 0.0, source: str = "") -> Non
 
     deliberation = Table(title="Round 2 — after reading every round-1 opinion",
                          title_justify="left")
-    deliberation.add_column("Agent", style="cyan")
-    deliberation.add_column("R1", justify="right")
-    deliberation.add_column("R2", justify="right")
-    deliberation.add_column("Change", max_width=80)
+    deliberation.add_column("Agent", style="cyan", no_wrap=True, min_width=14)
+    deliberation.add_column("R1", justify="right", no_wrap=True, min_width=2)
+    deliberation.add_column("R2", justify="right", no_wrap=True, min_width=4)
+    deliberation.add_column("Change")
     for name in names:
         o1, o2 = r1.get(name, {}), r2.get(name, {})
         s1, s2 = o1.get("score"), o2.get("score")
         moved = "" if s1 == s2 else ("[green]▲[/]" if (s2 or 0) > (s1 or 0) else "[red]▼[/]")
         deliberation.add_row(name, _fmt_score(s1), f"{_fmt_score(s2)} {moved}",
-                             (o2.get("verdict") or "")[:110])
+                             _clip(o2.get("verdict"), reserved=33))
     console.print(deliberation)
     step()
 

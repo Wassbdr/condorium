@@ -72,10 +72,12 @@ def proposal_input(a: Item, b: Item, rubric: Rubric) -> str:
                   a_title=a["title"], a_text=a["text"], b_title=b["title"], b_text=b["text"])
 
 
-def majority(votes: Iterable[Winner | None]) -> Winner | None:
-    counts = Counter(vote for vote in votes if vote is not None)
+def majority(votes: Iterable[Winner | None], *, include_abstentions: bool = False) -> Winner | None:
+    counts = Counter(votes)
+    abstentions = counts.pop(None, 0)
+    total = counts.total() + (abstentions if include_abstentions else 0)
     for vote, count in counts.items():
-        if count * 2 > counts.total():
+        if count * 2 > total:
             return vote
     return None
 
@@ -92,13 +94,37 @@ def _rating(value: object) -> int | None:
     return value if type(value) is int and 1 <= value <= 5 else None
 
 
-def _normalize(role: str, raw: str, a: Item, b: Item, rubric: Rubric) -> Review:
+def _review_json(raw: str) -> dict:
     try:
         data = parse_json(raw)
     except ValueError:
-        data = {}
-    if not isinstance(data, dict):
-        data = {}
+        data = None
+    if isinstance(data, dict):
+        return data
+
+    text = raw.strip()
+    try:
+        json.loads(text)
+    except json.JSONDecodeError as exc:
+        prefix, suffix = text[:exc.pos].rstrip(), text[exc.pos:].lstrip()
+        if not prefix.startswith(suffix):
+            return {}
+        try:
+            envelope = json.loads(prefix + "}")
+        except json.JSONDecodeError:
+            return {}
+        if isinstance(envelope, dict) and envelope.keys() == {"scores"}:
+            fields = envelope["scores"]
+            if isinstance(fields, dict) and fields.keys() == {
+                "a", "b", "preferred", "confidence", "evidence",
+            }:
+                return {"scores": {"a": fields["a"], "b": fields["b"]},
+                        **{key: fields[key] for key in ("preferred", "confidence", "evidence")}}
+    return {}
+
+
+def _normalize(role: str, raw: str, a: Item, b: Item, rubric: Rubric) -> Review:
+    data = _review_json(raw)
     preference = _preference(data.get("preferred"))
     texts = {side: tuple(" ".join(part.split()) for part in (item["title"], item["text"]))
              for side, item in (("a", a), ("b", b))}

@@ -163,7 +163,7 @@ the [latest pairwise results](benchmarks/results.md).
 
 ```bash
 export NVIDIA_NIM_API_KEY=...   # free tier; any LiteLLM provider works
-CONDORIUM_MODEL=nvidia_nim/nvidia/nemotron-3.5-lightning-30b-a3b CONDORIUM_RPM=36 \
+CONDORIUM_MODEL=nvidia_nim/nvidia/nemotron-3.5-lightning-30b-a3b CONDORIUM_RPM=30 \
   panel bench --versus --n 3 --tone 1 --seeds 0,1,2 --out showcase/results/versus_results.json
 ```
 

@@ -26,7 +26,9 @@ from ..prompts import load_prompt, render
 from .pairset import Pair, Rubric, Split, Variant, build_variants, position_variants
 
 METHODS = ("judge", "jury", "chateval", "committee")
-JURY_MODELS = (MODEL, "nvidia_nim/poolside/laguna-xs-2.1", "nvidia_nim/stepfun-ai/step-5-preview")
+STEP_MODEL = "nvidia_nim/stepfun-ai/step-5-preview"
+STEP_MAX_TOKENS = 1024
+JURY_MODELS = (MODEL, "nvidia_nim/poolside/laguna-xs-2.1", STEP_MODEL)
 _ORDER: tuple[Literal["committee", "judge", "jury", "chateval"], ...] = (
     "committee", "judge", "jury", "chateval",
 )
@@ -59,8 +61,9 @@ def parse_verdict(raw: str) -> Winner | None:
 
 
 def _sample(system: str, user: str, model: str, seed: int) -> str:
+    max_tokens = STEP_MAX_TOKENS if model == STEP_MODEL else MAX_TOKENS
     return complete_text(system, user, model=model, temperature=TEMPERATURE,
-                         seed=seed, max_tokens=MAX_TOKENS, max_retries=0, num_retries=0)
+                         seed=seed, max_tokens=max_tokens, max_retries=0, num_retries=0)
 
 
 def run_votes(
@@ -92,7 +95,9 @@ def run_votes(
                 failures.append(ParseFailure(f"{model}:{index}", raw))
             if method == "judge" and index == 0:
                 first = Decision(vote or "tie", meter.as_dict(), failures.copy())
-        decision = Decision(majority(votes) or "tie", meter.as_dict(), failures,
+        winner = majority(votes, include_abstentions=method == "jury")
+        decision = Decision(winner or "tie", meter.as_dict(), failures,
+                            abstains=len(failures) if method == "jury" else 0,
                             target_tokens=target_tokens)
     return {method: decision, **({"judge_1call": first} if first is not None else {})}
 

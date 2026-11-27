@@ -1,13 +1,15 @@
 import json
+import os
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from condorium import llm
 from condorium.bench import pairset, pairwise
 from condorium.bench.pairwise_metrics import metrics
 from condorium.cli import app
-from condorium.compare import compare, sample_seed
+from condorium.compare import _normalize, compare, sample_seed
 
 ROOT = Path(__file__).resolve().parents[1]
 RUBRIC = pairset.load_rubric(ROOT / "benchmarks/rubrics/proposal.yaml")
@@ -64,6 +66,24 @@ def test_committee_majority_and_all_abstain_do_not_debate(monkeypatch):
     assert all(r.parse_failure == "not JSON" for r in result.initial)
 
 
+@pytest.mark.parametrize("repeat", [False, True])
+def test_committee_recovers_misnested_review_and_checks_evidence(repeat):
+    payload = json.loads(_review("a", [{"proposal": "a", "quote": "Use actual data"},
+                                      {"proposal": "b", "quote": "invented"}]))
+    scores = payload.pop("scores")
+    review = json.dumps({"scores": scores | payload})[:-1]
+    raw = review + review[:len(review) // 2] if repeat else review
+    normalized = _normalize("scientist", raw, A, B, RUBRIC)
+    assert normalized.parse_failure is None
+    assert normalized.preferred == "a"
+    assert [e.quote for e in normalized.evidence] == ["Use actual data"]
+    assert normalized.dropped == 1
+    assert normalized.scores == scores
+
+    unrelated = review + '{"preferred":"b"'
+    assert _normalize("scientist", unrelated, A, B, RUBRIC).parse_failure == unrelated
+
+
 def test_judge_fallback_and_jury_matched_votes(monkeypatch):
     calls = []
     replies = iter(("[[A]]", "[[B]]", "[[C]]", "[[A]]", "[[A]]", "[[B]]", "[[A]]"))
@@ -87,6 +107,25 @@ def test_judge_fallback_and_jury_matched_votes(monkeypatch):
     assert len({sample_seed(seed, "judge", "variant", 0) for seed in range(3)}) == 3
     assert pairwise.parse_verdict("Reason\n[[b]]") == "b"
     assert pairwise.parse_verdict("[[A]] or [[B]]") is None
+
+
+@pytest.mark.parametrize(("step_reply", "expected"), [("", "tie"), ("[[A]]", "a")])
+def test_jury_reserves_step_output_and_counts_invalid_ballots(monkeypatch, step_reply, expected):
+    requests = []
+    replies = iter(("[[A]]", "no verdict", step_reply))
+
+    def complete(**request):
+        requests.append(request)
+        return next(replies)
+
+    monkeypatch.setattr(llm, "_completion", complete)
+    jury = pairwise.run_votes("jury", "proposals", "variant", 0, None)["jury"]
+    assert jury.winner == expected
+    assert [request["max_tokens"] for request in requests] == [384, 384, 1024]
+    assert requests[-1]["reasoning_effort"] == "low"
+    missing = ["no verdict", ""] if not step_reply else ["no verdict"]
+    assert [f.raw for f in jury.failures] == missing
+    assert jury.abstains == len(missing)
 
 
 def test_chateval_uses_transcript_and_only_final_turns(monkeypatch):
@@ -250,6 +289,21 @@ def test_pairwise_cli_exits_75_after_saving_rate_limited_report(monkeypatch, tmp
         report["model"], "nvidia_nim/poolside/laguna-xs-2.1", "nvidia_nim/stepfun-ai/step-5-preview",
     ]
     assert "HTTP 429" in (tmp_path / "results.md").read_text()
+
+
+@pytest.mark.parametrize(("pace", "expected"), [(None, "30"), ("12", "12")])
+def test_pairwise_cli_default_pace_respects_override(monkeypatch, tmp_path, pace, expected):
+    if pace is None:
+        monkeypatch.delenv("CONDORIUM_RPM")
+    else:
+        monkeypatch.setenv("CONDORIUM_RPM", pace)
+    monkeypatch.setenv("CONDORIUM_CACHE", str(tmp_path / "cache"))
+    output = CliRunner().invoke(app, [
+        "bench", "pairwise", "--split", "dev", "--seeds", "0", "--limit", "1",
+        "--methods", "judge", "--max-calls", "0", "--results-dir", str(tmp_path / "results"),
+    ])
+    assert output.exit_code == 0, output.output
+    assert os.environ["CONDORIUM_RPM"] == expected
 
 
 def test_legacy_versus_cli_still_dispatches(mock_llm, tmp_path):

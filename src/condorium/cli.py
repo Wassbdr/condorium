@@ -336,6 +336,7 @@ def bench_pairwise(
                                  param_hint="--seeds") from exc
     root = SETTINGS.root / "benchmarks"
     os.environ.setdefault("CONDORIUM_CACHE", str(root / "cache"))
+    os.environ.setdefault("CONDORIUM_RPM", "30")
     output = results_dir or root / "results"
     try:
         report = run_pairwise(

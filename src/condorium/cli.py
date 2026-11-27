@@ -237,6 +237,20 @@ def dashboard():
 
 
 @app.command()
+def ui(port: int = typer.Option(7860, help="Port"),
+       share: bool = typer.Option(False, help="Public Gradio link")):
+    """Web UI: live deliberation, or replay of a recorded run (no key)."""
+    try:
+        from .ui import build_app
+
+        app_ = build_app()
+    except ImportError:
+        console.print('[red]install the UI extra: pip install "condorium[ui]"[/red]')
+        raise typer.Exit(1) from None
+    app_.queue().launch(server_name="0.0.0.0", server_port=port, share=share)
+
+
+@app.command()
 def stats():
     """Influence matrix, round deltas, agreement, severity — full history."""
     from .analytics.stats import full_stats

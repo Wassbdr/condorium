@@ -60,10 +60,9 @@ class Settings:
 
     @property
     def demo_dir(self) -> Path:
-        local = self.root / "fixtures" / "demo"
-        if local.is_dir() or not (BUNDLED_DIR / "fixtures" / "demo").is_dir():
-            return local
-        return BUNDLED_DIR / "fixtures" / "demo"
+        candidates = (self.root / "fixtures" / "demo", BUNDLED_DIR / "fixtures" / "demo",
+                      Path(__file__).resolve().parents[2] / "fixtures" / "demo")
+        return next((c for c in candidates if c.is_dir()), candidates[0])
 
     @property
     def knowledge_dir(self) -> Path:

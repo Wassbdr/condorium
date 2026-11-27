@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 from collections import Counter
 from collections.abc import Iterable
@@ -21,7 +22,7 @@ MODEL = "nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b"
 TEMPERATURE = 0.7
 MAX_TOKENS = 384
 ROLES = ("judge", "skeptic", "scientist")
-PROTOCOL = "v3"
+PROTOCOL = "v4"
 _FOLDER = "committee/pairwise"
 _MAX_REQUIREMENTS = 5
 Winner = Literal["a", "b", "tie"]
@@ -109,7 +110,8 @@ def _committee_input(a: Item, b: Item, rubric: Rubric, brief: str) -> str:
         shared += 1
     input_a: Item = {"title": a["title"], "text": "\n\n".join(a_parts[shared:])}
     input_b: Item = {"title": b["title"], "text": "\n\n".join(b_parts[shared:])}
-    context = "\n\n".join(part for part in (brief, *a_parts[:shared]) if part)
+    context = "\n\n".join(dict.fromkeys(part for part in (brief.strip(), *a_parts[:shared])
+                                      if part))
     proposals = proposal_input(input_a, input_b, rubric)
     if context:
         header = render(load_prompt("committee/pairwise/brief.md").body, brief=context)
@@ -131,9 +133,53 @@ def _criteria(rubric: Rubric) -> str:
 
 
 @dataclass(frozen=True)
+class Requirement:
+    quote: str
+    kind: Literal["max", "min", "rule"]
+    limit: int | float | None
+    unit: str
+
+
+@dataclass(frozen=True)
 class Requirements:
-    quotes: tuple[str, ...] = ()
+    items: tuple[Requirement, ...] = ()
     parse_failure: str | None = None
+
+
+_NUMBER = re.compile(r"(?<![\w.])[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?!\w|[.,]\d)")
+
+
+def _number(value: object) -> int | float | None:
+    if isinstance(value, int) and not isinstance(value, bool):
+        return value
+    if isinstance(value, float) and math.isfinite(value):
+        return value
+    return None
+
+
+def _digit_int(value: object) -> int | None:
+    if isinstance(value, int) and not isinstance(value, bool):
+        return value
+    if isinstance(value, str) and re.fullmatch(r"[0-9]{1,10}", value):
+        return int(value)
+    return None
+
+
+def _requirement(row: object, brief: str) -> Requirement | None:
+    if not isinstance(row, dict) or not (quote := _quote(row.get("quote"))) or quote not in brief:
+        return None
+    kind, limit, unit = row.get("kind"), row.get("limit"), row.get("unit")
+    if not isinstance(unit, str) or "limit" not in row:
+        return None
+    if kind == "rule" and limit is None:
+        return Requirement(quote, kind, None, unit)
+    if kind not in ("max", "min") or (number := _number(limit)) is None:
+        return None
+    for match in _NUMBER.finditer(quote):
+        token = match[0].replace(",", "")
+        if number == (float(token) if "." in token else int(token)):
+            return Requirement(quote, kind, number, unit)
+    return None
 
 
 def _extract(brief: str, criteria: str, model: str) -> Requirements:
@@ -142,15 +188,18 @@ def _extract(brief: str, criteria: str, model: str) -> Requirements:
     user = render(load_prompt(f"{_FOLDER}/requirements_input.md").body, brief=brief,
                   criteria=criteria)
     raw = complete_text(load_prompt(f"{_FOLDER}/requirements.md").body, user, model=model,
-                        seed=0, temperature=0, max_tokens=164, max_retries=0, num_retries=0)
+                        seed=0, temperature=0, max_tokens=240, max_retries=0, num_retries=0)
     try:
         values = parse_json(raw)
     except ValueError:
         return Requirements(parse_failure=raw)
     if not isinstance(values, list):
         return Requirements(parse_failure=raw)
-    quotes = dict.fromkeys(q for value in values if (q := _quote(value)) and q in _quote(brief))
-    return Requirements(tuple(quotes)[:_MAX_REQUIREMENTS])
+    items: dict[str, Requirement] = {}
+    for value in values:
+        if requirement := _requirement(value, _quote(brief)):
+            items.setdefault(requirement.quote, requirement)
+    return Requirements(tuple(items.values())[:_MAX_REQUIREMENTS])
 
 
 class RequirementCache:
@@ -325,7 +374,7 @@ def _swap_review(review: Review) -> Review:
 
 
 def _normalize(role: str, raw: str, a: Item, b: Item, rubric: Rubric,
-               requirements: tuple[str, ...] = (), initial: Review | None = None) -> Review:
+               requirements: tuple[Requirement, ...] = (), initial: Review | None = None) -> Review:
     data = _review_json(raw)
     preference = _preference(data.get("preferred"))
     texts = {side: tuple(" ".join(part.split()) for part in (item["title"], item["text"]))
@@ -349,16 +398,28 @@ def _normalize(role: str, raw: str, a: Item, b: Item, rubric: Rubric,
     if initial is None and isinstance(checks, list):
         for entry in checks:
             if isinstance(entry, list) and len(entry) == 5:
-                index, side, status, quote, reason = entry
+                raw_index, side, result, quote, reason = entry
+                index = _digit_int(raw_index)
+                requirement = (requirements[index]
+                               if index is not None and 0 <= index < len(requirements) else None)
+                status = None
+                if requirement is not None:
+                    if requirement.kind == "rule":
+                        status = _digit_int(result)
+                    elif (value := _number(result)) is not None and requirement.limit is not None:
+                        status = int(value <= requirement.limit if requirement.kind == "max"
+                                     else value >= requirement.limit)
                 proposed = _quote(quote)
-                if (type(index) is int and 0 <= index < len(requirements)
-                        and side in ("a", "b") and type(status) is int and status in (0, 1)
+                if (requirement is not None and side in ("a", "b") and status in (0, 1)
                         and (index, side) not in seen and proposed
                         and any(proposed in text for text in texts[side])):
                     seen.add((index, side))
                     if status == 0:
-                        violations.append(Violation(side, requirements[index], proposed,
-                                                    _quote(reason)))
+                        explanation = _quote(reason)
+                        if requirement.limit is not None:
+                            op = ">" if requirement.kind == "max" else "<"
+                            explanation = f"{result} {op} {requirement.limit} {requirement.unit}".strip()
+                        violations.append(Violation(side, requirement.quote, proposed, explanation))
                     continue
                 if status == 1:
                     continue
@@ -419,7 +480,7 @@ def compare(
         raw = complete_text(system, user, model=model, temperature=temperature,
                             seed=review_seed, max_tokens=max_tokens, max_retries=0, num_retries=0)
         first, second = orders[reversed_order]
-        review = _normalize(role, raw, first, second, rubric, requirements.quotes, initial)
+        review = _normalize(role, raw, first, second, rubric, requirements.items, initial)
         if review.parse_failure is not None:
             review = replace(review, preferred=None)
         return _swap_review(review) if reversed_order else review
@@ -434,12 +495,13 @@ def compare(
                 _problem_brief(a, b, brief), criteria, model,
             )
         max_tokens = 172
-        if requirements.quotes:
+        if requirements.items:
             contract += "\n" + load_prompt(f"{folder}/checks.md").body
             checks = render(load_prompt(f"{folder}/checks_input.md").body,
-                            requirements=json.dumps(requirements.quotes, ensure_ascii=False))
+                            requirements=json.dumps([asdict(r) for r in requirements.items],
+                                                    ensure_ascii=False, separators=(",", ":")))
             proposals = [f"{proposals_text}\n\n{checks}" for proposals_text in proposals]
-            max_tokens = min(480, 200 + 60 * len(requirements.quotes))
+            max_tokens = min(480, 200 + 60 * len(requirements.items))
         initial = [pool.submit(copy_context().run, assess, role, index,
                                load_prompt(f"{folder}/{role}.md").body + "\n" + contract,
                                proposals[role == "scientist"], max_tokens, role == "scientist")
@@ -476,5 +538,5 @@ def compare(
             reviews = [_swap_review(review) for review in reviews]
             debate = [_swap_review(review) for review in debate]
         return Comparison((winner or "tie") if a != b else "tie",
-                          reviews, debate, usage.as_dict(), requirements.quotes,
+                          reviews, debate, usage.as_dict(), tuple(r.quote for r in requirements.items),
                           requirements.parse_failure, extraction.total_tokens)

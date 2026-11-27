@@ -118,7 +118,7 @@ def _render_split(report: dict) -> str:
         lines.append("Position-only run. Verbosity and tone were not measured.")
     if report.get("reference_budget") == "v1":
         lines.append("References replay the protocol v1 token targets from the same evaluation set.")
-    if report.get("committee_protocol") == "v3":
+    if report.get("committee_protocol") in ("v3", "v4"):
         lines.append("Swapping the two input arguments does not change which proposal the committee "
                      "picks. Roles alternate between the two content-based orders, so the "
                      "committee's position flip rate measures a property of the protocol.")

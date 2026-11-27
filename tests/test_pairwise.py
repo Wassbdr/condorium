@@ -10,6 +10,7 @@ from condorium.bench import pairset, pairwise
 from condorium.bench.pairwise_metrics import metrics, render_results, write_results
 from condorium.cli import app
 from condorium.compare import (
+    Requirement,
     RequirementCache,
     _committee_input,
     _normalize,
@@ -30,6 +31,10 @@ def _review(preferred, evidence, checks=()):
         "preferred": preferred, "confidence": 4, "evidence": evidence, "checks": checks,
         "scores": {side: {c["name"]: 3 for c in RUBRIC["criteria"]} for side in ("a", "b")},
     })
+
+
+def _typed_requirement(quote, kind="rule", limit=None, unit=""):
+    return {"quote": quote, "kind": kind, "limit": limit, "unit": unit}
 
 
 def _fixture_slots(user):
@@ -92,7 +97,7 @@ def test_violation_quotes_must_match_requirement_and_cited_proposal():
     valid = [0, "a", 0, "Use actual logs.", ""]
     checks = [valid, [0, "b", 0, valid[3], ""], [1, *valid[1:]], [-1, *valid[1:]], valid, None]
     review = _normalize("judge", _review("a", [{"proposal": "a", "quote": "Use actual logs."}],
-                                        checks), a, b, RUBRIC, (shared,))
+                                        checks), a, b, RUBRIC, (Requirement(shared, "rule", None, ""),))
     assert review.preferred == "b"
     assert review.parse_failure is None
     assert review.violations_dropped == 5
@@ -100,7 +105,8 @@ def test_violation_quotes_must_match_requirement_and_cited_proposal():
 
     both = [0, "b", 0, "Use totals.", ""]
     review = _normalize("judge", _review("a", [{"proposal": "a", "quote": "Use actual logs."}],
-                                        [valid, both]), a, b, RUBRIC, (shared,))
+                                        [valid, both]), a, b, RUBRIC,
+                        (Requirement(shared, "rule", None, ""),))
     assert review.preferred == "a" and len(review.violations) == 2
 
 
@@ -109,8 +115,13 @@ def test_requirement_extraction_is_blind_and_shared_across_orders_and_seeds(
     monkeypatch, extract_reply,
 ):
     brief = "Only share totals. Keep a log. No export. Cap is 5. Minimum 2. Use a lock."
-    extracted = ["Only share\n totals.", "Not in brief.", "Keep a log.", "No export.",
-                 "Cap is 5.", "Minimum 2.", "Use a lock.", "Only share totals."]
+    extracted = [_typed_requirement(q) for q in ("Only share\n totals.", "Not in brief.",
+                                                 "Keep a log.", "No export.")]
+    extracted += [_typed_requirement("Cap is 5.", "max", 50),
+                  _typed_requirement("Cap is 5.", "max", 5),
+                  _typed_requirement("Minimum 2.", "min", True),
+                  _typed_requirement("Minimum 2.", "min", 2),
+                  _typed_requirement("Use a lock."), _typed_requirement("Only share totals.")]
     extraction_requests = []
 
     def completion(*, messages, seed, **_):
@@ -144,7 +155,7 @@ def test_committee_violation_veto_and_disagreement_without_debate(
     def completion(*, messages, **_):
         system, user = [m["content"] for m in messages]
         if "at most five" in system:
-            return json.dumps([brief])
+            return json.dumps([_typed_requirement(brief)])
         assert f"Problem brief:\n{brief}" in user
         ballots.append(user)
         llm.record_usage(10, 3)
@@ -192,7 +203,7 @@ def test_committee_mirrors_results_and_reuses_identical_requests_when_swapped(mo
         requests[seed] = messages, kwargs
         system, user = [m["content"] for m in messages]
         if "at most five" in system:
-            return json.dumps([brief])
+            return json.dumps([_typed_requirement(brief)])
         a, b = _fixture_slots(user)
         if "Scientist" in system:
             assert a != ("a" if _order_key(A) < _order_key(B) else "b")
@@ -232,7 +243,7 @@ def test_committee_recovers_bad_checks_bracket_without_accepting_fabricated_quot
     if style == "nested":
         review = {"scores": review.pop("scores") | review}
     raw = json.dumps(review).replace(check_json, check_json[:-1] + "}", 1)
-    result = _normalize("skeptic", raw, A, B, RUBRIC, ("Hard limit",))
+    result = _normalize("skeptic", raw, A, B, RUBRIC, (Requirement("Hard limit", "rule", None, ""),))
     assert result.parse_failure is None and result.preferred == "b"
     assert len(result.violations) == result.violations_dropped == 1
     assert result.violations[0].proposal_quote == "Use actual data"
@@ -246,6 +257,82 @@ def test_committee_recovers_latex_escapes_and_still_checks_evidence_verbatim():
     result = _normalize("scientist", raw, a, B, RUBRIC)
     assert result.parse_failure is None and result.preferred == "a"
     assert result.dropped == 1 and [e.quote for e in result.evidence] == [a["text"]]
+
+
+@pytest.mark.parametrize(("ordinal", "requirement", "good", "bad"), [
+    (1, ("hard spending limit of $1033", "max", 1033, "USD"), 1022, 1060),
+    (2, ("Policy permits disclosure to third parties only as site-wide totals.",), 1, 0),
+    (3, ("every one of the 25 selected delivery runs to be checked", "min", 25, "runs"), 33, 22),
+    (4, ("hard spending limit of $845", "max", 845, "USD"), 830, 968),
+    (5, ("Policy permits disclosure to third parties only as site-wide totals.",), 1, 0),
+    (6, ("every one of the 36 selected display cases to be checked", "min", 36, "cases"), 40, 30),
+    (7, ("hard spending limit of $899", "max", 899, "USD"), 886, 942),
+    (8, ("Policy permits disclosure to third parties only as site-wide totals.",), 1, 0),
+])
+def test_v4_regression_on_synthetic_dev_failures(monkeypatch, ordinal, requirement, good, bad):
+    pairs = [pair for pair in pairset.synthetic_pairs() if pair["split"] == "dev"]
+    pair = pairs[ordinal - 1]
+    variants = [v for v in pairset.build_variants(pairs) if v["pair_id"] == pair["id"]]
+    brief = pair["a"]["text"].split("\n\n", 1)[0]
+    better = pair["better"]
+    worse = pairset.opposite(better)
+    good_quote = pair[better]["text"].split("\n\n")[-2]
+    bad_quote = pair[worse]["text"].split("\n\n")[-2]
+    typed = _typed_requirement(*requirement)
+    seen_extractions = []
+
+    def completion(*, messages, **_):
+        system, user = [m["content"] for m in messages]
+        if "at most five" in system:
+            assert user.startswith(f"Brief:\n{brief}\n")
+            assert "Permits ... only" in system
+            seen_extractions.append(user)
+            return json.dumps([typed])
+        assert f"Problem brief:\n{brief}" in user
+        assert "Fixed requirements" in user
+        good_slot = "a" if good_quote in user.split("Proposal B\n", 1)[0] else "b"
+        bad_slot = pairset.opposite(good_slot)
+        skeptic = "Skeptic" in system
+        judge = "Rubric Judge" in system
+        index = typed["quote"] if skeptic and ordinal in (4, 7) else "0"
+        if judge and ordinal == 3:
+            return "truncated ballot"
+        cite = bad_quote.replace("per unit", "per check") if judge and ordinal == 1 else bad_quote
+        preferred = (good_slot if skeptic and ordinal == 1 else "tie"
+                     if skeptic and ordinal in (4, 7) else bad_slot)
+        return _review(preferred, [{"proposal": bad_slot, "quote": cite}], [
+            [index, good_slot, str(good) if len(requirement) == 1 else good, good_quote, "violated"],
+            [index, bad_slot, str(bad) if len(requirement) == 1 else bad, cite, "met"],
+        ])
+
+    monkeypatch.setattr(llm, "_completion", completion)
+    cache = RequirementCache()
+    for variant in variants:
+        reviewed = compare(variant["a"], variant["b"], RUBRIC, brief=brief, requirement_cache=cache)
+        assert reviewed.requirements == (typed["quote"],)
+        assert reviewed.winner == variant["better"] and not reviewed.debate
+        assert reviewed.violations_kept == (2 if ordinal in (1, 3, 4, 7) else 3)
+        assert reviewed.violations_dropped == (1 if ordinal == 1 else 2 if ordinal in (4, 7) else 0)
+    assert len(seen_extractions) == 1
+
+
+def test_benchmark_passes_original_brief_to_every_synthetic_variant(monkeypatch):
+    pairs = [pair for pair in pairset.synthetic_pairs() if pair["split"] == "dev"]
+    expected = {p["id"]: p["a"]["text"].split("\n\n", 1)[0] for p in pairs}
+    seen = set()
+
+    def compared(a, b, rubric, *, variant_id, brief, **kwargs):
+        pair_id, kind = variant_id.split(":")
+        assert brief == expected[pair_id]
+        seen.add(kind)
+        return compare(a, b, rubric, brief=brief, **kwargs)
+
+    monkeypatch.setattr(pairwise, "compare", compared)
+    monkeypatch.setattr(llm, "_completion", _bench_completion)
+    result = pairwise.run_pairwise(pairs, {"proposal": RUBRIC}, split="dev", seeds=(0,),
+                                   methods=("committee",))
+    assert len(result["decisions"]) == 22
+    assert seen == {"position", "verbosity", "tone"}
 
 
 @pytest.mark.parametrize("repeat", [False, True])
@@ -611,7 +698,7 @@ def test_new_committee_replays_reference_budget_and_preserves_omitted_rows(monke
     real_input = pairwise.compare
 
     def fresh_compare(a, b, rubric, **kwargs):
-        return real_input(a, b, rubric, **kwargs, brief="Use the audit log.")
+        return real_input(a, b, rubric, **(kwargs | {"brief": "Use the audit log."}))
 
     monkeypatch.setattr(pairwise, "compare", fresh_compare)
     new = pairwise.run_pairwise(*args, **options, previous_report=old,

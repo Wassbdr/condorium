@@ -227,6 +227,8 @@ def run_pairwise(
                     comparison = compare(
                         variant["a"], variant["b"], rubric, seed=seed,
                         variant_id=f"{variant['pair_id']}:{variant['kind']}",
+                        brief=pair["a"]["text"].split("\n\n", 1)[0]
+                        if pair["source"] == "synthetic" else "",
                         requirement_cache=requirement_cache,
                     )
                     target = comparison.usage["total_tokens"] - comparison.extraction_tokens

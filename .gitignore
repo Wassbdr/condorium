@@ -12,3 +12,13 @@ knowledge/checkpoints.sqlite
 *.sqlite
 .env
 uv.lock
+
+CLAUDE.md
+AGENTS.md
+agents.md
+GEMINI.md
+.claude/
+.cursor/
+.cursorrules
+STATUS.md
+PROGRESS.md

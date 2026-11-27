@@ -4,7 +4,6 @@ import json
 import shutil
 
 import pytest
-
 from conftest import REPO
 
 

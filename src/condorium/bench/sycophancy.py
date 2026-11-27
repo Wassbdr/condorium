@@ -16,7 +16,7 @@ from ..config import SETTINGS
 from ..llm import complete_json
 from ..prompts import load_prompt, render
 from ..state import opinion_scores
-from .pairs import load_rows, _pick
+from .pairs import _pick, load_rows
 from .run import evaluate_idea_silently
 
 VARIANTS = ("enthusiastic", "neutral", "deprecating")

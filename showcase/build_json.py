@@ -76,8 +76,10 @@ showcase = {
     "limits": [
         "The anti-leak cleaner is lexical: a paraphrased victory clue survives "
         "(kept as a strict xfail test).",
-        "Benchmark pairs are synthetic and few (LLM budget < 2,000 calls); accuracy "
-        "differences of one pair are within noise.",
+        f"Benchmark pairs are synthetic and few: {sum(s['n_pairs_per_seed'])} pairs over "
+        f"{s['n_seeds']} seed(s) completed (NIM free-tier rate limits, budget < 2,000 calls); "
+        "a one-pair difference is within noise.",
+        "With this model the debate fired on every idea; the gap >= 3 trigger may be too loose.",
         "The demo GIF is a replay of a recorded run, not a live computation.",
         "One open model (via NIM) was measured; other providers are untested here.",
     ],

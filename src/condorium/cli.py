@@ -271,6 +271,7 @@ def bench(
     mode: str = typer.Option("hackathon", help="--versus: general | hackathon"),
     out: Optional[Path] = typer.Option(None, help="--versus: results JSON path"),
     workers: int = typer.Option(1, help="--versus: seeds run in parallel processes"),
+    resume: bool = typer.Option(False, help="--versus: keep seeds already in --out"),
 ):
     """Benchmark the committee: winner identification, formulation bias, or
     committee vs single judge (`--versus`)."""
@@ -281,7 +282,7 @@ def bench(
         dataset = dataset or SETTINGS.root / "fixtures" / "bench" / "synthetic_pairs.json"
         result = run_versus(dataset, n_pairs=n, n_tone=tone,
                             seeds=tuple(int(s) for s in seeds.split(",") if s.strip()),
-                            mode=mode, out=out, workers=workers,
+                            mode=mode, out=out, workers=workers, resume=resume,
                             log=lambda m: console.print(f"[dim]{m}[/dim]"))
         console.print(versus_table(result))
         console.print(f"[dim]model {result['model']} — "

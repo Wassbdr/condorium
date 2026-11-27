@@ -111,3 +111,14 @@ def test_call_budget_guard(mock_llm, monkeypatch):
     llm.complete_text("s", "u")
     with pytest.raises(llm.CallBudgetExceeded):
         llm.complete_text("s", "u")
+
+
+def test_resume_keeps_finished_seeds(substance_llm, sandbox, monkeypatch):
+    out = sandbox / "v.json"
+    versus.run_versus(_dataset(sandbox), n_pairs=2, n_tone=0, seeds=(0,), out=out)
+    ran = []
+    real = versus.run_seed
+    monkeypatch.setattr(versus, "run_seed", lambda *a, **k: ran.append(a[3]) or real(*a, **k))
+    report = versus.run_versus(_dataset(sandbox), n_pairs=2, n_tone=0, seeds=(0, 1), out=out,
+                               resume=True)
+    assert ran == [1] and report["summary"]["seeds"] == [0, 1]

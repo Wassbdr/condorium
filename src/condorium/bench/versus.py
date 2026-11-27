@@ -298,11 +298,22 @@ def _print(msg: str) -> None:
 
 def run_versus(dataset: Path, n_pairs: int = 6, n_tone: int = 3, seeds: tuple[int, ...] = (0, 1, 2),
                mode: str = "hackathon", out: Path | None = None,
-               log: Callable[[str], None] = lambda _: None, workers: int = 1) -> dict:
+               log: Callable[[str], None] = lambda _: None, workers: int = 1,
+               resume: bool = False) -> dict:
     """Run every seed (optionally one process per seed: the usage meter is
-    process-global, so seeds never share a meter) and write the report."""
+    process-global, so seeds never share a meter) and write the report after
+    each seed. `resume` keeps the seeds already in `out` (same model, pairs,
+    tone cases) and runs only the missing ones."""
     out = out or SETTINGS.evaluations_dir / "versus_results.json"
     runs: list[dict] = []
+    if resume and out.exists():
+        prev = json.loads(out.read_text(encoding="utf-8"))
+        same = all(prev.get(k) == v for k, v in (("model", SETTINGS.model), ("mode", mode),
+                                                  ("n_pairs", n_pairs), ("n_tone", n_tone)))
+        if same:
+            runs = [r for r in prev["runs"] if r["seed"] in seeds]
+            log(f"resume: seeds {[r['seed'] for r in runs]} kept from {out}")
+    seeds_todo = tuple(s for s in seeds if s not in {r["seed"] for r in runs})
 
     def write() -> dict:
         report = {"model": SETTINGS.model, "mode": mode, "dataset": str(dataset),
@@ -313,18 +324,18 @@ def run_versus(dataset: Path, n_pairs: int = 6, n_tone: int = 3, seeds: tuple[in
         out.write_text(json.dumps(report, indent=1, ensure_ascii=False), encoding="utf-8")
         return report
 
-    if workers > 1 and len(seeds) > 1:
+    if workers > 1 and len(seeds_todo) > 1:
         import multiprocessing
 
         ctx = multiprocessing.get_context("spawn")
         with ProcessPoolExecutor(max_workers=workers, mp_context=ctx) as pool:
             futures = [pool.submit(run_seed, dataset, n_pairs, n_tone, seed, mode, _print)
-                       for seed in seeds]
+                       for seed in seeds_todo]
             for fut in futures:
                 runs.append(fut.result())
                 write()
     else:
-        for seed in seeds:
+        for seed in seeds_todo:
             runs.append(run_seed(dataset, n_pairs, n_tone, seed, mode, log))
             write()
     return write()

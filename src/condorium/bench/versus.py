@@ -381,7 +381,7 @@ LABELS = {"committee": "Committee (7 agents, 2 rounds)",
 
 def readme_table(report: dict) -> str:
     s = report["summary"]
-    lines = ["| system | winner picked | ± sd (3 seeds) | tone flip rate | "
+    lines = [f"| system | winner picked | ± sd ({s['n_seeds']} seeds) | tone flip rate | "
              "tokens / idea | calls / idea |", "|---|---|---|---|---|---|"]
     for system in SYSTEMS:
         m = s["systems"][system]

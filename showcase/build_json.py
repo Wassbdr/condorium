@@ -16,9 +16,9 @@ s = results["summary"]
 sysm = s["systems"]
 model = results["model"].split("/", 1)[-1]
 setup = (f"{sum(s['n_pairs_per_seed'])} synthetic winner/non-winner pairs "
-         f"(fixtures/bench), seeds {results['seeds']}, {model} via NVIDIA NIM, "
+         f"(fixtures/bench), seeds {s['seeds']}, {model} via NVIDIA NIM, "
          "8-CPU VM, no GPU")
-bench_cmd = ("CONDORIUM_RPM=36 panel bench --versus --n {n} --tone {t} --seeds 0,1,2"
+bench_cmd = ("CONDORIUM_RPM=24 panel bench --versus --n {n} --tone {t} --seeds 0,1,2 --resume"
              .format(n=results["n_pairs"], t=results["n_tone"]))
 
 

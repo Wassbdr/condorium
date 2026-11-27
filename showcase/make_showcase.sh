@@ -33,8 +33,8 @@ panel demo >/dev/null   # both recorded runs replay offline
 if [ "${LIVE:-0}" = "1" ]; then
   : "${NVIDIA_NIM_API_KEY:?LIVE=1 needs NVIDIA_NIM_API_KEY}"
   # paced under the NIM free-tier rate limit; hard stop at 1,560 calls
-  CONDORIUM_MODEL="$MODEL" CONDORIUM_MAX_CALLS=1560 CONDORIUM_RPM=36 \
-    panel bench --versus --n 3 --tone 1 --seeds 0,1,2 \
+  CONDORIUM_MODEL="$MODEL" CONDORIUM_MAX_CALLS=1560 CONDORIUM_RPM=24 \
+    panel bench --versus --n 3 --tone 1 --seeds 0,1,2 --resume \
     --out showcase/results/versus_results.json
 fi
 

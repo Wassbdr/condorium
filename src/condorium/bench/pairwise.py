@@ -27,7 +27,9 @@ from .pairset import Pair, Rubric, Split, Variant, build_variants, position_vari
 
 METHODS = ("judge", "jury", "chateval", "committee")
 JURY_MODELS = (MODEL, "nvidia_nim/poolside/laguna-xs-2.1", "nvidia_nim/stepfun-ai/step-5-preview")
-_ORDER = ("committee", "judge", "jury", "chateval")
+_ORDER: tuple[Literal["committee", "judge", "jury", "chateval"], ...] = (
+    "committee", "judge", "jury", "chateval",
+)
 _VERDICT = re.compile(r"\[\[\s*([abc])\s*\]\]", re.IGNORECASE)
 
 
@@ -51,7 +53,8 @@ class Decision:
 def parse_verdict(raw: str) -> Winner | None:
     markers = _VERDICT.findall(raw)
     if len(markers) == 1:
-        return {"a": "a", "b": "b", "c": "tie"}[markers[0].lower()]
+        verdicts: dict[str, Winner] = {"a": "a", "b": "b", "c": "tie"}
+        return verdicts[markers[0].lower()]
     return None
 
 
@@ -98,7 +101,7 @@ def run_chateval(proposals: str, variant_id: str, seed: int) -> Decision:
     roles = ("critic", "scientist")
     prompts = {role: load_prompt(f"system/chateval_{role}.md").body for role in roles}
     template = load_prompt("system/chateval_input.md").body
-    transcript = []
+    transcript: list[dict[str, str]] = []
     final = []
     failures = []
     with usage_meter(scoped=True) as meter:
@@ -159,10 +162,11 @@ def run_pairwise(
         proposals = proposal_input(variant["a"], variant["b"], rubric)
         target = None
         rows = []
-        limited = set()
+        limited: set[str] = set()
         for method in _ORDER:
             if method not in methods:
                 continue
+            decisions: dict[str, Decision]
             try:
                 if method == "committee":
                     comparison = compare(variant["a"], variant["b"], rubric, seed=seed,

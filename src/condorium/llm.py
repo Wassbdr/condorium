@@ -29,7 +29,7 @@ _TRANSIENT_ERRORS = {
     "Timeout", "APITimeoutError", "InternalServerError",
 }
 
-_MODEL_PARAMS = {
+_MODEL_PARAMS: dict[str, dict[str, Any]] = {
     "nvidia_nim/nvidia/nemotron-*": {
         "extra_body": {"chat_template_kwargs": {"enable_thinking": False}},
     },
@@ -109,7 +109,7 @@ class _Usage(NamedTuple):
 
 
 def _take_usage(messages: list[dict], reply: str) -> _Usage:
-    usage = getattr(_reported, "usage", None)
+    usage: tuple[int, int] | None = getattr(_reported, "usage", None)
     _reported.usage = None
     if usage is None:
         prompt_chars = sum(len(m.get("content") or "") for m in messages)

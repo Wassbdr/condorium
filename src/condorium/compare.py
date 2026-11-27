@@ -9,7 +9,7 @@ from collections.abc import Iterable
 from concurrent.futures import ThreadPoolExecutor
 from contextvars import copy_context
 from dataclasses import asdict, dataclass, field
-from typing import Literal
+from typing import Literal, cast
 
 from .bench.pairset import Item, Rubric, Side
 from .llm import complete_text, parse_json, usage_meter
@@ -24,12 +24,16 @@ Winner = Literal["a", "b", "tie"]
 
 @dataclass(frozen=True)
 class Evidence:
+    """A quote verified against the proposal it cites."""
+
     proposal: Side
     quote: str
 
 
 @dataclass
 class Review:
+    """One role's scores, preference, and checked evidence."""
+
     role: str
     preferred: Winner | None
     confidence: int | None
@@ -41,6 +45,8 @@ class Review:
 
 @dataclass
 class Comparison:
+    """The winning side, blind reviews, debate reviews, and token usage."""
+
     winner: Winner
     initial: list[Review]
     debate: list[Review]
@@ -78,7 +84,7 @@ def _preference(value: object) -> Winner | None:
     if isinstance(value, str):
         value = value.strip().lower()
         if value in ("a", "b", "tie"):
-            return value
+            return cast(Winner, value)
     return None
 
 
@@ -101,17 +107,18 @@ def _normalize(role: str, raw: str, a: Item, b: Item, rubric: Rubric) -> Review:
     raw_quotes = data.get("evidence")
     if isinstance(raw_quotes, list):
         for entry in raw_quotes:
-            side = _preference(entry.get("proposal")) if isinstance(entry, dict) else None
+            cited_side = _preference(entry.get("proposal")) if isinstance(entry, dict) else None
             quote = entry.get("quote") if isinstance(entry, dict) else None
             quote = " ".join(quote.split()) if isinstance(quote, str) else ""
-            if side in ("a", "b") and quote and any(quote in text for text in texts[side]):
-                evidence.append(Evidence(side, quote))
+            if cited_side in ("a", "b") and quote and any(quote in text for text in texts[cited_side]):
+                evidence.append(Evidence(cast(Side, cited_side), quote))
             else:
                 dropped += 1
 
     scores: dict[Side, dict[str, int]] = {}
     raw_scores = data.get("scores")
-    for side in ("a", "b"):
+    sides: tuple[Side, Side] = ("a", "b")
+    for side in sides:
         values = raw_scores.get(side) if isinstance(raw_scores, dict) else None
         scores[side] = {
             name: value for criterion in rubric["criteria"] if isinstance(values, dict)

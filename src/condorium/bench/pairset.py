@@ -17,6 +17,8 @@ Side = Literal["a", "b"]
 
 
 class Item(TypedDict):
+    """A proposal with a display title and its full text."""
+
     title: str
     text: str
 
@@ -42,6 +44,8 @@ class Variant(TypedDict):
 
 
 class Criterion(TypedDict):
+    """A named rubric criterion with a one-line description."""
+
     name: str
     description: str
 
@@ -345,7 +349,7 @@ def _pad(text: str, rng: random.Random) -> str:
     target = len(text.split())
     sentences = list(_FILLER)
     rng.shuffle(sentences)
-    padding = []
+    padding: list[str] = []
     words = 0
     while words < target:
         sentence = sentences[len(padding) % len(sentences)]

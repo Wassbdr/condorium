@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextvars import copy_context
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from ..compare import (
     MAX_TOKENS,
@@ -26,9 +26,8 @@ from ..prompts import load_prompt, render
 from .pairset import Pair, Rubric, Split, Variant, build_variants, position_variants
 
 METHODS = ("judge", "jury", "chateval", "committee")
-STEP_MODEL = "nvidia_nim/stepfun-ai/step-5-preview"
-STEP_MAX_TOKENS = 1024
-JURY_MODELS = (MODEL, "nvidia_nim/poolside/laguna-xs-2.1", STEP_MODEL)
+KIMI_MODEL = "nvidia_nim/moonshotai/kimi-k3.1-pro"
+JURY_MODELS = (MODEL, "nvidia_nim/poolside/laguna-xs-2.1", KIMI_MODEL)
 _ORDER: tuple[Literal["committee", "judge", "jury", "chateval"], ...] = (
     "committee", "judge", "jury", "chateval",
 )
@@ -61,9 +60,11 @@ def parse_verdict(raw: str) -> Winner | None:
 
 
 def _sample(system: str, user: str, model: str, seed: int) -> str:
-    max_tokens = STEP_MAX_TOKENS if model == STEP_MODEL else MAX_TOKENS
+    params: dict[str, Any] = {}
+    if model == KIMI_MODEL:
+        params["extra_body"] = {"thinking": {"type": "disabled"}}
     return complete_text(system, user, model=model, temperature=TEMPERATURE,
-                         seed=seed, max_tokens=max_tokens, max_retries=0, num_retries=0)
+                         seed=seed, max_tokens=MAX_TOKENS, max_retries=0, num_retries=0, **params)
 
 
 def run_votes(

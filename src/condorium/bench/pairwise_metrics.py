@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
+import yaml
+
 BOOTSTRAP_DRAWS = 2000
 BOOTSTRAP_SEED = 42
 QUALITY = ("accuracy", "synthetic", "iclr", "position_flip", "slot_a", "verbosity", "tone")
@@ -145,7 +147,42 @@ def _render_split(report: dict) -> str:
     return "\n".join(lines)
 
 
-def render_results(reports: Sequence[dict]) -> str:
+def _render_iterations(iterations: Sequence[dict]) -> str:
+    if not iterations:
+        return ""
+    columns = ("Method", "Metric", "Value", "Delta vs previous")
+    fields = (("accuracy", "Accuracy"), ("position_flip", "Position flip"),
+              ("tokens", "Tokens / decision"))
+    lines = ["", "## Iterations", ""]
+    previous: dict = {}
+    for iteration in iterations:
+        seeds = ", ".join(map(str, iteration["seeds"]))
+        lines.extend([
+            f"### Iteration {iteration['id']}: {iteration['change']}",
+            "",
+            f"Split: `{iteration['split']}`. Seeds: `{seeds}`.",
+            "",
+            "| " + " | ".join(columns) + " |",
+            "| " + " | ".join("---" for _ in columns) + " |",
+        ])
+        comparable = all(iteration[key] == previous.get(key) for key in ("split", "seeds"))
+        for method, values in iteration["metrics"].items():
+            old = previous["metrics"].get(method, {}) if comparable else {}
+            for key, label in fields:
+                value = values[key]
+                percent = key != "tokens"
+                display = f"{value:.2%}" if percent else f"{value:,.1f}"
+                delta = "n/a"
+                if key in old:
+                    change = value - old[key]
+                    delta = f"{100 * change:+.2f} pp" if percent else f"{change:+,.1f}"
+                lines.append(f"| {method} | {label} | {display} | {delta} |")
+        lines.append("")
+        previous = iteration
+    return "\n".join(lines)
+
+
+def render_results(reports: Sequence[dict], iterations: Sequence[dict] = ()) -> str:
     header = (
         "# Pairwise benchmark results\n\n"
         "Cells show the estimate and a 95% percentile interval from 2,000 pair-bootstrap "
@@ -154,10 +191,23 @@ def render_results(reports: Sequence[dict]) -> str:
         "the same pair in its original order. Slot A counts explicit A picks; a tie is "
         "not an A pick. Token totals include cached usage.\n\n"
     )
-    return header + "\n".join(_render_split(report) for report in reports)
+    return header + "\n".join(_render_split(report) for report in reports) + _render_iterations(
+        iterations
+    )
 
 
-def write_results(report: dict, path: Path) -> None:
+def write_results(report: dict, path: Path, *, iterations_path: Path | None = None) -> None:
+    iterations = []
+    if iterations_path is not None and iterations_path.is_file():
+        try:
+            iterations = yaml.safe_load(iterations_path.read_text(encoding="utf-8"))
+            if iterations is None:
+                iterations = []
+            if not isinstance(iterations, list):
+                raise ValueError("expected a list of iterations")
+            _render_iterations(iterations)
+        except (yaml.YAMLError, KeyError, AttributeError, TypeError, ValueError) as exc:
+            raise ValueError(f"Invalid iteration history in {iterations_path}: {exc}") from exc
     path.mkdir(parents=True, exist_ok=True)
     out = path / f"{report['split']}.json"
     partial = out.with_suffix(".tmp")
@@ -165,4 +215,4 @@ def write_results(report: dict, path: Path) -> None:
     partial.replace(out)
     reports = [json.loads(f.read_text(encoding="utf-8")) for split in ("test", "dev")
                if (f := path / f"{split}.json").is_file()]
-    (path.parent / "results.md").write_text(render_results(reports), encoding="utf-8")
+    (path.parent / "results.md").write_text(render_results(reports, iterations), encoding="utf-8")

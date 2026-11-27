@@ -80,7 +80,10 @@ panel bench pairwise --split dev --seeds 0,1,2 --methods judge,jury,chateval,com
 ```
 
 The runner writes per-decision JSON to `benchmarks/results/<split>.json`
-and a report to `benchmarks/results.md`. It resumes through request
+and a report to `benchmarks/results.md`. To record a measured iteration,
+append its split, seeds and method metrics to [`iterations.yaml`](../iterations.yaml).
+The renderer includes the history on each run and shows deltas only when
+the split and seeds match the previous iteration. The benchmark resumes through request
 responses in `benchmarks/cache/` or `CONDORIUM_CACHE`. Set
 `CONDORIUM_OFFLINE=1` to reject cache misses. For a live NIM run, set
 `NIM_API_KEY` or `NVIDIA_NIM_API_KEY`. Use `--max-calls` to cap live attempts.
@@ -91,13 +94,16 @@ that quote unlicensed ICLR text.
 The judge, ChatEval, committee, and one jury member use
 `nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b` with thinking disabled.
 The other jury members use `nvidia_nim/poolside/laguna-xs-2.1` and
-`nvidia_nim/stepfun-ai/step-5-preview`. Step 5 has a 1,024-token output budget
-to leave room for the verdict after reasoning. An invalid ballot is recorded
+`nvidia_nim/moonshotai/kimi-k3.1-pro`. The benchmark requests non-thinking mode
+for Kimi. An invalid ballot is recorded
 as an abstention, but still counts toward the number of ballots needed for
 a majority. If NIM still returns HTTP 429 after retries, the command saves
 partial results and exits with status 75.
 
-Replay the checked-in synthetic smoke cache without fetching ICLR text or
+The committee retries a review once at 768 output tokens when the original
+384-token response fails to parse and reported usage reached that cap.
+
+Replay the checked-in synthetic cache without fetching ICLR text or
 making live calls:
 
 ```sh
@@ -106,8 +112,8 @@ CONDORIUM_OFFLINE=0 panel bench pairwise --split dev --seeds 0 \
 ```
 
 The replay reports only decisions that can be completed from the cache.
-The [recorded smoke](../results.md) used the previous 384-token limit for
-Step 5. Those Step 5 responses cannot satisfy requests with the new limit.
+The [recorded baseline](../results.md#iterations) used Step 5 as the third
+jury member. Its cached ballots cannot satisfy Kimi requests.
 
 The references are the pairwise judge from [MT-Bench](https://arxiv.org/abs/2306.05685),
 [PoLL](https://arxiv.org/abs/2404.18796) majority voting across three model

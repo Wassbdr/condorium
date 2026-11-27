@@ -1,0 +1,9 @@
+- id: 0
+  change: "Baseline: protocol v1, dev split, seed 0"
+  split: dev
+  seeds: [0]
+  metrics:
+    committee: {accuracy: 0.765625, position_flip: 0.3125, tokens: 2845.275}
+    judge: {accuracy: 0.71875, position_flip: 0.0625, tokens: 3093.875}
+    jury: {accuracy: 0.734375, position_flip: 0.3125, tokens: 3135.85}
+    chateval: {accuracy: 0.703125, position_flip: 0.125, tokens: 3163.85}

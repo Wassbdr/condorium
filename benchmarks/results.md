@@ -33,3 +33,24 @@ Parse failures: 35. See the per-decision JSON for raw outputs.
 | chateval | 0 | 40 | 3,163.8 [2,729.9, 3,621.3] | 4.0 [4.0, 4.0] | n/a | n/a | n/a |
 | committee | pooled | 40 | 2,845.3 [2,366.3, 3,355.7] | 3.1 [3.0, 3.3] | 8% [0%, 16%] | 0.1 [0.0, 0.3] | 0.3 [0.1, 0.5] |
 | committee | 0 | 40 | 2,845.3 [2,366.3, 3,355.7] | 3.1 [3.0, 3.3] | 8% [0%, 16%] | 0.1 [0.0, 0.3] | 0.3 [0.1, 0.5] |
+
+## Iterations
+
+### Iteration 0: Baseline: protocol v1, dev split, seed 0
+
+Split: `dev`. Seeds: `0`.
+
+| Method | Metric | Value | Delta vs previous |
+| --- | --- | --- | --- |
+| committee | Accuracy | 76.56% | n/a |
+| committee | Position flip | 31.25% | n/a |
+| committee | Tokens / decision | 2,845.3 | n/a |
+| judge | Accuracy | 71.88% | n/a |
+| judge | Position flip | 6.25% | n/a |
+| judge | Tokens / decision | 3,093.9 | n/a |
+| jury | Accuracy | 73.44% | n/a |
+| jury | Position flip | 31.25% | n/a |
+| jury | Tokens / decision | 3,135.8 | n/a |
+| chateval | Accuracy | 70.31% | n/a |
+| chateval | Position flip | 12.50% | n/a |
+| chateval | Tokens / decision | 3,163.8 | n/a |

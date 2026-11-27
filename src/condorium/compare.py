@@ -18,6 +18,7 @@ from .prompts import load_prompt, render
 MODEL = "nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b"
 TEMPERATURE = 0.7
 MAX_TOKENS = 384
+_RETRY_MAX_TOKENS = 768
 ROLES = ("judge", "skeptic", "scientist")
 Winner = Literal["a", "b", "tie"]
 
@@ -103,6 +104,17 @@ def _review_json(raw: str) -> dict:
         return data
 
     text = raw.strip()
+    leading = text
+    if leading.startswith("```"):
+        leading = leading[3:].removeprefix("json").lstrip()
+    try:
+        data, _ = json.JSONDecoder().raw_decode(leading)
+    except json.JSONDecodeError:
+        pass
+    else:
+        if isinstance(data, dict):
+            return data
+
     try:
         json.loads(text)
     except json.JSONDecodeError as exc:
@@ -175,10 +187,21 @@ def compare(
     def assess(role: str, index: int, *, extra: str = "", user: str = proposals) -> Review:
         persona = load_prompt(f"{folder}/{role}.md").body
         system = "\n\n".join(part for part in (persona, extra, contract) if part)
-        raw = complete_text(system, user, model=model, temperature=temperature,
-                            seed=sample_seed(seed, "committee", variant_id, index),
-                            max_tokens=MAX_TOKENS, max_retries=0, num_retries=0)
-        return _normalize(role, raw, a, b, rubric)
+        review_seed = sample_seed(seed, "committee", variant_id, index)
+
+        def request(max_tokens: int) -> Review:
+            raw = complete_text(system, user, model=model, temperature=temperature,
+                                seed=review_seed, max_tokens=max_tokens,
+                                max_retries=0, num_retries=0)
+            return _normalize(role, raw, a, b, rubric)
+
+        with usage_meter(scoped=True) as attempt:
+            review = request(MAX_TOKENS)
+        if review.parse_failure is not None and not attempt.estimated and (
+            attempt.completion_tokens >= MAX_TOKENS
+        ):
+            return request(_RETRY_MAX_TOKENS)
+        return review
 
     with usage_meter(scoped=True) as usage, ThreadPoolExecutor(max_workers=len(ROLES)) as pool:
         initial = [pool.submit(copy_context().run, assess, role, index)

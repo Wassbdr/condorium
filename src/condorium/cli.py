@@ -345,7 +345,7 @@ def bench_pairwise(
             split=checked_split, seeds=seed_values, methods=tuple(m.strip() for m in methods.split(",")),
             limit=limit, position_only=position_only, max_calls=max_calls,
         )
-        write_results(report, output)
+        write_results(report, output, iterations_path=root / "iterations.yaml")
     except (OSError, ValueError, OfflineCacheMiss) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(1) from exc

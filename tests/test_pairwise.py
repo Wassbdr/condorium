@@ -7,7 +7,7 @@ from typer.testing import CliRunner
 
 from condorium import llm
 from condorium.bench import pairset, pairwise
-from condorium.bench.pairwise_metrics import metrics
+from condorium.bench.pairwise_metrics import metrics, render_results, write_results
 from condorium.cli import app
 from condorium.compare import _normalize, compare, sample_seed
 
@@ -84,6 +84,50 @@ def test_committee_recovers_misnested_review_and_checks_evidence(repeat):
     assert _normalize("scientist", unrelated, A, B, RUBRIC).parse_failure == unrelated
 
 
+@pytest.mark.parametrize("fenced", [False, True])
+def test_committee_reads_first_complete_review_before_trailing_text(fenced):
+    review = _review("a", [{"proposal": "a", "quote": "Use actual data"},
+                          {"proposal": "b", "quote": "invented"}])
+    leading = f"```json\n{review}\n```" if fenced else review
+    raw = leading + "\n\n**Rubric application**\n" + review[:-20]
+    result = _normalize("judge", raw, A, B, RUBRIC)
+    assert result.parse_failure is None
+    assert result.preferred == "a"
+    assert [quote.quote for quote in result.evidence] == ["Use actual data"]
+    assert result.dropped == 1
+
+
+@pytest.mark.parametrize(("used", "retry_reply", "expected_calls"), [
+    (383, "", 3),
+    (384, "", 4),
+    (384, _review("a", [{"proposal": "a", "quote": "Use actual data"}]), 4),
+])
+def test_committee_retries_only_invalid_reviews_that_hit_the_cap(
+    monkeypatch, used, retry_reply, expected_calls,
+):
+    requests = {}
+    truncated = '{"scores":{"a":{"Problem fit":1'
+    valid = _review("a", [{"proposal": "a", "quote": "Use actual data"}])
+
+    def completion(*, messages, seed, max_tokens, **_):
+        if "Rubric Judge" in messages[0]["content"]:
+            requests[max_tokens] = seed
+            llm.record_usage(20, used if max_tokens == 384 else 100)
+            return truncated if max_tokens == 384 else retry_reply
+        llm.record_usage(20, 384)
+        return valid
+
+    monkeypatch.setattr(llm, "_completion", completion)
+    result = compare(A, B, RUBRIC)
+    assert result.usage["calls"] == expected_calls
+    if expected_calls == 4:
+        assert requests[384] == requests[768]
+        assert result.initial[0].parse_failure == (None if retry_reply else "")
+    else:
+        assert set(requests) == {384}
+        assert result.initial[0].parse_failure == truncated
+
+
 def test_judge_fallback_and_jury_matched_votes(monkeypatch):
     calls = []
     replies = iter(("[[A]]", "[[B]]", "[[C]]", "[[A]]", "[[A]]", "[[B]]", "[[A]]"))
@@ -109,10 +153,12 @@ def test_judge_fallback_and_jury_matched_votes(monkeypatch):
     assert pairwise.parse_verdict("[[A]] or [[B]]") is None
 
 
-@pytest.mark.parametrize(("step_reply", "expected"), [("", "tie"), ("[[A]]", "a")])
-def test_jury_reserves_step_output_and_counts_invalid_ballots(monkeypatch, step_reply, expected):
+@pytest.mark.parametrize(("third_reply", "expected"), [("", "tie"), ("[[A]]", "a")])
+def test_jury_requests_kimi_without_thinking_and_counts_invalid_ballots(
+    monkeypatch, third_reply, expected,
+):
     requests = []
-    replies = iter(("[[A]]", "no verdict", step_reply))
+    replies = iter(("[[A]]", "no verdict", third_reply))
 
     def complete(**request):
         requests.append(request)
@@ -121,9 +167,10 @@ def test_jury_reserves_step_output_and_counts_invalid_ballots(monkeypatch, step_
     monkeypatch.setattr(llm, "_completion", complete)
     jury = pairwise.run_votes("jury", "proposals", "variant", 0, None)["jury"]
     assert jury.winner == expected
-    assert [request["max_tokens"] for request in requests] == [384, 384, 1024]
-    assert requests[-1]["reasoning_effort"] == "low"
-    missing = ["no verdict", ""] if not step_reply else ["no verdict"]
+    assert [request["max_tokens"] for request in requests] == [384, 384, 384]
+    assert requests[-1]["model"] == "nvidia_nim/moonshotai/kimi-k3.1-pro"
+    assert requests[-1]["extra_body"] == {"thinking": {"type": "disabled"}}
+    missing = ["no verdict", ""] if not third_reply else ["no verdict"]
     assert [f.raw for f in jury.failures] == missing
     assert jury.abstains == len(missing)
 
@@ -198,6 +245,7 @@ def test_two_pair_cli_run_replays_all_methods_offline(sandbox, monkeypatch):
     (root / "rubrics/proposal.yaml").write_bytes(
         (ROOT / "benchmarks/rubrics/proposal.yaml").read_bytes()
     )
+    (root / "iterations.yaml").write_bytes((ROOT / "benchmarks/iterations.yaml").read_bytes())
     monkeypatch.setenv("CONDORIUM_CACHE", str(root / "cache"))
     monkeypatch.setattr(llm, "_completion", _bench_completion)
     runner = CliRunner()
@@ -221,6 +269,37 @@ def test_two_pair_cli_run_replays_all_methods_offline(sandbox, monkeypatch):
     assert offline["live_calls"] == offline["live_attempts"] == 0
     assert offline["cache_hits"] == 104
     assert "| committee | pooled |" in (root / "results.md").read_text()
+    assert "### Iteration 0: Baseline: protocol v1, dev split, seed 0" in (
+        root / "results.md"
+    ).read_text()
+
+
+def test_results_render_iteration_deltas_only_for_matching_split_and_seeds():
+    def entry(index, split, seeds, accuracy, flip, tokens):
+        return {"id": index, "change": "Change", "split": split, "seeds": seeds,
+                "metrics": {"judge": {"accuracy": accuracy, "position_flip": flip,
+                                      "tokens": tokens}}}
+
+    assert "## Iterations" not in render_results([])
+    output = render_results([], [
+        entry(0, "dev", [0], 0.75, 0.25, 100),
+        entry(1, "dev", [0], 0.875, 0.125, 90),
+        entry(2, "test", [0], 0.5, 0.5, 95),
+        entry(3, "test", [0, 1], 0.75, 0.5, 100),
+    ])
+    assert "| judge | Accuracy | 87.50% | +12.50 pp |" in output
+    assert "| judge | Position flip | 12.50% | -12.50 pp |" in output
+    assert "| judge | Tokens / decision | 90.0 | -10.0 |" in output
+    assert "| judge | Accuracy | 50.00% | n/a |" in output.split("### Iteration 2:")[1]
+    assert "| judge | Accuracy | 75.00% | n/a |" in output.split("### Iteration 3:")[1]
+
+
+def test_results_reject_malformed_iteration_history(tmp_path):
+    path = tmp_path / "iterations.yaml"
+    path.write_text("- id: 0\n")
+    with pytest.raises(ValueError, match=r"Invalid iteration history in .*iterations\.yaml"):
+        write_results({}, tmp_path / "results", iterations_path=path)
+    assert not (tmp_path / "results").exists()
 
 
 def test_live_cap_is_shared_across_nested_workers_and_partial_results(monkeypatch):
@@ -286,7 +365,7 @@ def test_pairwise_cli_exits_75_after_saving_rate_limited_report(monkeypatch, tmp
     assert report["rate_limited"] and report["live_calls"] == 0
     assert report["model"] == "nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b"
     assert report["jury_models"] == [
-        report["model"], "nvidia_nim/poolside/laguna-xs-2.1", "nvidia_nim/stepfun-ai/step-5-preview",
+        report["model"], "nvidia_nim/poolside/laguna-xs-2.1", "nvidia_nim/moonshotai/kimi-k3.1-pro",
     ]
     assert "HTTP 429" in (tmp_path / "results.md").read_text()
 

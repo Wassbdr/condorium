@@ -1,0 +1,1980 @@
+{
+ "model": "nvidia_nim/nvidia/nemotron-3.5-lightning-30b-a3b",
+ "mode": "hackathon",
+ "dataset": "/home/ubuntu/repos/condorium/fixtures/bench/synthetic_pairs.json",
+ "n_pairs": 3,
+ "n_tone": 1,
+ "seeds": [
+  0,
+  1,
+  2
+ ],
+ "summary": {
+  "n_seeds": 1,
+  "seeds": [
+   0
+  ],
+  "n_pairs_per_seed": [
+   3
+  ],
+  "n_tone_cases": 1,
+  "systems": {
+   "committee": {
+    "accuracy_mean": 0.667,
+    "accuracy_sd_across_seeds": 0.0,
+    "accuracy_per_seed": [
+     0.667
+    ],
+    "accuracy_by_tier": {
+     "easy": 0.667
+    },
+    "ties": 0,
+    "tokens_per_idea": 95847.0,
+    "calls_per_idea": 19.0,
+    "tone_flip_rate": 0.0,
+    "tone_score_delta": -0.5
+   },
+   "judge_matched": {
+    "accuracy_mean": 1.0,
+    "accuracy_sd_across_seeds": 0.0,
+    "accuracy_per_seed": [
+     1.0
+    ],
+    "accuracy_by_tier": {
+     "easy": 1.0
+    },
+    "ties": 0,
+    "tokens_per_idea": 103900.0,
+    "calls_per_idea": 45.167,
+    "tone_flip_rate": 0.0,
+    "tone_score_delta": 0.0
+   },
+   "judge_1call": {
+    "accuracy_mean": 1.0,
+    "accuracy_sd_across_seeds": 0.0,
+    "accuracy_per_seed": [
+     1.0
+    ],
+    "accuracy_by_tier": {
+     "easy": 1.0
+    },
+    "ties": 0,
+    "tokens_per_idea": 2324.5,
+    "calls_per_idea": 1.0,
+    "tone_flip_rate": 1.0,
+    "tone_score_delta": -1.0
+   }
+  },
+  "pick_agreement_committee_vs_judge_matched": 0.667,
+  "verdict_agreement_committee_vs_judge_matched": 0.833,
+  "committee_verdict_stability_across_seeds": null,
+  "believer_cap_fired": 0,
+  "debates_triggered": 6,
+  "llm_calls_total": 448,
+  "judge_budget_reached": 1.0,
+  "tokens_estimated": false
+ },
+ "runs": [
+  {
+   "seed": 0,
+   "pairs": [
+    {
+     "hackathon": "Open Science Hack",
+     "tier": "easy",
+     "entries": {
+      "loser": {
+       "committee": {
+        "verdict": "GO",
+        "score": 5.0,
+        "round1": {
+         "believer": 5,
+         "investor": 5,
+         "judge": 6,
+         "jury": 5,
+         "skeptic": 3,
+         "strategist": 5
+        },
+        "round2": {
+         "believer": 7,
+         "investor": 5,
+         "judge": 5,
+         "jury": 5,
+         "skeptic": 3,
+         "strategist": 5
+        },
+        "capped": [],
+        "disagreements": 3,
+        "debate": true,
+        "usage": {
+         "calls": 19,
+         "prompt_tokens": 33536,
+         "completion_tokens": 68681,
+         "total_tokens": 102217,
+         "estimated": false
+        }
+       },
+       "judge": {
+        "verdict": "ITERATE",
+        "score": 5.0,
+        "n_samples": 56,
+        "budget_reached": true,
+        "usage": {
+         "calls": 57,
+         "prompt_tokens": 20193,
+         "completion_tokens": 101573,
+         "total_tokens": 121766,
+         "estimated": false
+        },
+        "first": {
+         "score": 6,
+         "verdict": "ITERATE",
+         "approx_tokens": 2174
+        },
+        "samples": [
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         }
+        ]
+       },
+       "title": "SciChat",
+       "text": "SciChat lets anyone chat with the entire scientific literature. Ask a question and a language model answers with an explanation of the state of research. It is aimed at students, journalists and researchers. We connected a large language model to a prompt that asks it to cite sources and built a chat interface. Retrieval over real papers is planned. Stack: OpenAI API, Streamlit. Demo: asking the chatbot about climate science and reading the answer"
+      },
+      "winner": {
+       "committee": {
+        "verdict": "ITERATE",
+        "score": 7.0,
+        "round1": {
+         "believer": 7,
+         "investor": 4,
+         "judge": 7,
+         "jury": 7,
+         "skeptic": 5,
+         "strategist": 7
+        },
+        "round2": {
+         "believer": 8,
+         "investor": 4,
+         "judge": 7,
+         "jury": 7,
+         "skeptic": 5,
+         "strategist": 7
+        },
+        "capped": [],
+        "disagreements": 3,
+        "debate": true,
+        "usage": {
+         "calls": 19,
+         "prompt_tokens": 33063,
+         "completion_tokens": 71087,
+         "total_tokens": 104150,
+         "estimated": false
+        }
+       },
+       "judge": {
+        "verdict": "ITERATE",
+        "score": 7.0,
+        "n_samples": 41,
+        "budget_reached": true,
+        "usage": {
+         "calls": 41,
+         "prompt_tokens": 14924,
+         "completion_tokens": 91632,
+         "total_tokens": 106556,
+         "estimated": false
+        },
+        "first": {
+         "score": 8,
+         "verdict": "GO",
+         "approx_tokens": 2598
+        },
+        "samples": [
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 8,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "GO"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         }
+        ]
+       },
+       "title": "Retraction Radar",
+       "text": "Researchers sometimes cite papers that were later retracted without knowing it. We built a command-line tool that reads a BibTeX file, checks each DOI against the public Retraction Watch database export and Crossref, and prints the retracted ones with the retraction notice. We ran it on the bibliographies of 20 open-access theses from our university: it flagged 3 real retracted citations that the authors confirmed. Stack: Python, Crossref API. Demo: run it on a sample thesis bibliography"
+      }
+     },
+     "picks": {
+      "committee": 0.0,
+      "judge_matched": 1.0,
+      "judge_1call": 1.0
+     }
+    },
+    {
+     "hackathon": "Mobility Makers",
+     "tier": "easy",
+     "entries": {
+      "winner": {
+       "committee": {
+        "verdict": "ITERATE",
+        "score": 6.5,
+        "round1": {
+         "believer": 6,
+         "investor": 5,
+         "judge": 7,
+         "jury": 7,
+         "skeptic": 5,
+         "strategist": 6
+        },
+        "round2": {
+         "believer": 7,
+         "investor": 5,
+         "judge": 7,
+         "jury": 7,
+         "skeptic": 5,
+         "strategist": 6
+        },
+        "capped": [],
+        "disagreements": 3,
+        "debate": true,
+        "usage": {
+         "calls": 19,
+         "prompt_tokens": 33589,
+         "completion_tokens": 59643,
+         "total_tokens": 93232,
+         "estimated": false
+        }
+       },
+       "judge": {
+        "verdict": "ITERATE",
+        "score": 6.0,
+        "n_samples": 41,
+        "budget_reached": true,
+        "usage": {
+         "calls": 42,
+         "prompt_tokens": 15569,
+         "completion_tokens": 84849,
+         "total_tokens": 100418,
+         "estimated": false
+        },
+        "first": {
+         "score": 6,
+         "verdict": "ITERATE",
+         "approx_tokens": 2449
+        },
+        "samples": [
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         }
+        ]
+       },
+       "title": "Bike Lock Map",
+       "text": "Cyclists in our city have bikes stolen at poorly lit racks. We merged the open bike-rack dataset with police theft reports published as open data to colour each rack by theft rate, and added a 'safest rack near me' button. We checked the ten riskiest racks on Saturday night: eight had broken or missing lighting. Stack: Python, Leaflet. Demo: tap the button from the venue and get the safest rack within 300 metres, with the lighting photos"
+      },
+      "loser": {
+       "committee": {
+        "verdict": "ITERATE",
+        "score": 4.0,
+        "round1": {
+         "believer": 5,
+         "investor": 2,
+         "judge": 5,
+         "jury": 4,
+         "skeptic": 4,
+         "strategist": 3
+        },
+        "round2": {
+         "believer": 6,
+         "investor": 2,
+         "judge": 5,
+         "jury": 4,
+         "skeptic": 4,
+         "strategist": 3
+        },
+        "capped": [],
+        "disagreements": 3,
+        "debate": true,
+        "usage": {
+         "calls": 19,
+         "prompt_tokens": 32039,
+         "completion_tokens": 60894,
+         "total_tokens": 92933,
+         "estimated": false
+        }
+       },
+       "judge": {
+        "verdict": "ITERATE",
+        "score": 5.0,
+        "n_samples": 41,
+        "budget_reached": true,
+        "usage": {
+         "calls": 41,
+         "prompt_tokens": 14432,
+         "completion_tokens": 79595,
+         "total_tokens": 94027,
+         "estimated": false
+        },
+        "first": {
+         "score": 4,
+         "verdict": "ITERATE",
+         "approx_tokens": 2293
+        },
+        "samples": [
+         {
+          "score": 4,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 3,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 3,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 3,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 3,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 4,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 3,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 3,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 3,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         }
+        ]
+       },
+       "title": "HyperRoute",
+       "text": "HyperRoute is a multimodal mobility super-app combining trains, buses, scooters, taxis, car sharing and flights in one booking flow, with AI choosing the optimal trip for price, time and carbon. We wrote the business plan, designed the booking screens and listed 25 operators we would integrate. No operator API has been connected yet. Stack: Figma, React Native. Demo: the clickable booking flow for a fictional trip"
+      }
+     },
+     "picks": {
+      "committee": 1.0,
+      "judge_matched": 1.0,
+      "judge_1call": 1.0
+     }
+    },
+    {
+     "hackathon": "Open Transit Jam",
+     "tier": "easy",
+     "entries": {
+      "winner": {
+       "committee": {
+        "verdict": "ITERATE",
+        "score": 6.5,
+        "round1": {
+         "believer": 7,
+         "investor": 5,
+         "judge": 7,
+         "jury": 7,
+         "skeptic": 5,
+         "strategist": 6
+        },
+        "round2": {
+         "believer": 7,
+         "investor": 5,
+         "judge": 7,
+         "jury": 7,
+         "skeptic": 6,
+         "strategist": 5
+        },
+        "capped": [],
+        "disagreements": 3,
+        "debate": true,
+        "usage": {
+         "calls": 19,
+         "prompt_tokens": 34060,
+         "completion_tokens": 70775,
+         "total_tokens": 104835,
+         "estimated": false
+        }
+       },
+       "judge": {
+        "verdict": "ITERATE",
+        "score": 7.0,
+        "n_samples": 53,
+        "budget_reached": true,
+        "usage": {
+         "calls": 53,
+         "prompt_tokens": 19504,
+         "completion_tokens": 101628,
+         "total_tokens": 121132,
+         "estimated": false
+        },
+        "first": {
+         "score": 8,
+         "verdict": "GO",
+         "approx_tokens": 2285
+        },
+        "samples": [
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "GO"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "GO"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "GO"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "GO"
+         },
+         {
+          "score": 8,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 8,
+          "verdict": "GO"
+         },
+         {
+          "score": 7,
+          "verdict": "ITERATE"
+         }
+        ]
+       },
+       "title": "StopWatch",
+       "text": "Bus riders on the city's night lines often wait at stops where the real-time board is dark. We built a web page that reads the public GTFS-RT feed and shows the next three arrivals for one stop when you scan a QR sticker placed on the pole. During the weekend we stuck stickers on 12 night stops and logged 140 scans in two evenings. Stack: Python, FastAPI, the open feed. Demo: scan the sticker on stage and compare with a live bus tracker"
+      },
+      "loser": {
+       "committee": {
+        "verdict": "ITERATE",
+        "score": 5.0,
+        "round1": {
+         "believer": 6,
+         "investor": 6,
+         "judge": 5,
+         "jury": 5,
+         "skeptic": 5,
+         "strategist": 4
+        },
+        "round2": {
+         "believer": 7,
+         "investor": 6,
+         "judge": 5,
+         "jury": 5,
+         "skeptic": 5,
+         "strategist": 4
+        },
+        "capped": [],
+        "disagreements": 3,
+        "debate": true,
+        "usage": {
+         "calls": 19,
+         "prompt_tokens": 32876,
+         "completion_tokens": 44839,
+         "total_tokens": 77715,
+         "estimated": false
+        }
+       },
+       "judge": {
+        "verdict": "ITERATE",
+        "score": 5.0,
+        "n_samples": 37,
+        "budget_reached": true,
+        "usage": {
+         "calls": 37,
+         "prompt_tokens": 13024,
+         "completion_tokens": 66477,
+         "total_tokens": 79501,
+         "estimated": false
+        },
+        "first": {
+         "score": 6,
+         "verdict": "ITERATE",
+         "approx_tokens": 2148
+        },
+        "samples": [
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 7,
+          "verdict": "GO"
+         },
+         {
+          "score": 6,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         },
+         {
+          "score": 5,
+          "verdict": "ITERATE"
+         }
+        ]
+       },
+       "title": "MetroMind",
+       "text": "MetroMind is an AI assistant for public transport. Users can ask anything about their trip in natural language and the assistant answers with routes, delays and tips. It is built on a large language model with a prompt describing the city's network. Future versions will add ticketing, accessibility routing, crowd prediction and integrations with ride-sharing and bike-share operators. Stack: OpenAI API, React. Demo: a chat window answering questions about the network"
+      }
+     },
+     "picks": {
+      "committee": 1.0,
+      "judge_matched": 1.0,
+      "judge_1call": 1.0
+     }
+    }
+   ],
+   "tone": [
+    {
+     "title": "Retraction Radar",
+     "role": "winner",
+     "neutral": {
+      "committee": {
+       "verdict": "ITERATE",
+       "score": 7.0,
+       "round1": {
+        "believer": 7,
+        "investor": 4,
+        "judge": 7,
+        "jury": 7,
+        "skeptic": 5,
+        "strategist": 7
+       },
+       "round2": {
+        "believer": 8,
+        "investor": 4,
+        "judge": 7,
+        "jury": 7,
+        "skeptic": 5,
+        "strategist": 7
+       },
+       "capped": [],
+       "disagreements": 3,
+       "debate": true,
+       "usage": {
+        "calls": 19,
+        "prompt_tokens": 33063,
+        "completion_tokens": 71087,
+        "total_tokens": 104150,
+        "estimated": false
+       }
+      },
+      "judge": {
+       "verdict": "ITERATE",
+       "score": 7.0,
+       "n_samples": 41,
+       "budget_reached": true,
+       "usage": {
+        "calls": 41,
+        "prompt_tokens": 14924,
+        "completion_tokens": 91632,
+        "total_tokens": 106556,
+        "estimated": false
+       },
+       "first": {
+        "score": 8,
+        "verdict": "GO",
+        "approx_tokens": 2598
+       },
+       "samples": [
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 8,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 6,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 8,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 6,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 8,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "GO"
+        },
+        {
+         "score": 6,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 6,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        }
+       ]
+      },
+      "title": "Retraction Radar",
+      "text": "Researchers sometimes cite papers that were later retracted without knowing it. We built a command-line tool that reads a BibTeX file, checks each DOI against the public Retraction Watch database export and Crossref, and prints the retracted ones with the retraction notice. We ran it on the bibliographies of 20 open-access theses from our university: it flagged 3 real retracted citations that the authors confirmed. Stack: Python, Crossref API. Demo: run it on a sample thesis bibliography"
+     },
+     "enthusiastic": {
+      "committee": {
+       "verdict": "ITERATE",
+       "score": 6.5,
+       "round1": {
+        "believer": 6,
+        "investor": 5,
+        "judge": 7,
+        "jury": 7,
+        "skeptic": 5,
+        "strategist": 6
+       },
+       "round2": {
+        "believer": 7,
+        "investor": 5,
+        "judge": 7,
+        "jury": 7,
+        "skeptic": 5,
+        "strategist": 6
+       },
+       "capped": [],
+       "disagreements": 3,
+       "debate": true,
+       "usage": {
+        "calls": 19,
+        "prompt_tokens": 36059,
+        "completion_tokens": 70873,
+        "total_tokens": 106932,
+        "estimated": false
+       }
+      },
+      "judge": {
+       "verdict": "ITERATE",
+       "score": 7.0,
+       "n_samples": 44,
+       "budget_reached": true,
+       "usage": {
+        "calls": 44,
+        "prompt_tokens": 15532,
+        "completion_tokens": 92151,
+        "total_tokens": 107683,
+        "estimated": false
+       },
+       "first": {
+        "score": 7,
+        "verdict": "ITERATE",
+        "approx_tokens": 2447
+       },
+       "samples": [
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 6,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 6,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "GO"
+        },
+        {
+         "score": 8,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "GO"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 6,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "GO"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 7,
+         "verdict": "GO"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        },
+        {
+         "score": 6,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 6,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 5,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 7,
+         "verdict": "ITERATE"
+        },
+        {
+         "score": 8,
+         "verdict": "GO"
+        }
+       ]
+      }
+     },
+     "flips": {
+      "committee": false,
+      "judge_matched": false,
+      "judge_1call": true
+     },
+     "score_delta": {
+      "committee": -0.5,
+      "judge_matched": 0.0,
+      "judge_1call": -1
+     }
+    }
+   ],
+   "tone_truncated": false
+  }
+ ]
+}

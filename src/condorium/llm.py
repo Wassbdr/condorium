@@ -114,13 +114,27 @@ _calls_made = 0
 _calls_lock = threading.Lock()
 
 
+_next_slot = 0.0
+
+
 def _spend_call() -> None:
-    global _calls_made
+    """Budget guard (CONDORIUM_MAX_CALLS), client-side pacing (CONDORIUM_RPM)
+    and an optional append-only ledger of every attempt (CONDORIUM_CALL_LOG)."""
+    global _calls_made, _next_slot
     limit = os.environ.get("CONDORIUM_MAX_CALLS")
+    rpm = float(os.environ.get("CONDORIUM_RPM") or 0)
     with _calls_lock:
         if limit and _calls_made >= int(limit):
             raise CallBudgetExceeded(f"CONDORIUM_MAX_CALLS={limit} reached")
         _calls_made += 1
+        now = time.monotonic()
+        wait = max(0.0, _next_slot - now) if rpm else 0.0
+        _next_slot = max(now, _next_slot) + (60.0 / rpm if rpm else 0.0)
+        if ledger := os.environ.get("CONDORIUM_CALL_LOG"):
+            with open(ledger, "a", encoding="utf-8") as fh:
+                fh.write(f"{time.time():.0f}\n")
+    if wait:
+        time.sleep(wait)
 
 
 def complete_text(system: str, user: str, *, model: str | None = None, timeout: int | None = None,
@@ -144,7 +158,8 @@ def complete_text(system: str, user: str, *, model: str | None = None, timeout: 
         except Exception as exc:
             if attempt == attempts - 1 or not _is_transient(exc):
                 raise
-            time.sleep(0.5 * (4**attempt))  # 0.5s, 2s, ...
+            rate_limited = any(c.__name__ == "RateLimitError" for c in type(exc).__mro__)
+            time.sleep((15 * (attempt + 1)) if rate_limited else 0.5 * (4**attempt))
     raise RuntimeError("unreachable")
 
 

@@ -390,12 +390,12 @@ LABELS = {"committee": "Committee (7 agents, 2 rounds)",
 
 def readme_table(report: dict) -> str:
     s = report["summary"]
-    lines = [f"| system | winner picked | ± sd ({s['n_seeds']} seeds) | tone flip rate | "
+    lines = [f"| system | winner picked | ± sd over {s['n_seeds']} seed(s) | tone flip rate | "
              "tokens / idea | calls / idea |", "|---|---|---|---|---|---|"]
     for system in SYSTEMS:
         m = s["systems"][system]
         tokens = f"{m['tokens_per_idea']:,.0f}" if m["tokens_per_idea"] is not None else "n/a"
         lines.append(f"| {LABELS[system]} | {_pct(m['accuracy_mean'])} | "
                      f"{_pct(m['accuracy_sd_across_seeds'])} | {_pct(m['tone_flip_rate'])} | "
-                     f"{tokens} | {m['calls_per_idea']} |")
+                     f"{tokens} | {m['calls_per_idea']:.1f} |")
     return "\n".join(lines)

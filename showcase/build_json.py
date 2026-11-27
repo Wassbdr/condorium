@@ -100,11 +100,11 @@ def versus_block() -> str:
         "",
         readme_table(results),
         "",
-        f"Setup: {setup}. {s['n_tone_cases']} tone cases (same idea rewritten "
-        "enthusiastically). Agreement committee vs same-budget judge: "
+        f"Setup: {setup}. Tone cases (same idea rewritten enthusiastically): "
+        f"{s['n_tone_cases']}. Agreement committee vs same-budget judge: "
         f"{pct(s['pick_agreement_committee_vs_judge_matched'])} of pair picks, "
         f"{pct(s['verdict_agreement_committee_vs_judge_matched'])} of verdicts. "
-        f"{s['llm_calls_total']:,} LLM calls in total. Believer cap fired "
+        f"{s['llm_calls_total']:,} LLM calls in the measured systems. Believer cap fired "
         f"{s['believer_cap_fired']} times, debates {s['debates_triggered']}. "
         "Raw data: [`showcase/results/versus_results.json`](showcase/results/versus_results.json), "
         "regenerate with `LIVE=1 bash showcase/make_showcase.sh`.",

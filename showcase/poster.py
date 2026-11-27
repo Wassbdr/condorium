@@ -92,7 +92,7 @@ def main(trace: Path, results: Path | None, out: Path) -> None:
     if results and results.exists():
         rep = json.loads(results.read_text(encoding="utf-8"))
         s = rep["summary"]["systems"]
-        fig.text(0.66, 0.40, "Committee vs single judge (same token budget)", color=FG,
+        fig.text(0.66, 0.40, "Committee vs single judge, same tokens", color=FG,
                  fontsize=12, weight="bold")
         rows = [("committee", "Committee"), ("judge_matched", "Judge, = tokens"),
                 ("judge_1call", "Judge, 1 call")]
@@ -105,7 +105,7 @@ def main(trace: Path, results: Path | None, out: Path) -> None:
             fig.text(0.66, 0.33 - 0.035 * k, f"{label:16}{acc:>8}{flip:>11}", color=FG,
                      fontsize=11, family="monospace")
         n = rep["summary"]["n_pairs_per_seed"]
-        fig.text(0.66, 0.205, f"{sum(n)} synthetic pairs, seeds {rep['seeds']},\n"
+        fig.text(0.66, 0.205, f"{sum(n)} synthetic pairs, seeds {rep['summary']['seeds']},\n"
                  f"{rep['model'].split('/')[-1]} via NIM", color=DIM, fontsize=9)
 
     fig.text(0.04, 0.04, "Guardrails enforced in code: believer cap · citations limited to "

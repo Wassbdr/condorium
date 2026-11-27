@@ -353,6 +353,7 @@ def bench_pairwise(
     if report["rate_limited"]:
         typer.echo("NIM returned HTTP 429 after retries. Saved partial results; try again "
                    "later with the same cache.", err=True)
+        raise typer.Exit(75)
     elif report["limited_methods"]:
         message = ("Replayed cached decisions; remaining requests are not cached."
                    if max_calls == 0 else "Call limit reached. Rerun with the same cache to finish.")

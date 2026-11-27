@@ -8,6 +8,7 @@ from openai import OpenAI
 from condorium import llm
 
 NEMOTRON = "nvidia_nim/nvidia/nemotron-3.5-lightning-30b-a3b"
+SUPER_VL = "nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b"
 STEP = "nvidia_nim/stepfun-ai/step-5-preview"
 
 
@@ -94,6 +95,21 @@ def test_presets_are_forwarded_and_hashed(cache, completion, monkeypatch):
     llm.complete_text("s", "u", model=STEP)
     assert completion[2]["reasoning_effort"] == "medium"
     assert len(list(cache.glob("*.jsonl"))) == 2
+
+
+def test_super_vl_thinking_preset_changes_request_key(cache, completion, monkeypatch):
+    llm.complete_text("s", "u", model=SUPER_VL)
+    llm.complete_text("s", "u", model=SUPER_VL)
+    assert len(completion) == 1
+    assert completion[0]["extra_body"] == {"chat_template_kwargs": {"enable_thinking": False}}
+
+    monkeypatch.setitem(llm._MODEL_PARAMS, "nvidia_nim/nvidia/nemotron-*",
+                        {"extra_body": {"chat_template_kwargs": {"enable_thinking": True}}})
+    llm.complete_text("s", "u", model=SUPER_VL)
+    assert len(completion) == 2
+    [path] = cache.glob("*.jsonl")
+    entries = [json.loads(line) for line in path.read_text().splitlines()]
+    assert len({entry["key"] for entry in entries}) == 2
 
 
 def test_nim_sends_step_reasoning_effort_and_keeps_reasoning_usage(monkeypatch):

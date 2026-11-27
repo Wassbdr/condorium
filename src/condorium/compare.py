@@ -15,7 +15,7 @@ from .bench.pairset import Item, Rubric, Side
 from .llm import complete_text, parse_json, usage_meter
 from .prompts import load_prompt, render
 
-MODEL = "nvidia_nim/nvidia/nemotron-3.5-lightning-30b-a3b"
+MODEL = "nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b"
 TEMPERATURE = 0.7
 MAX_TOKENS = 384
 ROLES = ("judge", "skeptic", "scientist")

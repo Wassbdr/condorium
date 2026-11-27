@@ -226,6 +226,32 @@ def test_exhausted_rate_limit_preserves_results_and_stops_live_calls(monkeypatch
     assert [row["method"] for row in result["decisions"]] == ["committee"]
 
 
+def test_pairwise_cli_exits_75_after_saving_rate_limited_report(monkeypatch, tmp_path):
+    class RateLimitError(Exception):
+        status_code = 429
+
+    def limited(**request):
+        raise RateLimitError
+
+    monkeypatch.setenv("CONDORIUM_CACHE", str(tmp_path / "cache"))
+    monkeypatch.setattr(llm, "_completion", limited)
+    monkeypatch.setattr(llm.time, "sleep", lambda _: None)
+    output = tmp_path / "results"
+    result = CliRunner().invoke(app, [
+        "bench", "pairwise", "--split", "dev", "--seeds", "0", "--limit", "1",
+        "--methods", "judge", "--position-only", "--results-dir", str(output),
+    ])
+    assert result.exit_code == 75, (result.output, result.exception)
+    assert "Saved partial results" in result.stderr
+    report = json.loads((output / "dev.json").read_text())
+    assert report["rate_limited"] and report["live_calls"] == 0
+    assert report["model"] == "nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b"
+    assert report["jury_models"] == [
+        report["model"], "nvidia_nim/poolside/laguna-xs-2.1", "nvidia_nim/stepfun-ai/step-5-preview",
+    ]
+    assert "HTTP 429" in (tmp_path / "results.md").read_text()
+
+
 def test_legacy_versus_cli_still_dispatches(mock_llm, tmp_path):
     output = tmp_path / "versus.json"
     result = CliRunner().invoke(app, [

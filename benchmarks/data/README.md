@@ -87,16 +87,22 @@ responses in `benchmarks/cache/` or `CONDORIUM_CACHE`. Set
 and keep `CONDORIUM_RPM` at 15 or below when sharing a key. Do not publish
 responses that quote unlicensed ICLR text.
 
+The judge, ChatEval, committee, and one jury member use
+`nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b` with thinking disabled.
+The other jury members use `nvidia_nim/poolside/laguna-xs-2.1` and
+`nvidia_nim/stepfun-ai/step-5-preview`. If NIM still returns HTTP 429 after
+retries, the command saves partial results and exits with status 75.
+
 Replay the checked-in synthetic smoke cache without fetching ICLR text or
 making live calls:
 
 ```sh
 CONDORIUM_OFFLINE=0 panel bench pairwise --split dev --seeds 0 \
-  --limit 2 --position-only --max-calls 0
+  --limit 2 --max-calls 0
 ```
 
-The smoke run stopped on repeated HTTP 429 responses. The replay shows
-only decisions completed from that cache; it is not a four-method result.
+The replay reports only decisions that can be completed from the cache.
+See [the smoke report](../results.md) for the completed decision counts.
 
 The references are the pairwise judge from [MT-Bench](https://arxiv.org/abs/2306.05685),
 [PoLL](https://arxiv.org/abs/2404.18796) majority voting across three model

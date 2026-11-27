@@ -10,20 +10,20 @@
     "committee"
   ],
   "pair_count": 2,
-  "variant_count": 4,
-  "position_only": true,
-  "max_calls": 0,
-  "model": "nvidia_nim/nvidia/nemotron-3.5-lightning-30b-a3b",
+  "variant_count": 8,
+  "position_only": false,
+  "max_calls": 60,
+  "model": "nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b",
   "jury_models": [
-    "nvidia_nim/nvidia/nemotron-3.5-lightning-30b-a3b",
+    "nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b",
     "nvidia_nim/poolside/laguna-xs-2.1",
     "nvidia_nim/stepfun-ai/step-5-preview"
   ],
   "temperature": 0.7,
   "committee_protocol": "v1",
-  "live_attempts": 0,
-  "live_calls": 0,
-  "cache_hits": 14,
+  "live_attempts": 60,
+  "live_calls": 60,
+  "cache_hits": 5,
   "rate_limited": false,
   "limited_methods": [
     "chateval",
@@ -45,8 +45,59 @@
       "usage": {
         "calls": 3,
         "prompt_tokens": 1458,
-        "completion_tokens": 611,
-        "total_tokens": 2069,
+        "completion_tokens": 562,
+        "total_tokens": 2020,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "blind:scientist",
+          "raw": "{\"scores\":{\"a\":{\"Problem fit\":3,\"Feasibility\":2,\"Evidence\":4,\"Trade-offs\":2},\"b\":{\"Problem fit\":4,\"Feasibility\":5,\"Evidence\":4,\"Trade-offs\":3},\"preferred\":\"b\",\"confidence\":5,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"No extra overnight staff can be assigned.\"},{\"proposal\":\"a\",\"quote\":\"Keep the queue current by assigning an additional operator to cover each night shift.\"},{\"proposal\":\"b\",\"quote\":\"Queue work outside the staffed window and assign it to the next scheduled shift.\"},{\"proposal\":\"b\",\"quote\":\"Compare leaks repaired before a road closure with the pre-pilot baseline.\"}]}"
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-01",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-01:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 1800,
+        "completion_tokens": 296,
+        "total_tokens": 2096,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2020
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-01",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-01:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 360,
+        "completion_tokens": 78,
+        "total_tokens": 438,
         "estimated": false
       },
       "failures": [],
@@ -54,6 +105,34 @@
       "evidence_dropped": 0,
       "abstains": 0,
       "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-01",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-01:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 1432,
+        "completion_tokens": 707,
+        "total_tokens": 2139,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": ""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2020
     },
     {
       "method": "committee",
@@ -68,8 +147,8 @@
       "usage": {
         "calls": 3,
         "prompt_tokens": 1458,
-        "completion_tokens": 612,
-        "total_tokens": 2070,
+        "completion_tokens": 578,
+        "total_tokens": 2036,
         "estimated": false
       },
       "failures": [],
@@ -77,6 +156,29 @@
       "evidence_dropped": 0,
       "abstains": 0,
       "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-01",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-01:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 1800,
+        "completion_tokens": 278,
+        "total_tokens": 2078,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2036
     },
     {
       "method": "judge_1call",
@@ -87,12 +189,12 @@
       "kind": "position",
       "order": "ba",
       "better": "a",
-      "winner": "b",
+      "winner": "a",
       "usage": {
         "calls": 1,
         "prompt_tokens": 360,
-        "completion_tokens": 4,
-        "total_tokens": 364,
+        "completion_tokens": 53,
+        "total_tokens": 413,
         "estimated": false
       },
       "failures": [],
@@ -100,6 +202,29 @@
       "evidence_dropped": 0,
       "abstains": 0,
       "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-01",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-01:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 1788,
+        "completion_tokens": 417,
+        "total_tokens": 2205,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2036
     },
     {
       "method": "committee",
@@ -114,8 +239,8 @@
       "usage": {
         "calls": 3,
         "prompt_tokens": 1485,
-        "completion_tokens": 696,
-        "total_tokens": 2181,
+        "completion_tokens": 563,
+        "total_tokens": 2048,
         "estimated": false
       },
       "failures": [],
@@ -123,6 +248,29 @@
       "evidence_dropped": 0,
       "abstains": 0,
       "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-02",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-02:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 1845,
+        "completion_tokens": 297,
+        "total_tokens": 2142,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2048
     },
     {
       "method": "judge_1call",
@@ -133,12 +281,211 @@
       "kind": "position",
       "order": "ab",
       "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 369,
+        "completion_tokens": 44,
+        "total_tokens": 413,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-02",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-02:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 1472,
+        "completion_tokens": 576,
+        "total_tokens": 2048,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": "The key difference is that Proposal B requires manufacturer-only conservation logs"
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2048
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-02",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-02:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1485,
+        "completion_tokens": 615,
+        "total_tokens": 2100,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-02",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-02:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 6,
+        "prompt_tokens": 2214,
+        "completion_tokens": 291,
+        "total_tokens": 2505,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2100
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-02",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-02:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
       "winner": "b",
       "usage": {
         "calls": 1,
         "prompt_tokens": 369,
-        "completion_tokens": 55,
-        "total_tokens": 424,
+        "completion_tokens": 56,
+        "total_tokens": 425,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "jury",
+      "seed": 0,
+      "pair_id": "synthetic-dev-02",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-02:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 4,
+        "prompt_tokens": 1472,
+        "completion_tokens": 689,
+        "total_tokens": 2161,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "nvidia_nim/stepfun-ai/step-5-preview:2",
+          "raw": ""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2100
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-02",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-02:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1653,
+        "completion_tokens": 794,
+        "total_tokens": 2447,
+        "estimated": false
+      },
+      "failures": [
+        {
+          "turn": "blind:scientist",
+          "raw": "{\"scores\":{\"a\":{\"Problem fit\":5,\"Feasibility\":4,\"Evidence\":3,\"Trade-offs\":3},\"b\":{\"Problem fit\":2,\"Feasibility\":2,\"Evidence\":3,\"Trade-offs\":2},\"preferred\":\"a\",\"confidence\":5,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Use the museum's own case sensor history to set up and operate the pilot.\"},{\"proposal\":\"b\",\"quote\":\"Use manufacturer-only conservation logs as the input required for running the pilot.\"},{\"proposal\":\"a\",\"quote\":\"Compare hours display cases spend outside their humidity range with the pre-pilot baseline.\"},{\"proposal\":\"b\",\"quote\":\"Compare hours display cases spend outside their humidity range with the pre-pilot baseline.\"},{\"proposal\":\"a\",\"quote\":\"A conservator would adjust desiccant replacement using the current wireless sensors.\"},{\"proposal\":\"b\",\"quote\":\"A conservator would adjust desiccant replacement using the current wireless sensors.\"}]}{\"scores\":{\"a\":{\"Problem fit\":5,\"Feasibility\":4,\"Evidence\":3,\"Trade-offs\":3},\"b\":{\"Problem fit\":2,\"Feasibility\":2,\"Evidence\":3,\"Trade-offs\":2},\"preferred\":\"a\",\"confidence\":5,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Use the museum's own case sensor history to set up and operate the pilot.\"},{\"proposal\":\"b\",\"quote\":\"Use manufacturer-only conservation logs as the input required for running the pilot.\"},{\"proposal\":\"a\",\"quote\":\"Compare hours display cases spend outside their humidity range with the pre-pilot baseline.\"},{\"proposal\":\"b\",\"quote\":\"Compare hours display cases spend outside their humidity range with the pre-pilot baseline.\"},{\"proposal\":\"a\",\"quote\":\""
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 1,
+      "target_tokens": null
+    },
+    {
+      "method": "judge",
+      "seed": 0,
+      "pair_id": "synthetic-dev-02",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-02:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 5,
+        "prompt_tokens": 2125,
+        "completion_tokens": 504,
+        "total_tokens": 2629,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": 2447
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-02",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-02:verbosity:ab",
+      "kind": "verbosity",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 425,
+        "completion_tokens": 61,
+        "total_tokens": 486,
         "estimated": false
       },
       "failures": [],

@@ -153,7 +153,13 @@ flowchart TD
 
 ## Benchmarks
 
-**Committee vs single judge** (`src/condorium/bench/versus.py`):
+**Pairwise comparison** (`make bench`): the single judge, ChatEval, committee,
+and NVIDIA jury member use `nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b`.
+The other jury members use Laguna XS 2.1 and Step 5 Preview. See the
+[setup and replay commands](benchmarks/data/README.md#run-the-benchmark) and
+the [latest pairwise results](benchmarks/results.md).
+
+**Earlier pointwise comparison: committee vs single judge** (`src/condorium/bench/versus.py`):
 
 ```bash
 export NVIDIA_NIM_API_KEY=...   # free tier; any LiteLLM provider works

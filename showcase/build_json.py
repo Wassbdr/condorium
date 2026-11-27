@@ -64,7 +64,7 @@ showcase = {
         {"label": "Verdict flips when the same idea is pitched enthusiastically",
          "value": f"committee {pct(sysm['committee']['tone_flip_rate'])}, judge "
                   f"{pct(sysm['judge_matched']['tone_flip_rate'])} "
-                  f"({s['n_tone_cases']} cases)",
+                  f"({s['n_tone_cases']} case(s))",
          "command": bench_cmd, "setup": setup},
         {"label": "Tokens per idea, committee",
          "value": f"{sysm['committee']['tokens_per_idea']:,.0f} tokens, "

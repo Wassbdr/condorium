@@ -36,7 +36,7 @@
     },
     {
       "label": "Verdict flips when the same idea is pitched enthusiastically",
-      "value": "committee 0%, judge 0% (1 cases)",
+      "value": "committee 0%, judge 0% (1 case(s))",
       "command": "CONDORIUM_RPM=24 panel bench --versus --n 3 --tone 1 --seeds 0,1,2 --resume",
       "setup": "3 synthetic winner/non-winner pairs (fixtures/bench), seeds [0], nvidia/nemotron-3.5-lightning-30b-a3b via NVIDIA NIM, 8-CPU VM, no GPU"
     },

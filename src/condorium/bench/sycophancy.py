@@ -58,7 +58,7 @@ def run_sycophancy(dataset: Path | None = None, n: int = 20, seed: int = 42,
         variants = make_variants(idea["text"])
         order = list(VARIANTS)
         rng.shuffle(order)  # randomized; the committee never knows they relate
-        scores_by_variant: dict[str, dict[str, float]] = {}
+        scores_by_variant: dict[str, dict[str, int]] = {}
         for variant in order:
             result = evaluate_idea_silently(idea["title"], variants[variant], mode)
             scores_by_variant[variant] = opinion_scores(result.get("round2", {}))

@@ -76,7 +76,7 @@ def _majority_verdict(samples: list[dict]) -> str | None:
     if not counts:
         return None
     top = max(counts.values())
-    tied = sorted((v for v, c in counts.items() if c == top), key=VERDICT_RANK.get)
+    tied = sorted((v for v, c in counts.items() if c == top), key=VERDICT_RANK.__getitem__)
     return tied[0]  # tie between verdicts -> the more conservative one
 
 
@@ -252,7 +252,7 @@ def run_seed(dataset: Path, n_pairs: int, n_tone: int, seed: int, mode: str = "h
                 vn, sn = _system_view(system, neutral)
                 ve, se = _system_view(system, hyped)
                 tone["flips"][system] = vn != ve
-                tone["score_delta"][system] = (se - sn) if None not in (se, sn) else None
+                tone["score_delta"][system] = se - sn if se is not None and sn is not None else None
             tone_cases.append(tone)
     finally:
         SETTINGS.llm_seed = previous_seed

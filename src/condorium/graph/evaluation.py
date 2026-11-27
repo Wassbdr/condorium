@@ -68,10 +68,13 @@ def _render_agent_prompt(prompt: AgentPrompt, state: EvalState) -> str:
     return render(prompt.body, **values)
 
 
-def _normalize(name: str, opinion: dict, state: EvalState, round_no: int) -> dict:
+def _normalize(name: str, raw_opinion: dict | list, state: EvalState, round_no: int) -> dict:
     """Code-enforced guardrails, applied to every parsed opinion."""
-    if not isinstance(opinion, dict):
-        opinion = {"score": None, "verdict": str(opinion)}
+    opinion: dict
+    if isinstance(raw_opinion, dict):
+        opinion = raw_opinion
+    else:
+        opinion = {"score": None, "verdict": str(raw_opinion)}
     if name == "skeptic":
         # A doubt without a test is deleted: watchouts beyond the tests list drop.
         watchouts = opinion.get("watchouts") or []

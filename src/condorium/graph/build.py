@@ -8,6 +8,7 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 
 from langgraph.graph import END, START, StateGraph
+from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import Send, interrupt
 
 from ..analytics import traces
@@ -116,7 +117,7 @@ def route_to_evaluations(state: PanelState) -> list[Send]:
 
 
 def make_evaluate_node(lang: str | None = None):
-    compiled: dict[str, object] = {}
+    compiled: dict[str, CompiledStateGraph] = {}
 
     def evaluate_node(eval_input: dict, config=None) -> dict:
         mode = eval_input.get("mode", "general")

@@ -17,6 +17,7 @@ from ..compare import (
     MODEL,
     PROTOCOL,
     TEMPERATURE,
+    RequirementCache,
     Winner,
     compare,
     majority,
@@ -207,6 +208,7 @@ def run_pairwise(
 
     replay_references = all((seed, variant_key(v)) in reference_targets
                             for seed in seeds for v in variants)
+    requirement_cache = RequirementCache()
 
     def work(variant: Variant, seed: int) -> tuple[list[dict], set[str]]:
         variant_id = variant_key(variant)
@@ -223,14 +225,16 @@ def run_pairwise(
             try:
                 if method == "committee":
                     comparison = compare(variant["a"], variant["b"], rubric, seed=seed,
-                                         variant_id=variant_id)
-                    target = comparison.usage["total_tokens"]
+                                         variant_id=variant_id, requirement_cache=requirement_cache)
+                    target = comparison.usage["total_tokens"] - comparison.extraction_tokens
                     failures = [
                         ParseFailure(f"{stage}:{r.role}", r.parse_failure)
                         for stage, reviews in (("blind", comparison.initial),
                                                ("debate", comparison.debate))
                         for r in reviews if r.parse_failure is not None
                     ]
+                    if comparison.extraction_failure is not None:
+                        failures.append(ParseFailure("requirements", comparison.extraction_failure))
                     decisions = {method: Decision(
                             comparison.winner, comparison.usage, failures, bool(comparison.debate),
                             comparison.dropped, comparison.abstains,

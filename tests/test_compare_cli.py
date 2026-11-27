@@ -15,9 +15,10 @@ RUBRIC = {"name": "Delivery", "criteria": [{"name": "cost", "description": "Chec
 @pytest.fixture(autouse=True)
 def fake_reviews(monkeypatch):
     def complete(*, model, messages, timeout, **kwargs):
+        criteria = json.loads(messages[1]["content"].split("Rubric: ", 1)[1].splitlines()[1])
         return json.dumps({
             "preferred": "a", "confidence": 4,
-            "scores": {side: {"cost": 4} for side in ("a", "b")},
+            "scores": {side: {criterion["name"]: 4 for criterion in criteria} for side in ("a", "b")},
             "violations": [],
             "evidence": [{"proposal": "a", "quote": "Reuse existing equipment."},
                          {"proposal": "a", "quote": "A fabricated claim."}],

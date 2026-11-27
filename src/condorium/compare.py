@@ -6,9 +6,10 @@ import hashlib
 import json
 from collections import Counter
 from collections.abc import Iterable
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor
 from contextvars import copy_context
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
+from threading import Lock
 from typing import Literal, cast
 
 from .bench.pairset import Item, Rubric, Side, opposite
@@ -18,9 +19,10 @@ from .prompts import load_prompt, render
 MODEL = "nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b"
 TEMPERATURE = 0.7
 MAX_TOKENS = 384
-_RETRY_MAX_TOKENS = 768
 ROLES = ("judge", "skeptic", "scientist")
-PROTOCOL = "v2"
+PROTOCOL = "v2.1"
+_FOLDER = "committee/pairwise"
+_MAX_REQUIREMENTS = 5
 Winner = Literal["a", "b", "tie"]
 
 
@@ -65,6 +67,9 @@ class Comparison:
     initial: list[Review]
     debate: list[Review]
     usage: dict
+    requirements: tuple[str, ...] = ()
+    extraction_failure: str | None = None
+    extraction_tokens: int = 0
 
     @property
     def dropped(self) -> int:
@@ -109,6 +114,67 @@ def _committee_input(a: Item, b: Item, rubric: Rubric, brief: str) -> str:
         header = render(load_prompt("committee/pairwise/brief.md").body, brief=context)
         return f"{header}\n\n{proposals}"
     return proposals
+
+
+def _problem_brief(a: Item, b: Item, brief: str) -> str:
+    if brief.strip():
+        return brief.strip()
+    first_a, first_b = (_quote(item["text"].split("\n\n", 1)[0]) for item in (a, b))
+    if first_a == first_b and a["text"] != b["text"]:
+        return first_a
+    return ""
+
+
+def _criteria(rubric: Rubric) -> str:
+    return "\n".join(f"{c['name']}: {c['description']}" for c in rubric["criteria"])
+
+
+@dataclass(frozen=True)
+class Requirements:
+    quotes: tuple[str, ...] = ()
+    parse_failure: str | None = None
+
+
+def _extract(brief: str, criteria: str, model: str) -> Requirements:
+    if not brief:
+        return Requirements()
+    user = render(load_prompt(f"{_FOLDER}/requirements_input.md").body, brief=brief,
+                  criteria=criteria)
+    raw = complete_text(load_prompt(f"{_FOLDER}/requirements.md").body, user, model=model,
+                        seed=0, temperature=0, max_tokens=164, max_retries=0, num_retries=0)
+    try:
+        values = parse_json(raw)
+    except ValueError:
+        return Requirements(parse_failure=raw)
+    if not isinstance(values, list):
+        return Requirements(parse_failure=raw)
+    quotes = dict.fromkeys(q for value in values if (q := _quote(value)) and q in _quote(brief))
+    return Requirements(tuple(quotes)[:_MAX_REQUIREMENTS])
+
+
+class RequirementCache:
+    """Share identical extractions across simultaneous comparisons in one run."""
+
+    def __init__(self) -> None:
+        self._pending: dict[tuple[str, str, str], Future[Requirements]] = {}
+        self._lock = Lock()
+
+    def get(self, brief: str, criteria: str, model: str) -> Requirements:
+        key = brief, criteria, model
+        with self._lock:
+            future = self._pending.get(key)
+            if future is None:
+                future = Future()
+                self._pending[key] = future
+                owner = True
+            else:
+                owner = False
+        if owner:
+            try:
+                future.set_result(_extract(*key))
+            except BaseException as exc:
+                future.set_exception(exc)
+        return future.result()
 
 
 def majority(votes: Iterable[Winner | None], *, include_abstentions: bool = False) -> Winner | None:
@@ -167,7 +233,7 @@ def _review_json(raw: str) -> dict:
             fields = envelope["scores"]
             required = {"a", "b", "preferred", "confidence", "evidence"}
             if (isinstance(fields, dict) and required <= fields.keys()
-                    <= required | {"requirements", "violations"}):
+                    <= required | {"checks", "requirements", "violations"}):
                 return {"scores": {"a": fields["a"], "b": fields["b"]},
                         **{key: value for key, value in fields.items() if key not in ("a", "b")}}
     return {}
@@ -181,7 +247,8 @@ def _violation_sides(review: Review) -> frozenset[Side]:
     return frozenset(v.proposal for v in review.violations)
 
 
-def _normalize(role: str, raw: str, a: Item, b: Item, rubric: Rubric, brief: str = "") -> Review:
+def _normalize(role: str, raw: str, a: Item, b: Item, rubric: Rubric,
+               requirements: tuple[str, ...] = (), initial: Review | None = None) -> Review:
     data = _review_json(raw)
     preference = _preference(data.get("preferred"))
     texts = {side: tuple(" ".join(part.split()) for part in (item["title"], item["text"]))
@@ -198,42 +265,50 @@ def _normalize(role: str, raw: str, a: Item, b: Item, rubric: Rubric, brief: str
             else:
                 dropped += 1
 
-    sources = [_quote(brief), _quote(rubric["name"])]
-    sources.extend(_quote(f"{criterion['name']}: {criterion['description']}")
-                   for criterion in rubric["criteria"])
-    shared = (_quote(a["text"]), _quote(b["text"]))
     violations: list[Violation] = []
     violations_dropped = 0
-    raw_violations = data.get("violations")
-    if isinstance(raw_violations, list):
-        for entry in raw_violations:
-            if isinstance(entry, dict):
-                side = _preference(entry.get("proposal"))
-                requirement = _quote(entry.get("requirement_quote"))
-                proposed = _quote(entry.get("proposal_quote"))
-                reason = _quote(entry.get("reason"))
-                if (side in ("a", "b") and requirement and proposed and reason
-                        and (any(requirement in source for source in sources)
-                             or all(requirement in text for text in shared))
+    checks = data.get("checks")
+    seen = set()
+    if initial is None and isinstance(checks, list):
+        for entry in checks:
+            if isinstance(entry, list) and len(entry) == 5:
+                index, side, status, quote, reason = entry
+                proposed = _quote(quote)
+                if (type(index) is int and 0 <= index < len(requirements)
+                        and side in ("a", "b") and type(status) is int and status in (0, 1)
+                        and (index, side) not in seen and proposed
                         and any(proposed in text for text in texts[side])):
-                    violations.append(Violation(cast(Side, side), requirement, proposed, reason))
+                    seen.add((index, side))
+                    if status == 0:
+                        violations.append(Violation(side, requirements[index], proposed,
+                                                    _quote(reason)))
+                    continue
+                if status == 1:
                     continue
             violations_dropped += 1
+    if isinstance(unlisted := data.get("violations"), list):
+        violations_dropped += len(unlisted)
 
     scores: dict[Side, dict[str, int]] = {}
     raw_scores = data.get("scores")
     sides: tuple[Side, Side] = ("a", "b")
-    for side in sides:
-        values = raw_scores.get(side) if isinstance(raw_scores, dict) else None
-        scores[side] = {
-            name: value for criterion in rubric["criteria"] if isinstance(values, dict)
-            if (name := criterion["name"]) and (value := _rating(values.get(name))) is not None
-        }
+    if initial is not None:
+        scores = initial.scores
+    else:
+        names = [criterion["name"] for criterion in rubric["criteria"]]
+        for side in sides:
+            values = raw_scores.get(side) if isinstance(raw_scores, dict) else None
+            if isinstance(values, list):
+                values = dict(zip(names, values, strict=False))
+            scores[side] = {
+                name: value for name in names if isinstance(values, dict)
+                if (value := _rating(values.get(name))) is not None
+            }
     confidence = _rating(data.get("confidence"))
     failed = (preference is None or confidence is None or not isinstance(raw_quotes, list)
-              or not isinstance(raw_violations, list)
               or any(len(values) != len(rubric["criteria"]) for values in scores.values()))
-    if (preference == "a" or preference == "b") and {v.proposal for v in violations} == {preference}:
+    enforced = violations if initial is None else initial.violations
+    if (preference == "a" or preference == "b") and {v.proposal for v in enforced} == {preference}:
         preference = opposite(preference)
     return Review(role, preference if evidence else None, confidence, scores, evidence,
                   dropped, raw if failed else None, violations, violations_dropped)
@@ -249,64 +324,62 @@ def compare(
     seed: int = 0,
     variant_id: str = "",
     brief: str = "",
+    requirement_cache: RequirementCache | None = None,
 ) -> Comparison:
     """Run blind reviews and at most one round of targeted debate."""
-    folder = "committee/pairwise"
+    folder = _FOLDER
     proposals = _committee_input(a, b, rubric, brief)
     contract = load_prompt(f"{folder}/_contract.md").body
+    criteria = _criteria(rubric)
 
-    def assess(role: str, index: int, *, extra: str = "", user: str = proposals) -> Review:
-        persona = load_prompt(f"{folder}/{role}.md").body
-        system = "\n\n".join(part for part in (persona, extra, contract) if part)
+    def assess(role: str, index: int, system: str, user: str, max_tokens: int,
+               initial: Review | None = None) -> Review:
         review_seed = sample_seed(seed, "committee", variant_id, index)
+        raw = complete_text(system, user, model=model, temperature=temperature,
+                            seed=review_seed, max_tokens=max_tokens, max_retries=0, num_retries=0)
+        review = _normalize(role, raw, a, b, rubric, requirements.quotes, initial)
+        return replace(review, preferred=None) if review.parse_failure is not None else review
 
-        def request(max_tokens: int) -> Review:
-            raw = complete_text(system, user, model=model, temperature=temperature,
-                                seed=review_seed, max_tokens=max_tokens,
-                                max_retries=0, num_retries=0)
-            return _normalize(role, raw, a, b, rubric, brief)
-
-        with usage_meter(scoped=True) as attempt:
-            review = request(MAX_TOKENS)
-        if review.parse_failure is not None and not attempt.estimated and (
-            attempt.completion_tokens >= MAX_TOKENS
-        ):
-            return request(_RETRY_MAX_TOKENS)
-        return review
+    def quote_data(review: Review) -> str:
+        return json.dumps({"evidence": [asdict(e) for e in review.evidence],
+                           "violations": [asdict(v) for v in review.violations]}, separators=(",", ":"))
 
     with usage_meter(scoped=True) as usage, ThreadPoolExecutor(max_workers=len(ROLES)) as pool:
-        initial = [pool.submit(copy_context().run, assess, role, index)
-                   for index, role in enumerate(ROLES)]
+        with usage_meter(scoped=True) as extraction:
+            requirements = (requirement_cache or RequirementCache()).get(
+                _problem_brief(a, b, brief), criteria, model,
+            )
+        user = proposals
+        max_tokens = 172
+        if requirements.quotes:
+            contract += "\n" + load_prompt(f"{folder}/checks.md").body
+            user += "\n\n" + render(load_prompt(f"{folder}/checks_input.md").body,
+                                     requirements=json.dumps(requirements.quotes, ensure_ascii=False))
+            max_tokens = min(480, 200 + 60 * len(requirements.quotes))
+        initial = [pool.submit(copy_context().run, assess, role, index,
+                               load_prompt(f"{folder}/{role}.md").body + "\n" + contract,
+                               user, max_tokens) for index, role in enumerate(ROLES)]
         reviews = [future.result() for future in initial]
         winner = majority(review.preferred for review in reviews)
         debate: list[Review] = []
         flagged = [_violation_sides(review) for review in reviews]
-        if len(sides := set().union(*flagged)) == 1 and sum(bool(s) for s in flagged) >= 2:
-            return Comparison(opposite(next(iter(sides))), reviews, debate, usage.as_dict())
-
-        disagreement = [
-            (own, other) for i, own in enumerate(reviews) for other in reviews[i + 1:]
-            if _violation_sides(own) != _violation_sides(other)
-        ]
-        opposing = [(own, other) for own in reviews for other in reviews
-                    if own.preferred == "a" and other.preferred == "b"]
-        pair = max(disagreement, key=lambda pair: (
-            len(_violation_sides(pair[0]) ^ _violation_sides(pair[1])),
-            bool(_violation_sides(pair[0])) and bool(_violation_sides(pair[1])),
-        )) if disagreement else opposing[0] if winner is None and opposing else None
-        if pair is not None:
-            extra = load_prompt(f"{folder}/debate.md").body
+        sides = set().union(*flagged)
+        first = next((r for r in reviews if r.preferred == "a"), None)
+        second = next((r for r in reviews if r.preferred == "b"), None)
+        if len(sides) == 1 and sum(bool(s) for s in flagged) >= 2:
+            winner = opposite(next(iter(sides)))
+        elif winner is None and first is not None and second is not None:
+            system = load_prompt(f"{folder}/debate.md").body
             template = load_prompt(f"{folder}/debate_input.md").body
             turns = []
-            first, second = pair
             for index, (own, other) in enumerate(((first, second), (second, first)), len(ROLES)):
-                user = render(template, proposals=proposals, own_preference=own.preferred,
-                              other_preference=other.preferred,
-                              other_evidence=json.dumps([asdict(e) for e in other.evidence]),
-                              other_violations=json.dumps([asdict(v) for v in other.violations]))
-                turns.append(pool.submit(copy_context().run, assess, own.role, index,
-                                         extra=extra, user=user))
+                user = render(template, criteria=criteria, own_preference=own.preferred,
+                              other_preference=other.preferred, own_quotes=quote_data(own),
+                              other_quotes=quote_data(other))
+                turns.append(pool.submit(copy_context().run, assess, own.role, index, system,
+                                         user, 144, own))
             debate = [future.result() for future in turns]
             final = {review.role: review.preferred for review in reviews + debate}
             winner = majority(final.values())
-        return Comparison(winner or "tie", reviews, debate, usage.as_dict())
+        return Comparison(winner or "tie", reviews, debate, usage.as_dict(), requirements.quotes,
+                          requirements.parse_failure, extraction.total_tokens)

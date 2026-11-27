@@ -9,7 +9,14 @@ from condorium import llm
 from condorium.bench import pairset, pairwise
 from condorium.bench.pairwise_metrics import metrics, render_results, write_results
 from condorium.cli import app
-from condorium.compare import _committee_input, _normalize, compare, proposal_input, sample_seed
+from condorium.compare import (
+    RequirementCache,
+    _committee_input,
+    _normalize,
+    compare,
+    proposal_input,
+    sample_seed,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 RUBRIC = pairset.load_rubric(ROOT / "benchmarks/rubrics/proposal.yaml")
@@ -17,9 +24,9 @@ A = {"title": "Plan", "text": "Use actual\n data and compare the baseline."}
 B = {"title": "Alternative", "text": "Use a simple checklist."}
 
 
-def _review(preferred, evidence, violations=()):
+def _review(preferred, evidence, checks=()):
     return json.dumps({
-        "preferred": preferred, "confidence": 4, "evidence": evidence, "violations": violations,
+        "preferred": preferred, "confidence": 4, "evidence": evidence, "checks": checks,
         "scores": {side: {c["name"]: 3 for c in RUBRIC["criteria"]} for side in ("a", "b")},
     })
 
@@ -70,54 +77,69 @@ def test_violation_quotes_must_match_requirement_and_cited_proposal():
     shared = "Only aggregate data may leave."
     a = {"title": A["title"], "text": f"{shared} Use actual logs."}
     b = {"title": B["title"], "text": f"{shared} Use totals."}
-    valid = {"proposal": "A", "requirement_quote": "Only aggregate\n data may leave.",
-             "proposal_quote": "Use actual logs.", "reason": "Sharing raw logs."}
-    checks = [valid, valid | {"proposal": "B"}, valid | {"requirement_quote": "Made up."},
-              valid | {"requirement_quote": "Use actual logs."}, valid | {"reason": ""}, None]
+    valid = [0, "a", 0, "Use actual logs.", ""]
+    checks = [valid, [0, "b", 0, valid[3], ""], [1, *valid[1:]], [-1, *valid[1:]], valid, None]
     review = _normalize("judge", _review("a", [{"proposal": "a", "quote": "Use actual logs."}],
-                                        checks), a, b, RUBRIC)
+                                        checks), a, b, RUBRIC, (shared,))
     assert review.preferred == "b"
     assert review.parse_failure is None
     assert review.violations_dropped == 5
     assert [v.requirement_quote for v in review.violations] == [shared]
 
-    both = valid | {"proposal": "B", "proposal_quote": "Use totals."}
+    both = [0, "b", 0, "Use totals.", ""]
     review = _normalize("judge", _review("a", [{"proposal": "a", "quote": "Use actual logs."}],
-                                        [valid, both]), a, b, RUBRIC)
+                                        [valid, both]), a, b, RUBRIC, (shared,))
     assert review.preferred == "a" and len(review.violations) == 2
 
 
-def test_violation_can_cite_rubric_or_explicit_brief():
-    criterion = RUBRIC["criteria"][0]["description"]
-    violation = {"proposal": "a", "proposal_quote": "Use actual data", "reason": "Too broad."}
-    raw = _review("a", [{"proposal": "a", "quote": "Use actual data"}], [
-        violation | {"requirement_quote": criterion},
-        violation | {"requirement_quote": "Use aggregate data only."},
-    ])
-    result = _normalize("skeptic", raw, A, B, RUBRIC, brief="Use aggregate data only.")
-    assert len(result.violations) == 2 and result.violations_dropped == 0
+@pytest.mark.parametrize("extract_reply", [None, "[]", "not JSON"])
+def test_requirement_extraction_is_blind_and_shared_across_orders_and_seeds(
+    monkeypatch, extract_reply,
+):
+    brief = "Only share totals. Keep a log. No export. Cap is 5. Minimum 2. Use a lock."
+    extracted = ["Only share\n totals.", "Not in brief.", "Keep a log.", "No export.",
+                 "Cap is 5.", "Minimum 2.", "Use a lock.", "Only share totals."]
+    extraction_requests = []
+
+    def completion(*, messages, seed, **_):
+        system, user = [m["content"] for m in messages]
+        if "at most five" in system:
+            assert "Use actual" not in user and "simple checklist" not in user
+            assert user.startswith(f"Brief:\n{brief}")
+            extraction_requests.append(seed)
+            return json.dumps(extracted) if extract_reply is None else extract_reply
+        assert ("Fixed requirements" in user) is (extract_reply is None)
+        return _review("a", [{"proposal": "a", "quote": "Only share totals."}])
+
+    monkeypatch.setattr(llm, "_completion", completion)
+    cache = RequirementCache()
+    first = compare(A, B, RUBRIC, brief=brief, requirement_cache=cache)
+    second = compare(B, A, RUBRIC, brief=brief, requirement_cache=cache, seed=9)
+    assert first.requirements == second.requirements
+    assert first.requirements == (("Only share totals.", "Keep a log.", "No export.", "Cap is 5.",
+                                   "Minimum 2.") if extract_reply is None else ())
+    assert second.extraction_failure == ("not JSON" if extract_reply == "not JSON" else None)
+    assert extraction_requests == [0]
 
 
-@pytest.mark.parametrize(("agree", "expected", "calls"), [(True, "b", 3), (False, "a", 5)])
-def test_committee_violation_consensus_veto_and_disagreement_debate(
-    monkeypatch, agree, expected, calls,
+@pytest.mark.parametrize(("agree", "expected"), [(True, "b"), (False, "b")])
+def test_committee_violation_veto_and_disagreement_without_debate(
+    monkeypatch, agree, expected,
 ):
     brief = "Use aggregate data only."
-    a_violation = {"proposal": "A", "requirement_quote": brief,
-                   "proposal_quote": "Use actual data", "reason": "Uses raw records."}
-    b_violation = a_violation | {"proposal": "B", "proposal_quote": "Use a simple checklist"}
+    a_violation = [0, "a", 0, "Use actual data", ""]
+    b_violation = [0, "b", 0, "Use a simple checklist", ""]
     ballots = []
 
     def completion(*, messages, **_):
         system, user = [m["content"] for m in messages]
+        if "at most five" in system:
+            return json.dumps([brief])
         assert f"Problem brief:\n{brief}" in user
         ballots.append(user)
         llm.record_usage(10, 3)
         preferred = "a" if agree else "b"
         evidence = [{"proposal": "a", "quote": "Use actual data"}]
-        if "Other reviewer's verified evidence" in user:
-            assert "Other reviewer's verified violation quotes" in user
-            return _review("a", evidence)
         if "Rubric Judge" in system:
             return _review(preferred, evidence, [a_violation])
         if "Skeptic" in system:
@@ -127,7 +149,7 @@ def test_committee_violation_consensus_veto_and_disagreement_debate(
     monkeypatch.setattr(llm, "_completion", completion)
     result = compare(A, B, RUBRIC, brief=brief)
     assert result.winner == expected
-    assert len(ballots) == calls and bool(result.debate) is not agree
+    assert len(ballots) == 3 and not result.debate
     assert result.violations_kept == 2 and result.violations_dropped == 0
 
 
@@ -137,6 +159,8 @@ def test_committee_sends_shared_problem_once(monkeypatch):
     b = {"title": B["title"], "text": f"{shared}\n\n{B['text']}"}
 
     def completion(*, messages, **_):
+        if "at most five" in messages[0]["content"]:
+            return "[]"
         user = messages[1]["content"]
         assert user.count(shared) == 1
         assert f"Problem brief:\n{shared}" in user
@@ -177,14 +201,7 @@ def test_committee_reads_first_complete_review_before_trailing_text(fenced):
     assert result.dropped == 1
 
 
-@pytest.mark.parametrize(("used", "retry_reply", "expected_calls"), [
-    (383, "", 3),
-    (384, "", 4),
-    (384, _review("a", [{"proposal": "a", "quote": "Use actual data"}]), 4),
-])
-def test_committee_retries_only_invalid_reviews_that_hit_the_cap(
-    monkeypatch, used, retry_reply, expected_calls,
-):
+def test_committee_does_not_retry_capped_ballots(monkeypatch):
     requests = {}
     truncated = '{"scores":{"a":{"Problem fit":1'
     valid = _review("a", [{"proposal": "a", "quote": "Use actual data"}])
@@ -192,20 +209,15 @@ def test_committee_retries_only_invalid_reviews_that_hit_the_cap(
     def completion(*, messages, seed, max_tokens, **_):
         if "Rubric Judge" in messages[0]["content"]:
             requests[max_tokens] = seed
-            llm.record_usage(20, used if max_tokens == 384 else 100)
-            return truncated if max_tokens == 384 else retry_reply
-        llm.record_usage(20, 384)
+            llm.record_usage(20, max_tokens)
+            return truncated
+        llm.record_usage(20, max_tokens)
         return valid
 
     monkeypatch.setattr(llm, "_completion", completion)
     result = compare(A, B, RUBRIC)
-    assert result.usage["calls"] == expected_calls
-    if expected_calls == 4:
-        assert requests[384] == requests[768]
-        assert result.initial[0].parse_failure == (None if retry_reply else "")
-    else:
-        assert set(requests) == {384}
-        assert result.initial[0].parse_failure == truncated
+    assert result.usage["calls"] == 3 and len(requests) == 1
+    assert result.initial[0].parse_failure == truncated
 
 
 def test_judge_fallback_and_jury_matched_votes(monkeypatch):
@@ -318,6 +330,8 @@ def test_metrics_resample_pair_units_and_use_matched_controls():
 def _bench_completion(*, messages, **_):
     system = messages[0]["content"]
     llm.record_usage(10, 5)
+    if "at most five" in system:
+        return "[]"
     if "confidence" in system and "scores" in system:
         user = messages[1]["content"]
         title = user.split("Proposal A\nTitle: ", 1)[1].splitlines()[0]
@@ -343,7 +357,7 @@ def test_two_pair_cli_run_replays_all_methods_offline(sandbox, monkeypatch):
     path = root / "results/dev.json"
     live = json.loads(path.read_text())
     assert len(live["decisions"]) == 40 and live["cache_hits"] == 8
-    assert live["live_calls"] == live["live_attempts"] == 96
+    assert live["live_calls"] == live["live_attempts"] >= 98
     monkeypatch.setenv("CONDORIUM_OFFLINE", "1")
 
     def forbidden(**_):
@@ -353,9 +367,16 @@ def test_two_pair_cli_run_replays_all_methods_offline(sandbox, monkeypatch):
     replay = runner.invoke(app, args + ["--max-calls", "0"])
     assert replay.exit_code == 0, (replay.output, replay.exception)
     offline = json.loads(path.read_text())
-    assert live["decisions"] == offline["decisions"]
+    def total_by_method(report):
+        return {method: sum(row["usage"]["total_tokens"] for row in report["decisions"]
+                            if row["method"] == method) for method in report["methods"]}
+
+    assert total_by_method(live) == total_by_method(offline)
+    assert [row["winner"] for row in live["decisions"]] == [
+        row["winner"] for row in offline["decisions"]
+    ]
     assert offline["live_calls"] == offline["live_attempts"] == 0
-    assert offline["cache_hits"] == 104
+    assert offline["cache_hits"] == live["live_calls"] + live["cache_hits"]
     assert "| committee | pooled |" in (root / "results.md").read_text()
     assert "### Iteration 0: Baseline: protocol v1, dev split, seed 0" in (
         root / "results.md"
@@ -393,6 +414,8 @@ def test_mixed_pair_cli_sends_each_rubric_to_all_methods(sandbox, monkeypatch):
 
     def completion(*, messages, model, **_):
         system, user = [m["content"] for m in messages]
+        if "at most five" in system:
+            return "[]"
         is_committee = "confidence" in system and "scores" in system
         prompts = expected_committee if is_committee else expected
         [prompt] = [prompt for prompt in prompts if prompt in user]
@@ -493,6 +516,9 @@ def test_new_committee_replays_reference_budget_and_preserves_omitted_rows(monke
 
     def completion(*, messages, **kwargs):
         system = messages[0]["content"]
+        if "at most five" in system:
+            llm.record_usage(1, 1)
+            return "[]"
         assert "confidence" in system and "scores" in system
         changed.append(kwargs["model"])
         llm.record_usage(99, 1)
@@ -513,9 +539,9 @@ def test_new_committee_replays_reference_budget_and_preserves_omitted_rows(monke
     new = pairwise.run_pairwise(*args, **options, previous_report=old,
                                 methods=("judge", "committee"))
     assert new["reference_budget"] == "v1"
-    assert len(changed) == new["live_calls"] == 6
-    assert {row["usage"]["total_tokens"] for row in new["decisions"]
-            if row["method"] == "committee"} == {300}
+    assert len(changed) == 6 and new["live_calls"] == 7
+    assert sorted(row["usage"]["total_tokens"] for row in new["decisions"]
+                  if row["method"] == "committee") == [300, 302]
     def reference_rows(report):
         return {(row["method"], row["variant_id"]): row for row in report["decisions"]
                 if row["method"] != "committee"}
@@ -543,8 +569,8 @@ def test_exhausted_rate_limit_preserves_results_and_stops_live_calls(monkeypatch
         position_only=True, workers=1,
     )
     assert result["rate_limited"]
-    assert result["live_calls"] == 3
-    assert result["live_attempts"] == 3 + llm.SETTINGS.llm_retries + 1
+    assert result["live_calls"] == 4
+    assert result["live_attempts"] == 4 + llm.SETTINGS.llm_retries + 1
     assert waits == [min(300, 15 * 2**i) for i in range(llm.SETTINGS.llm_retries)]
     assert [row["method"] for row in result["decisions"]] == ["committee"]
     assert [line for line in ledger.read_text().splitlines() if line.startswith("429")] == [

@@ -244,8 +244,27 @@ def bench(
     n: int = typer.Option(50),
     seed: int = typer.Option(42),
     sycophancy: bool = typer.Option(False, "--sycophancy", help="Formulation-bias test"),
+    versus: bool = typer.Option(False, "--versus",
+                                help="Committee vs single judge at equal token budget"),
+    seeds: str = typer.Option("0,1,2", help="--versus: comma-separated seeds"),
+    tone: int = typer.Option(3, help="--versus: tone-sensitivity cases per seed"),
+    mode: str = typer.Option("hackathon", help="--versus: general | hackathon"),
+    out: Optional[Path] = typer.Option(None, help="--versus: results JSON path"),
 ):
-    """Benchmark the committee: winner identification, or formulation bias."""
+    """Benchmark the committee: winner identification, formulation bias, or
+    committee vs single judge (`--versus`)."""
+    if versus:
+        from .bench.versus import readme_table as versus_table
+        from .bench.versus import run_versus
+
+        dataset = dataset or SETTINGS.root / "fixtures" / "bench" / "synthetic_pairs.json"
+        result = run_versus(dataset, n_pairs=n, n_tone=tone,
+                            seeds=tuple(int(s) for s in seeds.split(",") if s.strip()),
+                            mode=mode, out=out, log=lambda m: console.print(f"[dim]{m}[/dim]"))
+        console.print(versus_table(result))
+        console.print(f"[dim]model {result['model']} — "
+                      f"{result['summary']['llm_calls_total']} LLM calls[/dim]")
+        return
     if sycophancy:
         from .bench.sycophancy import readme_table, run_sycophancy
 

@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import json
 import re
+import threading
 import time
+from contextlib import contextmanager
 from typing import Any
 
 from .config import SETTINGS
@@ -21,11 +23,81 @@ _TRANSIENT_ERRORS = {
 }
 
 
+class UsageMeter:
+    """Counts calls and tokens of every LLM call made while it is active.
+
+    Providers report real usage (`record_usage`); when a seam (test double,
+    replay) reports nothing, tokens are estimated at ~4 characters per token.
+    """
+
+    def __init__(self) -> None:
+        self.calls = 0
+        self.prompt_tokens = 0
+        self.completion_tokens = 0
+        self.estimated = False
+        self._lock = threading.Lock()
+
+    @property
+    def total_tokens(self) -> int:
+        return self.prompt_tokens + self.completion_tokens
+
+    def add(self, prompt_tokens: int, completion_tokens: int, estimated: bool = False) -> None:
+        with self._lock:
+            self.calls += 1
+            self.prompt_tokens += int(prompt_tokens or 0)
+            self.completion_tokens += int(completion_tokens or 0)
+            self.estimated = self.estimated or estimated
+
+    def as_dict(self) -> dict:
+        return {"calls": self.calls, "prompt_tokens": self.prompt_tokens,
+                "completion_tokens": self.completion_tokens,
+                "total_tokens": self.total_tokens, "estimated": self.estimated}
+
+
+_meters: list[UsageMeter] = []
+_meters_lock = threading.Lock()
+_reported = threading.local()
+
+
+@contextmanager
+def usage_meter():
+    meter = UsageMeter()
+    with _meters_lock:
+        _meters.append(meter)
+    try:
+        yield meter
+    finally:
+        with _meters_lock:
+            _meters.remove(meter)
+
+
+def record_usage(prompt_tokens: int, completion_tokens: int) -> None:
+    """Called by `_completion` with the provider's real token counts."""
+    _reported.usage = (prompt_tokens, completion_tokens)
+
+
+def _account(messages: list[dict], reply: str) -> None:
+    usage = getattr(_reported, "usage", None)
+    _reported.usage = None
+    if usage is None:
+        prompt_chars = sum(len(m.get("content") or "") for m in messages)
+        usage, estimated = (prompt_chars // 4, len(reply) // 4), True
+    else:
+        estimated = False
+    with _meters_lock:
+        meters = list(_meters)
+    for meter in meters:
+        meter.add(*usage, estimated=estimated)
+
+
 def _completion(*, model: str, messages: list[dict], timeout: int, **kwargs: Any) -> str:
     """Single seam to the model provider. Monkeypatched in tests/demo."""
     import litellm
 
-    resp = litellm.completion(model=model, messages=messages, timeout=timeout, **kwargs)
+    resp = litellm.completion(model=model, messages=messages, timeout=timeout,
+                              drop_params=True, **kwargs)
+    if (usage := getattr(resp, "usage", None)) is not None:
+        record_usage(getattr(usage, "prompt_tokens", 0), getattr(usage, "completion_tokens", 0))
     return resp.choices[0].message.content or ""
 
 
@@ -33,15 +105,23 @@ def _is_transient(exc: Exception) -> bool:
     return any(cls.__name__ in _TRANSIENT_ERRORS for cls in type(exc).__mro__)
 
 
-def complete_text(system: str, user: str, *, model: str | None = None, timeout: int | None = None) -> str:
+def complete_text(system: str, user: str, *, model: str | None = None, timeout: int | None = None,
+                  seed: int | None = None) -> str:
     attempts = SETTINGS.llm_retries + 1
+    messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
+    seed = seed if seed is not None else SETTINGS.llm_seed
+    extra = {"seed": seed} if seed is not None else {}
     for attempt in range(attempts):
         try:
-            return _completion(
+            _reported.usage = None
+            reply = _completion(
                 model=model or SETTINGS.model,
-                messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+                messages=messages,
                 timeout=timeout or SETTINGS.llm_timeout,
+                **extra,
             )
+            _account(messages, reply)
+            return reply
         except Exception as exc:
             if attempt == attempts - 1 or not _is_transient(exc):
                 raise
@@ -76,9 +156,10 @@ def complete_json(
     *,
     model: str | None = None,
     timeout: int | None = None,
+    seed: int | None = None,
 ) -> dict | list:
     """Call the model expecting strict JSON; on parse failure, retry once."""
-    raw = complete_text(system, user, model=model, timeout=timeout)
+    raw = complete_text(system, user, model=model, timeout=timeout, seed=seed)
     try:
         return parse_json(raw)
     except ValueError:
@@ -86,4 +167,5 @@ def complete_json(
             f"{user}\n\nYour previous reply was not valid JSON:\n{raw[:1500]}\n"
             "Reply again with ONLY the JSON object, no prose, no code fences."
         )
-        return parse_json(complete_text(system, retry_user, model=model, timeout=timeout))
+        return parse_json(complete_text(system, retry_user, model=model, timeout=timeout,
+                                        seed=seed))

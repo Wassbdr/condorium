@@ -44,7 +44,7 @@ def load_eval(eval_id: str) -> dict:
 
 
 def list_evals() -> list[dict]:
-    out = []
+    out: list[dict] = []
     root = SETTINGS.evaluations_dir
     if not root.is_dir():
         return out

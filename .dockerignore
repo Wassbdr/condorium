@@ -1,0 +1,5 @@
+.venv
+.git
+evaluations
+showcase
+**/__pycache__

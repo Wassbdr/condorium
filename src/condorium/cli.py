@@ -3,19 +3,24 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
-from typing import Optional
+from typing import Optional, cast
 
 import typer
 from rich.panel import Panel
 from rich.prompt import Confirm, IntPrompt, Prompt
 
 from .analytics import traces
+from .compare_cli import compare_command
 from .config import SETTINGS
 from .display import console, show_evaluation, show_prefilter, show_ranking
 
 app = typer.Typer(help="A calibrated idea committee: no flattery, no lazy rejection.",
                   no_args_is_help=True, pretty_exceptions_show_locals=False)
+bench_app = typer.Typer(invoke_without_command=True)
+app.add_typer(bench_app, name="bench")
+app.command("compare")(compare_command)
 
 
 # ------------------------------------------------------ interrupt handling
@@ -154,16 +159,22 @@ def tournament(
 
 
 @app.command()
-def demo():
-    """Replay pre-recorded evaluations (no API key needed)."""
-    fixtures = sorted((SETTINGS.root / "fixtures" / "demo").glob("*.json"))
+def demo(
+    traces_: Optional[list[Path]] = typer.Argument(None, metavar="[TRACE.json]...",
+                                                    help="Recorded traces (default: bundled)"),
+    pause: float = typer.Option(0.0, help="Seconds between deliberation steps"),
+):
+    """Replay recorded evaluations step by step (offline, no API key needed)."""
+    from .display import show_deliberation
+
+    fixtures = traces_ or sorted(SETTINGS.demo_dir.glob("*.json"))
     if not fixtures:
-        console.print("[red]no fixtures found in fixtures/demo/[/red]")
+        console.print(f"[red]no recorded traces found in {SETTINGS.demo_dir}[/red]")
         raise typer.Exit(1)
     for f in fixtures:
-        show_evaluation(json.loads(f.read_text(encoding="utf-8")))
-    console.print("\n[dim]This was a replay of recorded runs. "
-                  "Set an API key (any LiteLLM provider) for live evaluations.[/dim]")
+        show_deliberation(json.loads(f.read_text(encoding="utf-8")), pause=pause, source=f.name)
+    console.print(f"\n[bold]Replayed {len(fixtures)} recorded run(s)[/bold] — no model was "
+                  "called. Set an API key (any LiteLLM provider) for live evaluations.")
 
 
 @app.command()
@@ -231,6 +242,20 @@ def dashboard():
 
 
 @app.command()
+def ui(port: int = typer.Option(7860, help="Port"),
+       share: bool = typer.Option(False, help="Public Gradio link")):
+    """Web UI: live deliberation, or replay of a recorded run (no key)."""
+    try:
+        from .ui import build_app
+
+        app_ = build_app()
+    except ImportError:
+        console.print('[red]install the UI extra: pip install "condorium[ui]"[/red]')
+        raise typer.Exit(1) from None
+    app_.queue().launch(server_name="0.0.0.0", server_port=port, share=share)
+
+
+@app.command()
 def stats():
     """Influence matrix, round deltas, agreement, severity — full history."""
     from .analytics.stats import full_stats
@@ -238,14 +263,39 @@ def stats():
     console.print_json(json.dumps(full_stats(), ensure_ascii=False))
 
 
-@app.command()
+@bench_app.callback()
 def bench(
+    ctx: typer.Context,
     dataset: Optional[Path] = typer.Option(None, help="Devpost-style dataset path"),
     n: int = typer.Option(50),
     seed: int = typer.Option(42),
     sycophancy: bool = typer.Option(False, "--sycophancy", help="Formulation-bias test"),
+    versus: bool = typer.Option(False, "--versus",
+                                help="Committee vs single judge at equal token budget"),
+    seeds: str = typer.Option("0,1,2", help="--versus: comma-separated seeds"),
+    tone: int = typer.Option(3, help="--versus: tone-sensitivity cases per seed"),
+    mode: str = typer.Option("hackathon", help="--versus: general | hackathon"),
+    out: Optional[Path] = typer.Option(None, help="--versus: results JSON path"),
+    workers: int = typer.Option(1, help="--versus: seeds run in parallel processes"),
+    resume: bool = typer.Option(False, help="--versus: keep seeds already in --out"),
 ):
-    """Benchmark the committee: winner identification, or formulation bias."""
+    """Benchmark the committee: winner identification, formulation bias, or
+    committee vs single judge (`--versus`)."""
+    if ctx.invoked_subcommand is not None:
+        return
+    if versus:
+        from .bench.versus import readme_table as versus_table
+        from .bench.versus import run_versus
+
+        dataset = dataset or SETTINGS.root / "fixtures" / "bench" / "synthetic_pairs.json"
+        result = run_versus(dataset, n_pairs=n, n_tone=tone,
+                            seeds=tuple(int(s) for s in seeds.split(",") if s.strip()),
+                            mode=mode, out=out, workers=workers, resume=resume,
+                            log=lambda m: console.print(f"[dim]{m}[/dim]"))
+        console.print(versus_table(result))
+        console.print(f"[dim]model {result['model']} — "
+                      f"{result['summary']['llm_calls_total']} LLM calls[/dim]")
+        return
     if sycophancy:
         from .bench.sycophancy import readme_table, run_sycophancy
 
@@ -258,6 +308,63 @@ def bench(
         result = run_bench(dataset, n=n, seed=seed)
     console.print(readme_table(result))
     console.print("[dim]full results in evaluations/*.json — paste the table in the README[/dim]")
+
+
+@bench_app.command("pairwise")
+def bench_pairwise(
+    split: str = typer.Option("test", help="dev or test"),
+    seeds: str = typer.Option("0,1,2", help="Comma-separated run seeds"),
+    methods: str = typer.Option("judge,jury,chateval,committee", help="Comma-separated methods"),
+    max_calls: Optional[int] = typer.Option(None, min=0, help="Maximum live provider attempts"),
+    limit: Optional[int] = typer.Option(None, min=1, help="Use the first N pairs in the split"),
+    position_only: bool = typer.Option(False, help="Run both orders without verbosity or tone"),
+    results_dir: Optional[Path] = typer.Option(None, help="Directory for per-split JSON results"),
+):
+    """Compare all four methods on the seeded proposal pairs."""
+    from .bench.pairset import DEFAULT_RUBRIC, PAPER_RUBRIC, Split, load_rubric
+    from .bench.pairwise import load_pairs, run_pairwise
+    from .bench.pairwise_metrics import write_results
+    from .llm import OfflineCacheMiss
+
+    if split not in ("dev", "test"):
+        raise typer.BadParameter("Choose dev or test.", param_hint="--split")
+    checked_split = cast(Split, split)
+    try:
+        seed_values = tuple(int(seed.strip()) for seed in seeds.split(","))
+    except ValueError as exc:
+        raise typer.BadParameter("Use comma-separated integers, such as 0,1,2.",
+                                 param_hint="--seeds") from exc
+    root = SETTINGS.root / "benchmarks"
+    os.environ.setdefault("CONDORIUM_CACHE", str(root / "cache"))
+    os.environ.setdefault("CONDORIUM_RPM", "30")
+    output = results_dir or root / "results"
+    try:
+        previous = output / f"{checked_split}.json"
+        previous_report = json.loads(previous.read_text(encoding="utf-8")) if previous.is_file() else None
+        pairs = load_pairs(root / "data", split=checked_split, limit=limit)
+        rubric_ids = {pair["rubric"] for pair in pairs if pair["split"] == checked_split}
+        rubrics = {name: load_rubric(root / f"rubrics/{name}.yaml")
+                   for name in (DEFAULT_RUBRIC, PAPER_RUBRIC) if name in rubric_ids}
+        report = run_pairwise(
+            pairs, rubrics,
+            split=checked_split, seeds=seed_values, methods=tuple(m.strip() for m in methods.split(",")),
+            limit=limit, position_only=position_only, max_calls=max_calls,
+            previous_report=previous_report,
+        )
+        write_results(report, output, iterations_path=root / "iterations.yaml")
+    except (OSError, ValueError, OfflineCacheMiss) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from exc
+    typer.echo(f"Wrote {len(report['decisions'])} decisions to {output / f'{split}.json'}. "
+               f"Live calls: {report['live_calls']}; cache hits: {report['cache_hits']}.")
+    if report["rate_limited"]:
+        typer.echo("NIM returned HTTP 429 after retries. Saved partial results; try again "
+                   "later with the same cache.", err=True)
+        raise typer.Exit(75)
+    elif report["limited_methods"]:
+        message = ("Replayed cached decisions; remaining requests are not cached."
+                   if max_calls == 0 else "Call limit reached. Rerun with the same cache to finish.")
+        typer.echo(message, err=True)
 
 
 @app.command()

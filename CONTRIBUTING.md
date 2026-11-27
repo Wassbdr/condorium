@@ -37,6 +37,8 @@ Labeled [`good first issue`](https://github.com/Wassbdr/condorium/labels/good%20
 
 ## Rules the codebase enforces (don't fight them)
 
+See [Architecture](docs/architecture.md) for the execution flow and invariants.
+
 - prompts live in `agents/*.md`, never in Python;
 - scores are never averaged in the synthesis; the Believer cap, the Skeptic's
   doubt-with-test rule and the Scientist's citation gate are enforced in

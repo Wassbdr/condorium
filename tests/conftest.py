@@ -19,6 +19,13 @@ FAKE_PAPER = {
 }
 
 
+@pytest.fixture(autouse=True)
+def isolate_llm_environment(monkeypatch):
+    monkeypatch.setenv("CONDORIUM_RPM", "0")
+    for name in ("CACHE", "OFFLINE", "CALL_LOG", "MAX_CALLS"):
+        monkeypatch.delenv(f"CONDORIUM_{name}", raising=False)
+
+
 def _opinion(score, round_no: int, extra: dict | None = None) -> dict:
     op = {
         "score": score,
@@ -111,10 +118,16 @@ class MockLLM:
                         "mastered_option": {"tech": "plain web", "wow": 5, "risk": 2}}
             return {"action": "done", "idea": {"title": "refined idea",
                                                "text": "problem, audience, tech, wow"}}
+        if "SINGLE EXPERT JUDGE" in system:
+            return self.single_judge(user)
         if "Rewrite the idea" in system:
             return {"enthusiastic": "MY REVOLUTIONARY IDEA: base.",
                     "neutral": "base.", "deprecating": "a small idea, probably taken: base."}
         return self._committee(system, user)
+
+    def single_judge(self, user: str) -> dict:
+        return {"score": 6, "verdict": "ITERATE", "rationale": "fine", "main_risk": "x",
+                "action": "test it"}
 
     def _committee(self, system: str, user: str) -> dict:
         markers = [

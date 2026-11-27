@@ -11,6 +11,10 @@ DEFAULT_MODEL = "anthropic/claude-sonnet-4-6"
 COMMITTEE_GENERAL = ["judge", "believer", "scientist_eval", "skeptic", "investor", "strategist"]
 COMMITTEE_HACKATHON = COMMITTEE_GENERAL + ["jury"]
 
+# Prompts and demo traces bundled in the wheel (pyproject force-include):
+# used when the working root has none, e.g. after `pip install` / `uvx`.
+BUNDLED_DIR = Path(__file__).resolve().parent / "_data"
+
 # Agents whose round-1 work includes live research: they get a longer timeout,
 # run in the same parallel fan-out and never block the others.
 RESEARCH_AGENTS = {"scientist_eval"}
@@ -43,10 +47,22 @@ class Settings:
     research_timeout: int = 240  # scientist round-1 (papers + web)
     llm_retries: int = field(
         default_factory=lambda: int(os.environ.get("CONDORIUM_LLM_RETRIES", "2")))
+    # forwarded to the provider when set (bench runs pin it for reproducibility)
+    llm_seed: int | None = field(
+        default_factory=lambda: int(s) if (s := os.environ.get("CONDORIUM_SEED")) else None)
 
     @property
     def agents_dir(self) -> Path:
-        return self.root / "agents"
+        local = self.root / "agents"
+        if local.is_dir() or not (BUNDLED_DIR / "agents").is_dir():
+            return local
+        return BUNDLED_DIR / "agents"
+
+    @property
+    def demo_dir(self) -> Path:
+        candidates = (self.root / "fixtures" / "demo", BUNDLED_DIR / "fixtures" / "demo",
+                      Path(__file__).resolve().parents[2] / "fixtures" / "demo")
+        return next((c for c in candidates if c.is_dir()), candidates[0])
 
     @property
     def knowledge_dir(self) -> Path:

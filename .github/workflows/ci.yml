@@ -10,15 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
       - name: Install
-        run: |
-          uv venv --python ${{ matrix.python-version }}
-          uv pip install -e ".[dev]"
-      - name: Lint
-        run: .venv/bin/ruff check src tests scripts
-      - name: Test (no network, no keys — LLM fully mocked)
-        run: .venv/bin/pytest -q
+        run: make install PYTHON="${{ matrix.python-version }}"
+      - name: Lint, typecheck, test, and replay the demo offline
+        run: make -k lint typecheck test demo

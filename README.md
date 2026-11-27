@@ -1,36 +1,85 @@
 # condorium
 
-> **Your AI thinks every idea is genius — or kills it with "it already exists". This committee does neither.**
+**A committee of seven LLM agents that evaluates an idea in two rounds (blind, then deliberation) and is built, in code, not to flatter you: for builders, hackathon teams and anyone who wants LLM feedback they can trust.**
 
-[![ci](https://github.com/Wassbdr/condorium/actions/workflows/ci.yml/badge.svg)](https://github.com/Wassbdr/condorium/actions)
-[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
-
-`condorium` is a two-layer multi-agent system for evaluating ideas — yours, or ideas it generates itself:
-
-1. **The Cohort** (upstream) — idea generators: an Interviewer that refines *your* idea, a Hackathon Generator, a Scientist that mines real papers, and a Historian that navigates a knowledge graph of past hackathon winners.
-2. **The Committee** (downstream) — a panel that evaluates each idea in two rounds: blind first, deliberation second. No flattery, no lazy rejection.
-
-The anti-sycophancy claim is not vibes — it is **measured** (`panel bench --sycophancy`, see [below](#prove-it-the-anti-sycophancy-bench)). The guardrails are structural, enforced in code:
-
-| the usual failure | the structural fix |
-|---|---|
-| "This is genius!" for everything | the **Believer**'s score is *hard-capped in code* at the panel median + 3, and he must cite a real precedent or admit he can't |
-| "It already exists" as a verdict | forbidden for the **Skeptic** — competition is a data point; every doubt must ship with a concrete 30-minute test or it is *deleted in code* |
-| Hallucinated "studies show…" | the **Scientist** may only cite papers retrieved by the arXiv/Semantic Scholar APIs *during* the run — off-list references are stripped by the orchestrator, and a `debunked` verdict must come with contradicting sources |
-| "No papers about it" as a penalty | a `neutral` scientific verdict sets `score: null` — excluded from every median and ranking, informational only |
-| Averaged scores that hide the real question | averaging is **forbidden** in the synthesis; disagreements are surfaced, and a major one triggers a targeted debate: exactly 2 agents, exactly 1 round |
-
-## Try it in 30 seconds — no API key
+![Replay of a recorded run: blind scores, the believer cap, round 2, disagreements instead of an average](showcase/demo.gif)
 
 ```bash
-uvx --from git+https://github.com/Wassbdr/condorium panel demo
-# or: pip install git+https://github.com/Wassbdr/condorium && panel demo
+git clone https://github.com/Wassbdr/condorium && cd condorium
+uv venv -p 3.11 && uv pip install -e .
+.venv/bin/panel demo        # offline replay of two recorded runs, no API key
 ```
 
-`panel demo` replays recorded evaluations with the full display — including a "revolutionary" idea getting a calm **PIVOT**, and a scientist honestly declaring "neutral, no penalty".
+Or with Docker: `docker build -t condorium . && docker run --rm -it condorium` (add `panel ui` and `-p 7860:7860` for the web UI).
+
+## Key result: committee vs single judge, same token budget
+
+Measured live in this repo; small sample, see [limitations](#roadmap-and-known-limitations).
+
+<!-- versus:start -->
+**Winner picked: committee 67%, single judge at the same token budget 100%, single judge in one call 100%.** The committee costs 41x the tokens of one judge call.
+
+| system | winner picked | ± sd over 1 seed(s) | tone flip rate | tokens / idea | calls / idea |
+|---|---|---|---|---|---|
+| Committee (7 agents, 2 rounds) | 67% | 0% | 0% | 95,847 | 19.0 |
+| Single judge, same token budget | 100% | 0% | 0% | 103,900 | 45.2 |
+| Single judge, 1 call | 100% | 0% | 100% | 2,324 | 1.0 |
+
+Setup: 3 synthetic winner/non-winner pairs (fixtures/bench), seeds [0], nvidia/nemotron-3.5-lightning-30b-a3b via NVIDIA NIM, 8-CPU VM, no GPU. Tone cases (same idea rewritten enthusiastically): 1. Agreement committee vs same-budget judge: 67% of pair picks, 83% of verdicts. 448 LLM calls in the measured systems. Believer cap fired 0 times, debates 6. Raw data: [`showcase/results/versus_results.json`](showcase/results/versus_results.json), regenerate with `LIVE=1 bash showcase/make_showcase.sh`.
+<!-- versus:end -->
+
+## One verdict, explained
+
+<!-- verdict:start -->
+From the recorded run [`01-transit-copilot.json`](fixtures/demo/01-transit-copilot.json) (`panel demo fixtures/demo/01-transit-copilot.json`): *Transit Copilot* — A phone app that watches the city's live bus/tram feeds and proactively reroutes commuters BEFORE a delay is officially announced, by detecting anomalies in veh…
+
+1. **Round 1, blind**: judge 7, believer 8, scientist_eval 6, skeptic 5, investor 6, strategist 7, jury 7.
+2. **Cap**: the believer may not exceed median(others' blind scores) + 3 = **9.5**; it asked for 7 (blind: 8), within the cap.
+3. **Round 2, after reading everyone**: believer 8→7, skeptic 5→6; every change comes with a stated reason.
+4. **Verdict GO**: Feasible in 24h on public data with a demo that explains itself; every agent conditions the upside on one unmeasured number — the lead time over official alerts.
+5. **No average**: the synthesis reports the disagreement instead — *size of the lead-time advantage* (believer: the wedge is Citymapper-grade if it holds; skeptic: it may be 90 seconds of nothing), because the entire differentiation is this number.
+6. **One next action**: Tonight, before any app code: log 24h of feed vs official alerts and compute the median lead time.
+<!-- verdict:end -->
+
+## Anti-sycophancy rules enforced in code (not in prompts)
+
+All in [`evaluation.py::_normalize`](src/condorium/graph/evaluation.py) and the synthesis/debate nodes, guarded by `tests/test_committee_rules.py`:
+
+| the usual failure | the rule the orchestrator enforces |
+|---|---|
+| "This is genius!" for everything | the **Believer**'s round-2 score is **capped at the median of the others' blind scores + 3** |
+| Hallucinated "studies show…" | the **Scientist** may cite only papers/pages **retrieved during the run** (arXiv, Semantic Scholar, web); any other reference is stripped |
+| "No papers about it" as a penalty | a `neutral` scientific verdict sets **`score: null`**, excluded from every median and ranking |
+| "It already exists" as a verdict | every **Skeptic** doubt must ship with a concrete test; doubts beyond the number of tests are deleted |
+| Averaged scores that hide the real question | the synthesis **never averages**: it lists disagreements; a major one (gap ≥ 3 or critical) triggers a debate of **exactly 2 agents, 1 round** |
+| Winner leaks in benchmark data | victory clues (prizes, badges, "winner"…) are **stripped before the committee sees an entry**; a paraphrased clue is a documented limit (strict `xfail` test) |
+
+## How it works
+
+```mermaid
+flowchart LR
+    idea([idea]) --> intake[Intake]
+    intake --> r1{{"Round 1 — 7 agents in parallel, blind"}}
+    r1 --> r2{{"Round 2 — each sees all round-1 opinions, must justify any change"}}
+    r2 --> norm["_normalize: cap · citation gate · neutral = ∅ · skeptic trim"]
+    norm --> syn["Synthesis — GO / ITERATE / PIVOT, disagreements, one action (no average)"]
+    syn -->|"gap ≥ 3 or critical"| debate["Debate: 2 agents, 1 round"] --> out([trace JSON])
+    syn --> out
+```
+
+More: the full [LangGraph pipeline](#the-pipeline-langgraph) (cohort generators, pre-filter, tournament, SQLite checkpointing), the [committee](#the-committee), the [benchmarks](#benchmarks).
+
+## Web UI
+
+```bash
+uv pip install -e ".[ui]" && .venv/bin/panel ui     # http://localhost:7860
+```
+
+**Replay (no key)** plays a recorded run agent by agent. **Live** streams a real evaluation. **Compare** evaluates two proposals against a rubric you can edit in the browser.
 
 ## Real usage
+
+For `panel compare`, see the [tutorial](docs/tutorial.md) for custom rubrics, batch input, and offline replay.
 
 ```bash
 export ANTHROPIC_API_KEY=...        # or any LiteLLM provider:
@@ -102,22 +151,31 @@ flowchart TD
 
 **Add your own agent with zero Python**: drop a markdown file in [agents/community/](agents/community/SCHEMA.md). Anchored rubrics required.
 
-## Prove it: the anti-sycophancy bench
+## Benchmarks
+
+**Pairwise comparison** (`make bench`): the single judge, ChatEval, committee,
+and NVIDIA jury member use `nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b`.
+The other jury members use Laguna XS 2.1 and Step 5 Preview. See the
+[setup and replay commands](benchmarks/data/README.md#run-the-benchmark) and
+the [latest pairwise results](benchmarks/results.md).
+
+**Earlier pointwise comparison: committee vs single judge** (`src/condorium/bench/versus.py`):
 
 ```bash
-panel bench --sycophancy --n 20
+export NVIDIA_NIM_API_KEY=...   # free tier; any LiteLLM provider works
+CONDORIUM_MODEL=nvidia_nim/nvidia/nemotron-3.5-lightning-30b-a3b CONDORIUM_RPM=30 \
+  panel bench --versus --n 3 --tone 1 --seeds 0,1,2 --out showcase/results/versus_results.json
 ```
 
-Each sampled idea is rewritten in 3 tone variants with identical content — *enthusiastic* ("my revolutionary idea!"), *neutral*, *deprecating* ("probably already taken, nothing special") — and each variant goes through the full committee, in isolation, in randomized order. **Formulation bias** = mean score spread between variants, global and per agent. Target: 0. An agent with a high bias has a prompt to harden — and `panel coach` will propose the hardening, backed by the failing cases.
+- **Pairs**: [`fixtures/bench/synthetic_pairs.json`](fixtures/bench/README.md), 18 fictitious hackathons, one winner and one non-winner each (12 easy, 6 hard), generated for this repo, no real project or person. Victory clues are stripped before any system sees an entry.
+- **Systems**: the full committee (intake, 7 agents × 2 rounds, synthesis, optional debate) vs one judge ([`agents/system/single_judge.md`](agents/system/single_judge.md)) **re-sampled until it has spent the same number of tokens as the committee on that entry**, aggregated by majority verdict and median score. The judge's first sample alone is the 1-call baseline.
+- **Metrics**: winner picked (verdict rank, then median score; tie = ½), tokens and calls per idea (provider-reported usage), agreement between systems, and **tone sensitivity**: the same idea rewritten enthusiastically, how often the verdict flips.
+- **Seeds** 0, 1, 2 select the pairs and are forwarded to the provider. `CONDORIUM_MAX_CALLS` is a hard call budget, `CONDORIUM_CALL_LOG` an audit ledger.
+- Fully tested offline against a deterministic fake LLM (`tests/test_bench_versus.py`).
 
-The winner-prediction bench uses real hackathon data:
+**Formulation bias** (`panel bench --sycophancy --n 20`): each idea in 3 tone variants with identical content (enthusiastic, neutral, deprecating); bias = mean score spread, global and per agent.
 
-```bash
-panel bootstrap --dataset devpost.json     # e.g. a Devpost dump (Kaggle/HF)
-panel bench --dataset devpost.json --n 50 --seed 42
-```
-
-It builds (winner, non-winner) pairs from the same hackathon, **strips every victory clue** (badges, "winner", prize amounts — the anti-leak pass is unit-tested), evaluates both blind, and reports: winner-identification rate, per-agent precision (learn *which agent to listen to*), and score calibration. Results are seed-reproducible.
+**Winner prediction on your own data** (`panel bootstrap --dataset devpost.json && panel bench --dataset devpost.json --n 50 --seed 42`): same-hackathon pairs, anti-leak pass, per-agent precision.
 
 ## The learning loop
 
@@ -157,9 +215,14 @@ evaluations/     full traces of every run (JSON) + reports
 scripts/         ingest_winners.py, bootstrap_from_dataset.py
 ```
 
-## Roadmap
+## Roadmap and known limitations
 
-- **Phase 2 — simulated population** (`panel population <id>`, stub shipped): 6 realistic personas (≥ 2 natural skeptics) react to a verdict in their own voice with an adoption call and a global insight.
+- **Anti-leak cleaning is lexical.** Explicit clues ("won the Grand Prize ($5,000)") are removed and tested; a paraphrase ("took home the top honour of the night") survives. `tests/test_bench_antileak.py::test_paraphrased_winning_clue_is_removed` is a strict `xfail` that documents it. Next: an LLM or NLI-based leak detector as a second pass.
+- **The live comparison is small and partial.** Only seed 0 (3 pairs, 6 ideas, 1 tone case) completed on the NVIDIA NIM free tier; seeds 1 and 2 were stopped by sustained HTTP 429 throttling. One pair moves accuracy by 33 points: read the table as a measured sanity check, not a verdict. Finish it with the same command plus `--resume` (finished seeds and entries are cached, never re-paid). Next: more pairs, all 3 seeds, a second model.
+- **Debate fires on every idea with this model** (6/6): the gap ≥ 3 trigger may be too loose for a 30B model's score spread.
+- **Synthetic pairs.** Winners and non-winners were written for this repo with deliberate quality gaps; real Devpost data (`panel bootstrap`) is supported but not redistributed.
+- **The demo is a replay** of recorded runs (said on screen and in `showcase/showcase.json`). `panel ui` → Live, or `panel eval`, computes live.
+- **Phase 2: simulated population** (`panel population <id>`, stub shipped): 6 personas react to a verdict with an adoption call.
 
 ## Contributing
 

@@ -1,0 +1,6 @@
+name: Office energy pilot
+criteria:
+  - name: feasibility
+    description: Check whether the team can run the pilot with its equipment and staff.
+  - name: measurement
+    description: Look for a baseline and a measurable outcome before wider rollout.

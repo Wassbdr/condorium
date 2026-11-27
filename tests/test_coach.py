@@ -4,7 +4,6 @@ import json
 import shutil
 
 import pytest
-
 from conftest import REPO
 
 
@@ -118,7 +117,7 @@ def test_transient_llm_errors_retried(monkeypatch):
 
     monkeypatch.setattr(llm, "_completion", flaky)
     assert llm.complete_json("s", "u") == {"ok": True}
-    assert len(calls) == 2 and sleeps == [0.5]
+    assert len(calls) == 2 and sleeps == [15]  # 429s back off longer than other errors
 
 
 def test_non_transient_llm_errors_not_retried(monkeypatch):

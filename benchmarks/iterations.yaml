@@ -1,0 +1,49 @@
+- id: 0
+  change: "Baseline: protocol v1, dev split, seed 0"
+  split: dev
+  seeds: [0]
+  metrics:
+    committee: {accuracy: 0.765625, position_flip: 0.3125, tokens: 2845.275}
+    judge: {accuracy: 0.71875, position_flip: 0.0625, tokens: 3093.875}
+    jury: {accuracy: 0.734375, position_flip: 0.3125, tokens: 3135.85}
+    chateval: {accuracy: 0.703125, position_flip: 0.125, tokens: 3163.85}
+- id: 1
+  change: "Evaluation set v2 baseline, protocol v1"
+  split: dev
+  seeds: [0]
+  dataset_version: 2
+  metrics:
+    committee: {accuracy: 0.3125, position_flip: 0.3125, tokens: 3498.6315789473683}
+    judge: {accuracy: 0.40625, position_flip: 0.3125, tokens: 3831.5789473684213}
+    jury: {accuracy: 0.390625, position_flip: 0.3125, tokens: 3903.7105263157896}
+    chateval: {accuracy: 0.5625, position_flip: 0.25, tokens: 3844.6052631578946}
+- id: 2
+  change: "Protocol v2.1: shared requirement extraction and compact ballots"
+  split: dev
+  seeds: [0]
+  dataset_version: 2
+  metrics:
+    committee: {accuracy: 0.453125, position_flip: 0.75, tokens: 2391.2105263157896}
+    judge: {accuracy: 0.40625, position_flip: 0.3125, tokens: 3831.5789473684213}
+    jury: {accuracy: 0.453125, position_flip: 0.1875, tokens: 3903.7105263157896}
+    chateval: {accuracy: 0.5625, position_flip: 0.25, tokens: 3844.6052631578946}
+- id: 3
+  change: "Protocol v3: content-based ordering, alternating slots, and ballot recovery"
+  split: dev
+  seeds: [0]
+  dataset_version: 2
+  metrics:
+    committee: {accuracy: 0.375, position_flip: 0.0, tokens: 2461.8947368421054}
+    judge: {accuracy: 0.40625, position_flip: 0.3125, tokens: 3831.5789473684213}
+    jury: {accuracy: 0.453125, position_flip: 0.1875, tokens: 3903.7105263157896}
+    chateval: {accuracy: 0.5625, position_flip: 0.25, tokens: 3844.6052631578946}
+- id: 4
+  change: "Protocol v4: explicit briefs and typed hard requirements"
+  split: dev
+  seeds: [0]
+  dataset_version: 2
+  metrics:
+    committee: {accuracy: 0.65625, position_flip: 0.0, tokens: 2658.157894736842}
+    judge: {accuracy: 0.40625, position_flip: 0.3125, tokens: 3831.5789473684213}
+    jury: {accuracy: 0.453125, position_flip: 0.1875, tokens: 3903.7105263157896}
+    chateval: {accuracy: 0.5625, position_flip: 0.25, tokens: 3844.6052631578946}

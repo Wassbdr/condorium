@@ -30,7 +30,7 @@ class Paper:
 
 
 def search_arxiv(query: str, max_results: int = 8) -> list[Paper]:
-    params = {
+    params: dict[str, str | int] = {
         "search_query": f"all:{query}",
         "max_results": max_results,
         "sortBy": "relevance",
@@ -50,7 +50,9 @@ def search_arxiv(query: str, max_results: int = 8) -> list[Paper]:
 
 
 def search_semantic_scholar(query: str, max_results: int = 8) -> list[Paper]:
-    params = {"query": query, "limit": max_results, "fields": "title,url,abstract,year"}
+    params: dict[str, str | int] = {
+        "query": query, "limit": max_results, "fields": "title,url,abstract,year",
+    }
     resp = httpx.get(S2_API, params=params, timeout=_TIMEOUT)
     resp.raise_for_status()
     papers = []
@@ -86,7 +88,7 @@ def search_papers(query: str, max_results: int = 8) -> list[Paper]:
     return unique
 
 
-def filter_cited_references(references: list[dict], retrieved: list[dict]) -> list[dict]:
+def filter_cited_references(references: list[dict] | None, retrieved: list[dict]) -> list[dict]:
     """Orchestrator gate: keep only references whose URL was actually retrieved."""
     allowed = {r["url"] for r in retrieved if r.get("url")}
     return [r for r in references or [] if r.get("url") in allowed]

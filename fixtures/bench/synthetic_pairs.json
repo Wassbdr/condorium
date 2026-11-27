@@ -1,0 +1,266 @@
+[
+ {
+  "hackathon": "Open Transit Jam",
+  "title": "StopWatch",
+  "description": "Bus riders on the city's night lines often wait at stops where the real-time board is dark. We built a web page that reads the public GTFS-RT feed and shows the next three arrivals for one stop when you scan a QR sticker placed on the pole. During the weekend we stuck stickers on 12 night stops and logged 140 scans in two evenings. Stack: Python, FastAPI, the open feed. Demo: scan the sticker on stage and compare with a live bus tracker.",
+  "prizes": "Grand Prize",
+  "enthusiastic": "Get ready for the end of waiting in the dark! StopWatch is our game-changing web page that reads the public GTFS-RT feed and shows the next three arrivals the instant you scan a QR sticker on the pole of a night bus stop. We stuck stickers on 12 night stops and riders loved it: 140 scans in just two evenings! Python, FastAPI, the open feed. Live demo: scan the sticker on stage and watch it match a live bus tracker!",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "Open Transit Jam",
+  "title": "MetroMind",
+  "description": "MetroMind is an AI assistant for public transport. Users can ask anything about their trip in natural language and the assistant answers with routes, delays and tips. It is built on a large language model with a prompt describing the city's network. Future versions will add ticketing, accessibility routing, crowd prediction and integrations with ride-sharing and bike-share operators. Stack: OpenAI API, React. Demo: a chat window answering questions about the network.",
+  "prizes": "",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "HealthHack Lyon",
+  "title": "PillPal Pharmacist View",
+  "description": "Community pharmacists told us they spend about 20 minutes a day phoning patients who forgot to renew chronic prescriptions. We built a pharmacist dashboard that reads the renewal dates already in their export file and sends one SMS reminder three days before. We tested it with one pharmacy on 60 anonymised past renewals: it would have flagged 52 of the 57 late ones. Stack: Python, an SMS sandbox. Demo: import the CSV, see the reminder list, send a test SMS.",
+  "prizes": "Grand Prize",
+  "enthusiastic": "This is the tool pharmacists have been dreaming of! PillPal Pharmacist View reads the renewal dates already in the pharmacy export file and fires one SMS reminder three days before, ending 20 minutes of daily phone calls. On 60 anonymised past renewals from one pharmacy it would have caught 52 of the 57 late ones, incredible! Python and an SMS sandbox. Demo: import the CSV, see the reminder list, send a test SMS live!",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "HealthHack Lyon",
+  "title": "CareVerse",
+  "description": "CareVerse is a platform that connects patients, doctors, pharmacists, insurers and caregivers in one place. Patients get a health timeline, doctors get AI-generated summaries, insurers get risk scores and caregivers get alerts. The data model covers medical records, prescriptions and wearables. In 48 hours we designed the architecture and the screens for each of the five user types. Stack: Figma, Node.js, a blockchain layer for consent. Demo: clickable mock-ups of the five dashboards.",
+  "prizes": "",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "Climate Code Sprint",
+  "title": "HeatMap Schoolyards",
+  "description": "Schoolyards in our city are mostly asphalt and get dangerously hot in June. We combined open satellite surface-temperature tiles with the public list of school addresses to rank the 30 hottest schoolyards, and checked the top five with a handheld thermometer on Saturday afternoon: all five were above 45 C at ground level. Stack: Python, rasterio, a static map. Demo: the ranked map plus the thermometer photos, ready to send to the city's greening programme.",
+  "prizes": "Grand Prize",
+  "enthusiastic": "Our map is going to change summers for thousands of kids! HeatMap Schoolyards fuses open satellite surface-temperature tiles with the public list of school addresses to rank the 30 hottest schoolyards in the city, and we proved it on the ground: the top five all measured above 45 C with a handheld thermometer on Saturday afternoon! Python, rasterio, a static map. Demo: the ranked map and the thermometer photos, ready for the city's greening programme!",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "Climate Code Sprint",
+  "title": "CarbonCoin",
+  "description": "CarbonCoin rewards citizens with tokens for climate-friendly actions such as cycling, recycling and eating less meat. Actions are self-reported in the app and verified by the community. Tokens can be exchanged for discounts at partner shops, which we plan to recruit after the hackathon. We wrote the smart contract and the token economics during the weekend. Stack: Solidity, React Native. Demo: minting tokens on a test network after logging a bike ride by hand.",
+  "prizes": "",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "FinTech Weekend",
+  "title": "Split the Rent Ledger",
+  "description": "Flatmates in our student residence argue about shared bills because the rent, energy and internet are paid by different people. We built a shared ledger where each flatmate photographs a bill, the amount is extracted with an open OCR model, and the app computes who owes whom with the fewest transfers. Five flats in the residence used it during the weekend for 38 real bills; the OCR read 35 amounts correctly. Stack: Flutter, Tesseract. Demo: photograph a bill on stage and settle up.",
+  "prizes": "Grand Prize",
+  "enthusiastic": "Flatmate fights over bills are OVER! Split the Rent Ledger lets each flatmate snap a photo of a bill, reads the amount with an open OCR model, and computes who owes whom with the fewest transfers, like magic. Five flats in our residence used it this weekend for 38 real bills and the OCR nailed 35 of them! Flutter and Tesseract. Demo: photograph a bill on stage and settle up live!",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "FinTech Weekend",
+  "title": "WealthGPT",
+  "description": "WealthGPT is a personal financial advisor powered by a large language model. It answers questions about savings, investing and taxes and generates a personalised plan from a short questionnaire. It targets everyone who cannot afford a human advisor. We spent the weekend on the prompt, the questionnaire and a landing page; regulatory review and connecting real bank accounts are next. Stack: OpenAI API, Next.js. Demo: filling the questionnaire and reading the generated plan.",
+  "prizes": "",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "EdTech Days",
+  "title": "Dictée Coach",
+  "description": "Primary school teachers in our partner school correct about 25 dictations each week by hand. We built a tool where the teacher reads the dictation aloud once, the pupils write on paper, and a phone photo of each sheet is compared to the reference text with handwriting recognition, highlighting the mistakes for the teacher to confirm. On 40 real sheets from one class it found 91 percent of the errors the teacher marked. Stack: Python, an open handwriting model. Demo: photograph a sheet and see the highlights.",
+  "prizes": "Grand Prize",
+  "enthusiastic": "Teachers, get your evenings back! Dictée Coach compares a phone photo of each pupil's dictation sheet with the reference text using handwriting recognition and highlights every mistake for the teacher to confirm. On 40 real sheets from one class it found an amazing 91 percent of the errors the teacher marked! Python and an open handwriting model. Demo: photograph a sheet and watch the highlights appear!",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "EdTech Days",
+  "title": "LearnVerse VR",
+  "description": "LearnVerse is a virtual-reality campus where students attend classes as avatars, explore 3D models of history and science, and collaborate in virtual rooms. Teachers can build lessons with a drag-and-drop editor. The long-term plan covers the whole curriculum from primary school to university. During the hackathon we built the lobby scene and one room with a rotating 3D molecule. Stack: Unity, a VR headset. Demo: walking through the lobby into the molecule room.",
+  "prizes": "",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "Civic Tech Night",
+  "title": "Pothole Proof",
+  "description": "Residents report potholes to the city by email and rarely hear back. We built a form that takes a photo, reads its GPS position, and files the report through the city's existing open311 endpoint, then shows the ticket status. We filed 17 real reports during the night with the residents' association; the city's system accepted all 17 and two were already marked scheduled by Sunday. Stack: Svelte, the open311 API. Demo: file a report from the stage and show the ticket.",
+  "prizes": "Grand Prize",
+  "enthusiastic": "Finally, potholes that get fixed! Pothole Proof takes a photo, reads its GPS position and files the report straight into the city's existing open311 endpoint, then shows the ticket status. We filed 17 real reports overnight with the residents' association, the city accepted all 17, and two were already scheduled by Sunday! Svelte and the open311 API. Demo: file a report live from the stage and show the ticket!",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "Civic Tech Night",
+  "title": "CityPulse",
+  "description": "CityPulse is a smart-city dashboard that aggregates every data source a city has: traffic, air quality, noise, waste, energy, social media sentiment and citizen complaints. Machine learning detects anomalies and recommends actions to the mayor's office. We collected a list of 40 relevant open datasets and designed the dashboard layout. Data ingestion and the models are planned for the next phase. Stack: Python, Grafana. Demo: the dashboard layout with sample charts.",
+  "prizes": "",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "AgriTech Challenge",
+  "title": "Frost Alert for Orchards",
+  "description": "Small apple growers in our valley lose blossoms to late spring frost and cannot afford commercial sensor networks. We wired a 15-euro temperature sensor to a LoRa board, placed three in a partner orchard, and send an SMS when the canopy temperature drops below 1 C. Over two nights the sensors read within 0.4 C of the orchard's reference thermometer and triggered one real alert at 4 a.m. Stack: ESP32, LoRa, a small Python server. Demo: cool the sensor with ice on stage and receive the SMS.",
+  "prizes": "Grand Prize",
+  "enthusiastic": "Say goodbye to frost disasters! Frost Alert for Orchards turns a 15-euro sensor and a LoRa board into a canopy watchdog that texts the grower the moment the temperature drops below 1 C. Three sensors in a partner orchard stayed within 0.4 C of the reference thermometer over two nights and fired a real alert at 4 a.m.! ESP32, LoRa, a small Python server. Demo: cool the sensor with ice on stage and the SMS arrives!",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "AgriTech Challenge",
+  "title": "FarmBrain",
+  "description": "FarmBrain is an all-in-one AI platform for farmers. It will predict yields, recommend fertilisers, detect plant diseases from photos, forecast prices and automate subsidy paperwork. Farmers interact through a chatbot. We interviewed no farmers yet but researched the market online and found it is worth billions. During the hackathon we trained a disease classifier on a public leaf dataset and built the chatbot shell. Stack: PyTorch, Dialogflow. Demo: uploading a leaf photo from the dataset.",
+  "prizes": "",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "Accessibility Hack",
+  "title": "Menu Reader",
+  "description": "Blind members of our local association cannot read restaurant menus, which are usually printed or posted as images. We built a phone app that photographs a menu, reads it with OCR and lets the user navigate it by section with the screen reader, jumping straight to desserts or prices. Four association members tested it in two restaurants on Saturday and found the dish they wanted in under a minute each time. Stack: Kotlin, on-device OCR. Demo: a member navigates a real menu on stage.",
+  "prizes": "Grand Prize",
+  "enthusiastic": "This app opens every restaurant to blind diners! Menu Reader photographs a menu, reads it with OCR and lets users jump through it by section with their screen reader, straight to desserts or prices. Four members of our local association tried it in two restaurants on Saturday and found the dish they wanted in under a minute every single time! Kotlin and on-device OCR. Demo: a member navigates a real menu live on stage!",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "Accessibility Hack",
+  "title": "AccessAll",
+  "description": "AccessAll is a universal accessibility layer for the web. A browser extension uses AI to automatically fix every accessibility problem on any website: missing alt text, poor contrast, keyboard traps and complex language. It serves blind, deaf, dyslexic and elderly users at once. We built the extension skeleton and an alt-text generator that works on simple pages. Stack: JavaScript, a vision API. Demo: the extension adding alt text to a demo page we wrote.",
+  "prizes": "",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "Retail Innovation Cup",
+  "title": "Last Bake",
+  "description": "Our neighbourhood bakery throws away about 30 loaves on weekday evenings. We built a one-page shop where the baker posts what is left at 6 p.m. and nearby customers reserve it at half price and pay at pickup. We ran it live with the bakery on Friday and Saturday: 41 of 58 leftover items were reserved and collected. Stack: a Python backend, SMS for the baker. Demo: post tonight's leftovers from the baker's phone and reserve one from the audience.",
+  "prizes": "Grand Prize",
+  "enthusiastic": "No more bread in the bin! Last Bake is a one-page shop where the baker posts what is left at 6 p.m. and neighbours snap it up at half price, paying at pickup. Our bakery ran it live on Friday and Saturday and 41 of 58 leftover items were reserved and collected, wow! Python backend and SMS for the baker. Demo: post tonight's leftovers from the baker's phone and reserve one from the audience!",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "Retail Innovation Cup",
+  "title": "ShopSense AR",
+  "description": "ShopSense is an augmented-reality shopping experience. Customers point their phone at any shelf and see reviews, prices from competitors, recommendations and personalised offers floating over each product. Retailers get analytics on customer attention. We prototyped the overlay on a printed photo of a shelf with three hard-coded products. Recognising real products and partnering with retailers are the next steps. Stack: ARKit, Swift. Demo: the overlay on the printed shelf photo.",
+  "prizes": "",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "Mobility Makers",
+  "title": "Bike Lock Map",
+  "description": "Cyclists in our city have bikes stolen at poorly lit racks. We merged the open bike-rack dataset with police theft reports published as open data to colour each rack by theft rate, and added a 'safest rack near me' button. We checked the ten riskiest racks on Saturday night: eight had broken or missing lighting. Stack: Python, Leaflet. Demo: tap the button from the venue and get the safest rack within 300 metres, with the lighting photos.",
+  "prizes": "Grand Prize",
+  "enthusiastic": "Your bike will never be stolen again! Bike Lock Map merges the open bike-rack dataset with open police theft reports to colour every rack by theft rate, plus a 'safest rack near me' button. We inspected the ten riskiest racks on Saturday night and eight had broken or missing lighting! Python and Leaflet. Demo: tap the button from the venue and get the safest rack within 300 metres!",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "Mobility Makers",
+  "title": "HyperRoute",
+  "description": "HyperRoute is a multimodal mobility super-app combining trains, buses, scooters, taxis, car sharing and flights in one booking flow, with AI choosing the optimal trip for price, time and carbon. We wrote the business plan, designed the booking screens and listed 25 operators we would integrate. No operator API has been connected yet. Stack: Figma, React Native. Demo: the clickable booking flow for a fictional trip.",
+  "prizes": "",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "Data for Good",
+  "title": "Food Bank Shift Filler",
+  "description": "Our local food bank cancels Saturday distributions when fewer than eight volunteers sign up, which happened four times last winter. We built a sign-up page that shows the shifts still short of people and sends an SMS to past volunteers only when a shift is under-staffed 48 hours ahead. In a trial with the food bank's real volunteer list, the first SMS filled two short shifts in three hours. Stack: Django, an SMS sandbox. Demo: an under-staffed shift triggers the SMS, a volunteer signs up.",
+  "prizes": "Grand Prize",
+  "enthusiastic": "No family will be turned away again! Food Bank Shift Filler shows the shifts still short of people and texts past volunteers only when a shift is under-staffed 48 hours ahead. In a trial with the food bank's real volunteer list, the very first SMS filled two short shifts in three hours! Django and an SMS sandbox. Demo: watch an under-staffed shift trigger the SMS and a volunteer sign up live!",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "Data for Good",
+  "title": "GoodGraph",
+  "description": "GoodGraph is a social network for doing good. Users post volunteering activities, follow non-profits, earn badges and see the impact of their community on a global map. A recommendation algorithm suggests causes based on interests. We plan to partner with major NGOs after launch. During the weekend we built the sign-up flow, the profile page and the badge system with fake data. Stack: Firebase, Flutter. Demo: creating a profile and earning a badge.",
+  "prizes": "",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "Open Science Hack",
+  "title": "Retraction Radar",
+  "description": "Researchers sometimes cite papers that were later retracted without knowing it. We built a command-line tool that reads a BibTeX file, checks each DOI against the public Retraction Watch database export and Crossref, and prints the retracted ones with the retraction notice. We ran it on the bibliographies of 20 open-access theses from our university: it flagged 3 real retracted citations that the authors confirmed. Stack: Python, Crossref API. Demo: run it on a sample thesis bibliography.",
+  "prizes": "Grand Prize",
+  "enthusiastic": "A must-have for every researcher on the planet! Retraction Radar reads a BibTeX file, checks every DOI against the public Retraction Watch export and Crossref, and prints the retracted ones with their notices. On the bibliographies of 20 open-access theses from our university it caught 3 real retracted citations, confirmed by the authors! Python and the Crossref API. Demo: run it live on a sample thesis bibliography!",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "Open Science Hack",
+  "title": "SciChat",
+  "description": "SciChat lets anyone chat with the entire scientific literature. Ask a question and a language model answers with an explanation of the state of research. It is aimed at students, journalists and researchers. We connected a large language model to a prompt that asks it to cite sources and built a chat interface. Retrieval over real papers is planned. Stack: OpenAI API, Streamlit. Demo: asking the chatbot about climate science and reading the answer.",
+  "prizes": "",
+  "tier": "easy"
+ },
+ {
+  "hackathon": "Smart Campus Hack",
+  "title": "Fume Hood Watch",
+  "description": "Our chemistry building's shared fridges and fume hoods are left running overnight. We clipped 10 cheap smart plugs on fume-hood fans with the facilities team's approval and send the last user a Slack message when a hood runs after 9 p.m. with the sash open. Over the weekend it caught 6 real cases and facilities confirmed each from their energy meter. Stack: Python, the plugs' local API. Demo: open the sash after hours and the message arrives.",
+  "prizes": "First place",
+  "tier": "hard"
+ },
+ {
+  "hackathon": "Smart Campus Hack",
+  "title": "Library Seat Finder",
+  "description": "Students waste time walking around the library looking for free seats. We trained a person-detection model on 300 photos we took of one reading room and display live free-seat counts on a web page. Accuracy on our test photos was 96 percent. Deploying it needs cameras in reading rooms, which the library has not agreed to yet because of privacy rules, so the demo runs on the recorded photos. Stack: PyTorch, YOLO, Flask. Demo: the counts on the recorded photo set.",
+  "prizes": "",
+  "tier": "hard"
+ },
+ {
+  "hackathon": "Supply Chain Sprint",
+  "title": "Pallet Return Tracker",
+  "description": "A regional wholesaler loses about 200 reusable pallets a month because nobody records which shop kept them. We added a pallet count to the delivery app the drivers already use and a weekly reminder to each shop with its balance. The logistics manager ran it on Saturday's 23 real deliveries; it reconciled 21 balances against his paper log. Stack: a plugin for their existing app, PostgreSQL. Demo: a driver logs a delivery and the shop's balance updates.",
+  "prizes": "First place",
+  "tier": "hard"
+ },
+ {
+  "hackathon": "Supply Chain Sprint",
+  "title": "Container ETA Oracle",
+  "description": "Freight forwarders cannot trust shipping lines' arrival estimates. We built a model that predicts container arrival at the port from ship positions, weather and port congestion. On a public dataset of 2019 voyages it beats the lines' estimates by 11 hours on average. Live use needs a commercial ship-tracking feed that costs about 2,000 euros a month, and no forwarder has seen it yet. Stack: Python, LightGBM, Streamlit. Demo: predictions on the 2019 test voyages.",
+  "prizes": "",
+  "tier": "hard"
+ },
+ {
+  "hackathon": "Health Data Jam",
+  "title": "Clinic No-Show Nudge",
+  "description": "A small physiotherapy clinic loses about 15 percent of appointments to no-shows. We added a confirmation SMS two days ahead, with a one-tap reschedule link, on top of the clinic's existing booking export. Over two weeks of shadow testing on their real schedule, 9 patients rescheduled through the link and the receptionist re-filled 7 of those slots. Stack: Python, an SMS sandbox. Demo: the receptionist sees a freed slot and fills it.",
+  "prizes": "First place",
+  "tier": "hard"
+ },
+ {
+  "hackathon": "Health Data Jam",
+  "title": "SkinCheck",
+  "description": "Melanoma is easier to treat when caught early. We fine-tuned an image classifier on a public dermatology dataset and reached 89 percent accuracy on its test split. The app lets anyone photograph a mole and get a risk score. We showed it to two friends who are medical students, who liked the interface. Selling it as a medical tool would require certification, which we have not looked into. Stack: TensorFlow Lite, Flutter. Demo: classifying dataset images on the phone.",
+  "prizes": "",
+  "tier": "hard"
+ },
+ {
+  "hackathon": "Green Office Challenge",
+  "title": "Meeting Room Heat Saver",
+  "description": "Our coworking space heats all eight meeting rooms all day although bookings cover about a third of the hours. We connected the room booking calendar to the existing smart thermostats so that unbooked rooms drop to 16 C. The manager let us run it on three rooms for the weekend's bookings and the thermostat logs show 31 percent fewer heating hours on those rooms, with no complaint from the two teams that used them. Stack: Node.js, the thermostat API. Demo: book a room and watch its setpoint rise.",
+  "prizes": "First place",
+  "tier": "hard"
+ },
+ {
+  "hackathon": "Green Office Challenge",
+  "title": "Commute Carbon Game",
+  "description": "Employees rarely think about the carbon cost of their commute. We built a team game where people log their commute mode each day and teams compete on carbon saved, with a weekly leaderboard. Eleven colleagues from our company played during the hackathon and logged 47 commutes. We do not yet know whether the game changes behaviour or only records what people already do. Stack: React, Supabase. Demo: logging a bike commute and climbing the leaderboard.",
+  "prizes": "",
+  "tier": "hard"
+ },
+ {
+  "hackathon": "Local Business Hack",
+  "title": "Market Stall Card Reader",
+  "description": "Farmers at our weekly market turn away card payments because terminal fees and contracts are too high for a few sales a day. We set up a phone-to-phone payment page using a payment provider's sandbox with per-transaction pricing and printed a QR code per stall. On Sunday three stallholders ran 26 test payments with real customers in sandbox mode; average checkout took 14 seconds. Stack: the provider's API, a static site. Demo: pay for a jar of honey on stage.",
+  "prizes": "First place",
+  "tier": "hard"
+ },
+ {
+  "hackathon": "Local Business Hack",
+  "title": "Neighbourhood Delivery Bot",
+  "description": "Local shops cannot compete with large retailers on delivery. We built a small sidewalk delivery robot from a kit with a camera and a lidar, and wrote the navigation code. It drove 40 metres around the venue courtyard on its own during the hackathon. Running it on public sidewalks would need a city permit and someone to follow it, and we have not talked to any shop yet. Stack: ROS, Raspberry Pi. Demo: the robot crossing the stage.",
+  "prizes": "",
+  "tier": "hard"
+ },
+ {
+  "hackathon": "Social Impact Weekend",
+  "title": "Shelter Bed Board",
+  "description": "Night shelters in our city each keep their free beds on a whiteboard, so street outreach teams phone them one by one. We built a page where each shelter updates its free beds with two taps and outreach workers see all shelters at once. Two shelters and one outreach team used it on Friday and Saturday nights; the team found a bed in 4 phone calls fewer per night than their usual log. Stack: Django, SMS fallback. Demo: a shelter updates its count and the board refreshes.",
+  "prizes": "First place",
+  "tier": "hard"
+ },
+ {
+  "hackathon": "Social Impact Weekend",
+  "title": "Kindness Chain",
+  "description": "Loneliness is rising among elderly people. Kindness Chain matches lonely seniors with young volunteers for weekly phone calls using a matching algorithm based on interests. We wrote the matching algorithm and a sign-up form, and 30 students from our school signed up as volunteers during the weekend. We have not yet reached any senior or a care organisation that could refer them. Stack: Python, Airtable. Demo: the algorithm matching volunteers to sample senior profiles.",
+  "prizes": "",
+  "tier": "hard"
+ }
+]

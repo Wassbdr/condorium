@@ -20,8 +20,8 @@ from typing import Any
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
 
-from ..config import SETTINGS
 from ..analytics import traces
+from ..config import SETTINGS
 from ..knowledge.calibration import nearest_winners_block
 from ..llm import complete_json
 from ..prompts import AgentPrompt, committee_prompts, load_prompt, render
@@ -68,10 +68,13 @@ def _render_agent_prompt(prompt: AgentPrompt, state: EvalState) -> str:
     return render(prompt.body, **values)
 
 
-def _normalize(name: str, opinion: dict, state: EvalState, round_no: int) -> dict:
+def _normalize(name: str, raw_opinion: dict | list, state: EvalState, round_no: int) -> dict:
     """Code-enforced guardrails, applied to every parsed opinion."""
-    if not isinstance(opinion, dict):
-        opinion = {"score": None, "verdict": str(opinion)}
+    opinion: dict
+    if isinstance(raw_opinion, dict):
+        opinion = raw_opinion
+    else:
+        opinion = {"score": None, "verdict": str(raw_opinion)}
     if name == "skeptic":
         # A doubt without a test is deleted: watchouts beyond the tests list drop.
         watchouts = opinion.get("watchouts") or []
@@ -89,6 +92,7 @@ def _normalize(name: str, opinion: dict, state: EvalState, round_no: int) -> dic
         med = median(list(opinion_scores(others).values()))
         if med is not None and isinstance(opinion.get("score"), (int, float)):
             cap = med + 3
+            opinion["cap_limit"] = cap
             if opinion["score"] > cap:
                 opinion["uncapped_score"] = opinion["score"]
                 opinion["score"] = int(cap)

@@ -1,0 +1,10 @@
+name: Paper
+criteria:
+  - name: Significance
+    description: How important is the research question or contribution?
+  - name: Novelty
+    description: How clearly does the work differ from prior approaches?
+  - name: Soundness
+    description: Do the methods and reported evidence support the claims?
+  - name: Clarity
+    description: How clearly are the question, methods, and findings explained?

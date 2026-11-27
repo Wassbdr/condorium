@@ -11,7 +11,9 @@ from typing import Literal, NamedTuple, TypedDict
 import yaml
 
 DEFAULT_SEED = 42
+DATASET_VERSION = 2
 DEFAULT_RUBRIC = "proposal"
+PAPER_RUBRIC = "paper"
 Split = Literal["dev", "test"]
 Side = Literal["a", "b"]
 
@@ -25,6 +27,7 @@ class Item(TypedDict):
 
 class Pair(TypedDict):
     id: str
+    version: int
     source: Literal["synthetic", "iclr"]
     split: Split
     rubric: str
@@ -99,154 +102,144 @@ class _Scenario(NamedTuple):
     problem: str
     approach: str
     outcome: str
-    unavailable: str
-    fallback: str
+    units: str
+    records: str
 
 
 _SCENARIOS = (
     _Scenario("Bus wheelchair boarding",
               "A bus operator wants to reduce boarding delays for riders using wheelchairs.",
               "Dispatch would flag stops with repeated ramp failures for preventive maintenance.",
-              "wheelchair boardings delayed by a ramp fault", "historical passenger GPS traces",
+              "wheelchair boardings delayed by a ramp fault", "stops",
               "driver ramp-fault reports and scheduled maintenance logs"),
     _Scenario("Night pharmacy stock",
               "A hospital pharmacy wants to avoid emergency substitutions during night shifts.",
               "Night staff would get reorder prompts for medicines with recurring shortages.",
-              "night shifts with an emergency substitution", "supplier-level demand forecasts",
+              "night shifts with an emergency substitution", "stock bins",
               "the pharmacy's dispense history and supplier lead-time records"),
     _Scenario("Shelter room turnover",
               "A shelter wants to shorten vacant periods between occupants without rushing cleaning.",
               "The desk would queue room turnovers from checkout through a cleaning sign-off.",
-              "hours rooms sit empty between occupants", "case files from other shelters",
+              "hours rooms sit empty between occupants", "rooms",
               "the shelter's checkout and cleaning timestamps"),
     _Scenario("Small-farm irrigation",
               "A vegetable cooperative wants to limit irrigation water without damaging crops.",
               "Growers would schedule watering by soil moisture and check affected plots for stress.",
-              "litres used per marketable crate", "proprietary satellite moisture snapshots",
+              "litres used per marketable crate", "plots",
               "readings from soil probes the cooperative already owns"),
     _Scenario("Campus heat pumps",
               "A campus wants to cut energy use without increasing cold classrooms.",
               "Facilities would stagger heat-pump starts and keep the existing comfort limits.",
               "heating energy per occupied hour at the target temperature",
-              "the utility's unpublished feeder readings", "campus submeter readings"),
+              "classrooms", "campus submeter readings"),
     _Scenario("Court appointment reminders",
               "A court wants fewer missed appointments without revealing case details in messages.",
               "It would send neutral reminders through the existing opt-in notification system.",
-              "scheduled appointments that are missed", "private phone-carrier location data",
+              "scheduled appointments that are missed", "appointment slots",
               "the court calendar and delivery receipts"),
     _Scenario("Library laptop lending",
               "A library wants fewer long waits for laptops without shortening loan periods.",
               "It would release reserved devices when a pickup expires and keep a walk-in reserve.",
-              "loan requests still waiting after a day", "patron profiles from neighboring systems",
+              "loan requests still waiting after a day", "laptops",
               "local checkout timestamps and the reservation queue"),
     _Scenario("Refrigerated deliveries",
               "A meal distributor wants fewer temperature excursions in refrigerated vans.",
               "Drivers would get alerts early enough to inspect seals and move stock if needed.",
-              "minutes stock spends outside the safe temperature range", "customer kitchen sensors",
+              "minutes stock spends outside the safe temperature range", "delivery runs",
               "van temperature loggers and delivery timestamps"),
     _Scenario("Water leak dispatch",
               "A water utility needs to find service-line leaks before they cause road closures.",
               "The dispatch desk would combine recurring low-flow alerts with repair tickets.",
-              "leaks repaired before a road closure", "live feeds from privately owned meters",
+              "leaks repaired before a road closure", "service lines",
               "municipal flow gauges and existing repair tickets"),
     _Scenario("Factory changeovers",
               "A food plant wants shorter line changeovers without relaxing allergen checks.",
               "The plant would stage clean tooling off-line before the previous run ends.",
               "minutes per changeover that passes the existing allergen check",
-              "the equipment maker's confidential maintenance dataset",
+              "changeovers",
               "line timestamps and the plant's sanitation checklist"),
     _Scenario("Storm drain inspections",
               "A city cannot inspect every drain before heavy rain and wants fewer street floods.",
               "Crews would schedule repeat blockages and verify drain clearance with site photos.",
-              "flood calls in the inspected service area", "private building basement sensors",
+              "flood calls in the inspected service area", "drains",
               "the city's inspection records and flood reports"),
     _Scenario("Job training appointments",
               "A training program wants to reduce missed intake meetings for shift workers.",
               "The program would offer evening slots and let applicants move an existing booking.",
-              "participants who miss an intake appointment", "employer payroll schedules",
+              "participants who miss an intake appointment", "intake bookings",
               "appointment records and the hours applicants volunteer"),
     _Scenario("Bike share rebalancing",
               "A bike share wants to cut empty-dock arrivals without adding overnight routes.",
               "The crew would move bikes earlier on existing routes when a station shows a deficit.",
-              "arrivals at stations with no bikes available", "personal trip logs from rival apps",
+              "arrivals at stations with no bikes available", "dock stations",
               "station counts and aggregated trip arrivals from its own fleet"),
     _Scenario("Museum humidity control",
               "A museum wants to keep display cases in range without closing galleries for rewiring.",
               "A conservator would adjust desiccant replacement using the current wireless sensors.",
               "hours display cases spend outside their humidity range",
-              "manufacturer-only conservation logs", "the museum's own case sensor history"),
+              "display cases", "the museum's own case sensor history"),
     _Scenario("Online checkout timeouts",
               "A shop wants fewer checkout timeouts without relaxing payment safeguards.",
               "It would queue order confirmation separately while leaving payment checks in place.",
-              "checkouts abandoned after a timeout", "card networks' unpublished retry traces",
+              "checkouts abandoned after a timeout", "checkout sessions",
               "the shop's request timings and payment status codes"),
 )
 
 
 class _Defect(NamedTuple):
     constraint: str
+    detail: str
     strong: str
     weak: str
     note: str
 
 
 _DEFECTS = {
-    "measurement": _Defect(
-        "The pilot must show whether service actually improved.",
-        "Judge the pilot by the change in {outcome} against a comparable pre-pilot window.",
-        "Judge the pilot by whether the rollout checklist is complete on the review date.",
-        "The completion checklist measures activity, not the service outcome.",
+    "throughput": _Defect(
+        "Sign-off requires every one of the {scope} selected {units} to be checked. "
+        "There are {shifts} staffed shifts before handover.",
+        "An on-duty team can check at most {capacity} per shift; "
+        "only that team can sign off on checks.",
+        "Use {shifts} shifts for the checks and write up the results after the last shift.",
+        "Use {short_shifts} shifts for the checks, then turn the last shift into a review "
+        "meeting. The team will close the checklist before convening.",
+        "The planned checking shifts times the per-shift limit cannot cover the full scope.",
     ),
-    "schedule": _Defect(
-        "The pilot must start in six weeks and touches a shared operations system.",
-        "Run the first trial beside the shared system and migrate it after the pilot is reviewed.",
-        "Start the trial after replacing the shared operations system in the third month.",
-        "A third-month dependency misses the six-week start deadline.",
-    ),
-    "unavailable-data": _Defect(
-        "The team cannot obtain {unavailable}.",
-        "Use {fallback} to set up and operate the pilot.",
-        "Use {unavailable} as the input required for running the pilot.",
-        "The proposed input is explicitly unavailable, whereas local records are available.",
-    ),
-    "staffing": _Defect(
-        "No extra overnight staff can be assigned.",
-        "Queue work outside the staffed window and assign it to the next scheduled shift.",
-        "Keep the queue current by assigning an additional operator to cover each night shift.",
-        "The plan depends on extra overnight staff despite the staffing constraint.",
-    ),
-    "unsupported-claim": _Defect(
-        "The team needs an evidence-backed performance forecast before committing to expansion.",
-        "Use the pilot to estimate the achievable improvement before committing to a target.",
-        "Commit to a tenfold improvement based on the assumption that rollout speed predicts impact.",
-        "Rollout speed does not support the tenfold performance forecast.",
+    "budget": _Defect(
+        "The pilot needs to cover {scope} {units} within a hard spending limit of ${budget}.",
+        "The pilot must pay a fixed ${fixed} setup fee before any checks begin.",
+        "Use the standard check at ${rate} per unit and log the result.",
+        "Use the priority check at ${higher_rate} per unit so each result comes back before "
+        "the next check begins. Log the result as soon as it arrives.",
+        "The fixed fee plus the priority rate for the required scope exceeds the spending limit.",
     ),
     "privacy": _Defect(
-        "Policy prohibits transferring identifiable records outside the organization.",
-        "Keep identifiable logs on-premises and share only aggregate pilot counts.",
-        "Send identifiable pilot logs to a hosted analysis vendor for the weekly review.",
-        "Sending identifiable logs to an outside vendor violates policy.",
-    ),
-    "incumbent": _Defect(
-        "The existing operations tool remains mandatory because it is the auditable record.",
-        "Keep the existing tool as the record and reconcile pilot actions to its entries.",
-        "Replace logging in the existing tool with a separate record maintained by the pilot.",
-        "The pilot stops logging in the required system of record.",
+        "Policy permits disclosure to third parties only as site-wide totals.",
+        "The team will log a reference number for every unit checked.",
+        "Ask the contractor to review a single count for the whole operation.",
+        "Give the contractor the spreadsheet with one line per unit and its reference "
+        "number so the contractor can check each entry against the summary.",
+        "Line-by-line contractor access violates the aggregate-only disclosure rule.",
     ),
 }
 
 _STYLES = (
-    ("{problem} {constraint}", "{approach}", "{measurement}", "{decision}"),
-    ("{problem} {constraint}", "{approach}", "{decision}", "{measurement}"),
-    ("{problem} {constraint}", "{measurement}", "{approach}", "{decision}"),
+    ("{approach}", "{detail}", "{measurement}"),
+    ("{detail}", "{measurement}", "{approach}"),
+    ("{measurement}", "{approach}", "{detail}"),
+)
+_COSMETIC = (
+    "This seems worth trying. The first readout may look a bit plain.",
+    "I think this is a reasonable first pass. The summary could use a clearer heading.",
+    "This could be a useful start, even if the first chart is not pretty.",
 )
 _POLISH = (
-    "Treat this as a focused operating trial rather than a system redesign. "
-    "The case for moving ahead is the direct link between the change and the service problem.",
-    "This is a practical starting point. The review can stay focused on whether the proposed "
-    "change addresses the problem, not whether the team can draft a more elaborate plan.",
-    "The proposal is deliberately narrow. That makes it worth trying as written rather than "
-    "waiting for a larger program to settle the same operating question.",
+    "The scorecard will compare one {weeks}-week pilot window with the preceding "
+    "{weeks} weeks. A weekly dashboard will show both the numerator and denominator.",
+    "Publish {weeks} weekly snapshots and a final chart against the prior {weeks}-week "
+    "baseline. The closing report will show the change and the size of the sample.",
+    "Track the measure weekly for {weeks} weeks and compare it with the preceding "
+    "{weeks} weeks. Publish the sample size and the week-by-week trend.",
 )
 
 
@@ -255,45 +248,48 @@ def opposite(side: Side) -> Side:
 
 
 def synthetic_pairs(seed: int = DEFAULT_SEED) -> list[Pair]:
-    """Build forty pairs, holding out all test domains from the dev split."""
+    """Build versioned hard pairs, holding out all test domains from the dev split."""
     rng = random.Random(seed)
     scenarios = list(_SCENARIOS)
     rng.shuffle(scenarios)
     pairs: list[Pair] = []
     groups: tuple[tuple[Split, int, list[_Scenario]], ...] = (
-        ("dev", 10, scenarios[:5]), ("test", 30, scenarios[5:]),
+        ("dev", 8, scenarios[:4]), ("test", 30, scenarios[4:]),
     )
     for split, count, domains in groups:
         defects = list(_DEFECTS)
         rng.shuffle(defects)
-        hard = [True, False] * (count // 2)
-        rng.shuffle(hard)
         sides: list[Side] = ["a", "b"] * (count // 2)
         rng.shuffle(sides)
-        for i, (is_hard, better) in enumerate(zip(hard, sides, strict=True)):
+        for i, better in enumerate(sides):
             trial, domain = divmod(i, len(domains))
             scenario = domains[domain]
-            code = defects[(domain + 3 * trial) % len(defects)]
+            code = defects[(domain + trial) % len(defects)]
             defect = _DEFECTS[code]
-            fields = scenario._asdict()
-            measurement = f"Compare {scenario.outcome} with the pre-pilot baseline."
+            shifts, capacity = rng.randint(3, 6), rng.randint(6, 11)
+            scope = shifts * capacity - rng.randint(1, capacity - 1)
+            fixed, rate = rng.randrange(120, 301, 10), rng.randint(15, 28)
+            fields = dict(units=scenario.units, shifts=shifts, short_shifts=shifts - 1,
+                          capacity=capacity, scope=scope, fixed=fixed, rate=rate,
+                          higher_rate=rate + rng.randint(1, 3),
+                          budget=fixed + rate * scope + rng.randint(1, scope - 1))
+            problem = f"{scenario.problem} {defect.constraint.format(**fields)}"
+            measurement = (f"Use {scenario.records} to compare {scenario.outcome} "
+                           "with the pre-pilot baseline.")
             style = rng.choice(_STYLES)
-
-            def text(decision: str) -> str:
-                lines = {
-                    **fields, "constraint": defect.constraint.format(**fields),
-                    "measurement": "" if code == "measurement" else measurement,
-                    "decision": decision.format(**fields),
-                }
-                return "\n\n".join(part for t in style if (part := t.format(**lines)))
-
-            strong = Item(title=scenario.title, text=text(defect.strong))
-            weak = Item(title=scenario.title, text=text(defect.weak))
-            if is_hard:
-                weak["text"] += "\n\n" + rng.choice(_POLISH)
+            context = [part.format(approach=scenario.approach, measurement=measurement,
+                                   detail=defect.detail.format(**fields)) for part in style]
+            shared = [problem, *context]
+            strong = Item(title=scenario.title, text="\n\n".join(
+                [*shared, defect.strong.format(**fields), rng.choice(_COSMETIC)],
+            ))
+            weak = Item(title=scenario.title, text="\n\n".join([
+                *shared, defect.weak.format(**fields),
+                rng.choice(_POLISH).format(weeks=rng.randint(2, 6)),
+            ]))
             pairs.append({
                 "id": f"synthetic-{split}-{i + 1:02d}", "source": "synthetic",
-                "split": split, "rubric": DEFAULT_RUBRIC,
+                "version": DATASET_VERSION, "split": split, "rubric": DEFAULT_RUBRIC,
                 "a": strong if better == "a" else weak, "b": strong if better == "b" else weak,
                 "better": better, "note": f"{code}: {defect.note}",
             })
@@ -340,9 +336,14 @@ def position_variants(pairs: Sequence[Pair]) -> list[Variant]:
 def _sample(pairs: Sequence[Pair], kind: str, seed: int, dev: int, test: int) -> Iterable[Pair]:
     for split, count in (("dev", dev), ("test", test)):
         candidates = sorted((p for p in pairs if p["split"] == split), key=lambda p: p["id"])
-        yield from random.Random(f"{seed}:{kind}:{split}").sample(
-            candidates, min(count, len(candidates)),
-        )
+        random.Random(f"{seed}:{kind}:{split}").shuffle(candidates)
+        picked = set()
+        for source in ("synthetic", "iclr"):
+            if first := next((pair for pair in candidates if pair["source"] == source), None):
+                yield first
+                picked.add(first["id"])
+        remaining = [pair for pair in candidates if pair["id"] not in picked]
+        yield from remaining[:count - len(picked)]
 
 
 def _pad(text: str, rng: random.Random) -> str:
@@ -377,11 +378,11 @@ def _alter(p: Pair, kind: Literal["verbosity", "tone"], seed: int) -> Variant:
 
 
 def verbosity_variants(pairs: Sequence[Pair], seed: int = DEFAULT_SEED) -> list[Variant]:
-    return [_alter(p, "verbosity", seed) for p in _sample(pairs, "verbosity", seed, 4, 12)]
+    return [_alter(p, "verbosity", seed) for p in _sample(pairs, "verbosity", seed, 3, 12)]
 
 
 def tone_variants(pairs: Sequence[Pair], seed: int = DEFAULT_SEED) -> list[Variant]:
-    return [_alter(p, "tone", seed) for p in _sample(pairs, "tone", seed, 4, 10)]
+    return [_alter(p, "tone", seed) for p in _sample(pairs, "tone", seed, 3, 10)]
 
 
 def build_variants(pairs: Sequence[Pair], seed: int = DEFAULT_SEED) -> list[Variant]:

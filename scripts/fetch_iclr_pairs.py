@@ -15,7 +15,15 @@ from typing import NamedTuple, TypedDict
 
 import httpx
 
-from condorium.bench.pairset import DEFAULT_RUBRIC, DEFAULT_SEED, Pair, Side, Split, write_jsonl
+from condorium.bench.pairset import (
+    DATASET_VERSION,
+    DEFAULT_SEED,
+    PAPER_RUBRIC,
+    Pair,
+    Side,
+    Split,
+    write_jsonl,
+)
 
 ROOT = Path(__file__).resolve().parents[1] / "benchmarks/data"
 REVISION = "881bab41b57b85916ba462758f7be016505f26dc"
@@ -25,7 +33,9 @@ USER_AGENT = "condorium-pairset/1.0"
 _WORD = re.compile(r"\b[^\W\d_]{2,}\b")
 _STOP = set("an and are as at be by for from has have in is it not of on or that the "
             "their this to use was we were which will with".split())
-_SPLIT_COUNTS = {"dev": 6, "test": 12}
+_BASE_COUNT = 18
+_BASE_DEV = 6
+_SPLIT_COUNTS = {"dev": 8, "test": 14}
 
 
 class Paper(NamedTuple):
@@ -139,34 +149,35 @@ def select_ids(papers: dict[int, Paper], seed: int = DEFAULT_SEED) -> list[Ident
         track in _decision(papers[i]) for track in ("oral", "spotlight")
     ))
     target = sum(_SPLIT_COUNTS.values())
-    chosen: list[tuple[int, int]] = []
     used: set[str] = set()
-    for accept in candidates:
-        reject = nearest[accept]
-        titles = {papers[accept].title.strip().casefold(), papers[reject].title.strip().casefold()}
-        if len(titles) != 2 or titles & used:
-            continue
-        chosen.append((accept, reject))
-        used.update(titles)
-        if len(chosen) == target:
-            break
-    if len(chosen) != target:
-        raise ValueError(f"Found only {len(chosen)} distinct ICLR pairs; need {target}")
-
-    rng.shuffle(chosen)
+    result: list[Identifiers] = []
 
     def ref(index: int) -> Reference:
         return {"row_index": index, "title_sha256": _title_hash(papers[index].title)}
 
-    result: list[Identifiers] = []
-    for i, (accept, reject) in enumerate(chosen):
-        split: Split = "dev" if i < _SPLIT_COUNTS["dev"] else "test"
-        better: Side = rng.choice(("a", "b"))
-        result.append({
-            "id": f"iclr-{i + 1:02d}", "split": split, "conference": papers[accept].conference,
-            "a": ref(accept if better == "a" else reject),
-            "b": ref(accept if better == "b" else reject), "better": better,
-        })
+    for size, dev in ((_BASE_COUNT, _BASE_DEV),
+                      (target - _BASE_COUNT, _SPLIT_COUNTS["dev"] - _BASE_DEV)):
+        chosen: list[tuple[int, int]] = []
+        for accept in candidates:
+            reject = nearest[accept]
+            titles = {papers[accept].title.strip().casefold(), papers[reject].title.strip().casefold()}
+            if len(titles) != 2 or titles & used:
+                continue
+            chosen.append((accept, reject))
+            used.update(titles)
+            if len(chosen) == size:
+                break
+        if len(chosen) != size:
+            raise ValueError(f"Found only {len(result) + len(chosen)} distinct ICLR pairs; need {target}")
+        rng.shuffle(chosen)
+        for i, (accept, reject) in enumerate(chosen):
+            better: Side = rng.choice(("a", "b"))
+            result.append({
+                "id": f"iclr-{len(result) + 1:02d}", "split": "dev" if i < dev else "test",
+                "conference": papers[accept].conference,
+                "a": ref(accept if better == "a" else reject),
+                "b": ref(accept if better == "b" else reject), "better": better,
+            })
     return result
 
 
@@ -226,7 +237,8 @@ def resolve_pairs(ids: Sequence[Identifiers], papers: dict[int, Paper]) -> list[
             sides[side] = {"title": p.title, "text": p.abstract}
         pairs.append({
             "id": item["id"], "source": "iclr", "split": item["split"],
-            "rubric": DEFAULT_RUBRIC, "a": sides["a"], "b": sides["b"], "better": item["better"],
+            "version": DATASET_VERSION, "rubric": PAPER_RUBRIC,
+            "a": sides["a"], "b": sides["b"], "better": item["better"],
             "note": "Accepted versus rejected in the same ICLR year.",
         })
     return pairs

@@ -105,7 +105,8 @@ def _render_split(report: dict) -> str:
         "",
         f"{report['pair_count']} pairs, {report['variant_count']} variants, "
         f"seeds {report['seeds']}, {report['model']}, temperature {report['temperature']}, "
-        f"committee protocol {report.get('committee_protocol', 'v1')}.",
+        f"committee protocol {report.get('committee_protocol', 'v1')}, "
+        f"evaluation set v{report.get('dataset_version', 1)}.",
         f"Live calls: {report['live_calls']}; live attempts: {report['live_attempts']}; "
         f"cache hits: {report['cache_hits']}.",
     ]

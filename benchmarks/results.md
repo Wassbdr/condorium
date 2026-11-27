@@ -4,7 +4,7 @@ Cells show the estimate and a 95% percentile interval from 2,000 pair-bootstrap 
 
 ## Dev
 
-16 pairs, 40 variants, seeds [0], nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b, temperature 0.7, committee protocol v1.
+16 pairs, 40 variants, seeds [0], nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b, temperature 0.7, committee protocol v1, evaluation set v1.
 Live calls: 561; live attempts: 561; cache hits: 85.
 Parse failures: 35. See the per-decision JSON for raw outputs.
 

@@ -321,7 +321,7 @@ def bench_pairwise(
     results_dir: Optional[Path] = typer.Option(None, help="Directory for per-split JSON results"),
 ):
     """Compare all four methods on the seeded proposal pairs."""
-    from .bench.pairset import Split, load_rubric
+    from .bench.pairset import DEFAULT_RUBRIC, PAPER_RUBRIC, Split, load_rubric
     from .bench.pairwise import load_pairs, run_pairwise
     from .bench.pairwise_metrics import write_results
     from .llm import OfflineCacheMiss
@@ -339,9 +339,12 @@ def bench_pairwise(
     os.environ.setdefault("CONDORIUM_RPM", "30")
     output = results_dir or root / "results"
     try:
+        pairs = load_pairs(root / "data", split=checked_split, limit=limit)
+        rubric_ids = {pair["rubric"] for pair in pairs if pair["split"] == checked_split}
+        rubrics = {name: load_rubric(root / f"rubrics/{name}.yaml")
+                   for name in (DEFAULT_RUBRIC, PAPER_RUBRIC) if name in rubric_ids}
         report = run_pairwise(
-            load_pairs(root / "data", split=checked_split, limit=limit),
-            load_rubric(root / "rubrics/proposal.yaml"),
+            pairs, rubrics,
             split=checked_split, seeds=seed_values, methods=tuple(m.strip() for m in methods.split(",")),
             limit=limit, position_only=position_only, max_calls=max_calls,
         )

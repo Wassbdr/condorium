@@ -9,7 +9,7 @@ from condorium import llm
 from condorium.bench import pairset, pairwise
 from condorium.bench.pairwise_metrics import metrics, render_results, write_results
 from condorium.cli import app
-from condorium.compare import _normalize, compare, sample_seed
+from condorium.compare import _normalize, compare, proposal_input, sample_seed
 
 ROOT = Path(__file__).resolve().parents[1]
 RUBRIC = pairset.load_rubric(ROOT / "benchmarks/rubrics/proposal.yaml")
@@ -167,7 +167,7 @@ def test_jury_requests_kimi_without_thinking_and_counts_invalid_ballots(
     monkeypatch.setattr(llm, "_completion", complete)
     jury = pairwise.run_votes("jury", "proposals", "variant", 0, None)["jury"]
     assert jury.winner == expected
-    assert [request["max_tokens"] for request in requests] == [384, 384, 384]
+    assert [request["max_tokens"] for request in requests] == [384, 384, 768]
     assert requests[-1]["model"] == "nvidia_nim/moonshotai/kimi-k3.1-pro"
     assert requests[-1]["extra_body"] == {"thinking": {"type": "disabled"}}
     missing = ["no verdict", ""] if not third_reply else ["no verdict"]
@@ -274,6 +274,71 @@ def test_two_pair_cli_run_replays_all_methods_offline(sandbox, monkeypatch):
     ).read_text()
 
 
+def test_mixed_pair_cli_sends_each_rubric_to_all_methods(sandbox, monkeypatch):
+    root = sandbox / "benchmarks"
+    synthetic = pairset.synthetic_pairs()[0]
+    paper = pairset.Pair(**(pairset.synthetic_pairs()[1] | {
+        "id": "iclr-01", "source": "iclr", "rubric": "paper",
+    }))
+    pairset.write_jsonl(root / "data/pairs.jsonl", [synthetic])
+    cached_papers = root / "data/.cache/iclr_pairs.jsonl"
+    pairset.write_jsonl(cached_papers, [paper])
+    (root / "rubrics").mkdir()
+    rubrics = {
+        name: pairset.load_rubric(ROOT / f"benchmarks/rubrics/{name}.yaml")
+        for name in ("proposal", "paper")
+    }
+    for name in rubrics:
+        (root / f"rubrics/{name}.yaml").write_bytes(
+            (ROOT / f"benchmarks/rubrics/{name}.yaml").read_bytes()
+        )
+    expected = {
+        proposal_input(pair[a], pair[b], rubrics[pair["rubric"]]): (pair["rubric"], pair[a]["title"])
+        for pair in (synthetic, paper) for a, b in (("a", "b"), ("b", "a"))
+    }
+    received = set()
+
+    def completion(*, messages, model, **_):
+        system, user = [m["content"] for m in messages]
+        [prompt] = [prompt for prompt in expected if prompt in user]
+        rubric, title = expected[prompt]
+        llm.record_usage(10, 5)
+        if "confidence" in system and "scores" in system:
+            received.add((rubric, "committee"))
+            return json.dumps({
+                "preferred": "a", "confidence": 4, "evidence": [{"proposal": "a", "quote": title}],
+                "scores": {side: {c["name"]: 3 for c in rubrics[rubric]["criteria"]}
+                           for side in ("a", "b")},
+            })
+        if "Discussion so far (JSON):" in user:
+            received.add((rubric, "chateval"))
+        else:
+            received.add((rubric, "judge" if model == pairwise.MODEL else "jury"))
+        return "[[A]]"
+
+    monkeypatch.setattr(llm, "_completion", completion)
+    result = CliRunner().invoke(app, [
+        "bench", "pairwise", "--split", "dev", "--seeds", "0", "--limit", "2", "--position-only",
+    ])
+    assert result.exit_code == 0, (result.output, result.exception)
+    assert received == {(name, method) for name in rubrics for method in pairwise.METHODS}
+    report = json.loads((root / "results/dev.json").read_text())
+    assert report["dataset_version"] == 2
+    assert all(not row["failures"] for row in report["decisions"])
+    assert {row["source"]: row["rubric"] for row in report["decisions"]} == {
+        "synthetic": "proposal", "iclr": "paper",
+    }
+
+    pairset.write_jsonl(cached_papers, [paper | {"version": 1, "rubric": "proposal"}])
+    with pytest.raises(ValueError, match="out of date.*fetch_iclr_pairs.py"):
+        pairwise.load_pairs(root / "data", split="dev", limit=2)
+
+
+def test_missing_pairwise_rubric_is_reported_before_running():
+    with pytest.raises(ValueError, match="Missing pairwise rubrics: proposal"):
+        pairwise.run_pairwise(pairset.synthetic_pairs(), {}, split="dev")
+
+
 def test_results_render_iteration_deltas_only_for_matching_split_and_seeds():
     def entry(index, split, seeds, accuracy, flip, tokens):
         return {"id": index, "change": "Change", "split": split, "seeds": seeds,
@@ -305,7 +370,7 @@ def test_results_reject_malformed_iteration_history(tmp_path):
 def test_live_cap_is_shared_across_nested_workers_and_partial_results(monkeypatch):
     monkeypatch.setattr(llm, "_completion", _bench_completion)
     result = pairwise.run_pairwise(
-        pairset.synthetic_pairs()[:2], RUBRIC, split="dev", seeds=(0,), max_calls=3,
+        pairset.synthetic_pairs()[:2], {"proposal": RUBRIC}, split="dev", seeds=(0,), max_calls=3,
         position_only=True,
     )
     assert result["live_calls"] == result["live_attempts"] == 3
@@ -334,7 +399,7 @@ def test_exhausted_rate_limit_preserves_results_and_stops_live_calls(monkeypatch
     monkeypatch.setattr(llm, "_completion", limited)
     monkeypatch.setattr(llm.time, "sleep", waits.append)
     result = pairwise.run_pairwise(
-        pairset.synthetic_pairs()[:1], RUBRIC, split="dev", seeds=(0,), max_calls=80,
+        pairset.synthetic_pairs()[:1], {"proposal": RUBRIC}, split="dev", seeds=(0,), max_calls=80,
         position_only=True, workers=1,
     )
     assert result["rate_limited"]

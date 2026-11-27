@@ -1,7 +1,7 @@
 # Pairwise evaluation data
 
 The benchmark compares two items against the same rubric. Each JSONL row has
-`id`, `source` (`synthetic` or `iclr`), `split` (`dev` or `test`),
+`id`, `version`, `source` (`synthetic` or `iclr`), `split` (`dev` or `test`),
 `rubric`, `a` and `b` (each with `title` and `text`), `better` (`a` or
 `b`), and `note` (the reason for the label). Evaluators receive the items
 and the rubric, not the label or note. Use `dev` to tune the protocol and
@@ -9,12 +9,14 @@ leave `test` alone until measurement.
 
 ## Synthetic proposals
 
-[`pairs.jsonl`](pairs.jsonl) has 40 pairs across 15 domains (10 dev, 30 test).
-The domains do not overlap across splits. Each pair shares a problem and
-changes a single substantive sentence. The weaker item contains a defect
-such as a missed deadline, an unavailable input, or a measurement that
-does not test the goal. Half of each split makes the weaker proposal
-longer and more polished without changing its substance.
+Version 2 of [`pairs.jsonl`](pairs.jsonl) has 38 pairs across 15 domains
+(8 dev, 30 test). The domains do not overlap across splits. Both proposals
+start with the same problem and constraints. Spotting the fatal defect
+requires checking shifts against scope and capacity, tallying fixed and
+per-unit charges against a cap, or recognizing that a detailed handoff
+violates an aggregate-only disclosure rule. The weaker proposal is longer,
+more confident, and uses concrete numbers in its measurement plan. The stronger
+proposal's weaknesses are cosmetic.
 
 From an editable install, regenerate the file with the default seed, 42:
 
@@ -37,7 +39,9 @@ The setup follows the accepted-versus-rejected comparison used by
 the abstracts to find the nearest rejected paper for each accepted paper
 from the same conference year. Prefer oral and spotlight accepts, break
 similarity ties by row index, and skip candidates that would repeat a title.
-Seed 42 determines candidate order, orientation and the 6 dev / 12 test split.
+Seed 42 determines candidate order and orientation. Version 2 keeps the
+original 18 identifiers and appends two dev and two test pairs, for a
+total of 8 dev and 14 test.
 
 ```sh
 uv pip install duckdb==1.5.0  # parquet reader for this script only
@@ -55,17 +59,20 @@ benchmark time. Its labels follow the item if the order changes.
 
 | Variant | Dev | Test | Change |
 | --- | ---: | ---: | --- |
-| Position | 32 | 84 | Run every pair in both orders. |
-| Verbosity | 4 | 12 | Pad the weaker item to about twice its original word count with generic framing that adds no facts or numbers. |
-| Tone | 4 | 10 | Add enthusiastic, confident framing around the unchanged weaker item. |
+| Position | 32 | 88 | Run every pair in both orders. |
+| Verbosity | 3 | 12 | Pad the weaker item to about twice its original word count with generic framing that adds no facts or numbers. |
+| Tone | 3 | 10 | Add enthusiastic, confident framing around the unchanged weaker item. |
 
-Verbosity and tone sample within each split from the combined set; they
+Verbosity and tone sample within each split, including both sources when
+available before filling the remaining slots from the combined set. They
 retain the original order so each result can be compared with its unmodified
 case. No model is used to build the data or variants.
 
 ## Rubric
 
-All pairs use [`proposal`](../rubrics/proposal.yaml). A rubric is YAML or
+Synthetic pairs use [`proposal`](../rubrics/proposal.yaml); ICLR pairs use
+[`paper`](../rubrics/paper.yaml). All methods receive the pair's rubric through
+the same input template. A rubric is YAML or
 JSON with a `name` and a non-empty `criteria` list. Each criterion has a
 unique `name` and a one-line `description`. Use
 `condorium.bench.pairset.load_rubric(path)` to validate it.
@@ -95,7 +102,7 @@ The judge, ChatEval, committee, and one jury member use
 `nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b` with thinking disabled.
 The other jury members use `nvidia_nim/poolside/laguna-xs-2.1` and
 `nvidia_nim/moonshotai/kimi-k3.1-pro`. The benchmark requests non-thinking mode
-for Kimi. An invalid ballot is recorded
+and caps Kimi's output at 768 tokens. An invalid ballot is recorded
 as an abstention, but still counts toward the number of ballots needed for
 a majority. If NIM still returns HTTP 429 after retries, the command saves
 partial results and exits with status 75.
@@ -103,7 +110,7 @@ partial results and exits with status 75.
 The committee retries a review once at 768 output tokens when the original
 384-token response fails to parse and reported usage reached that cap.
 
-Replay the checked-in synthetic cache without fetching ICLR text or
+To replay only matching cached responses without fetching ICLR text or
 making live calls:
 
 ```sh
@@ -111,9 +118,9 @@ CONDORIUM_OFFLINE=0 panel bench pairwise --split dev --seeds 0 \
   --limit 2 --max-calls 0
 ```
 
-The replay reports only decisions that can be completed from the cache.
-The [recorded baseline](../results.md#iterations) used Step 5 as the third
-jury member. Its cached ballots cannot satisfy Kimi requests.
+The [recorded baseline](../results.md#iterations) used evaluation set v1
+and Step 5 as the third jury member. The changed proposal text, paper
+rubric, and jury requests in v2 do not match those baseline cache keys.
 
 The references are the pairwise judge from [MT-Bench](https://arxiv.org/abs/2306.05685),
 [PoLL](https://arxiv.org/abs/2404.18796) majority voting across three model

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import re
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from contextvars import copy_context
 from dataclasses import asdict, dataclass, field
@@ -23,7 +23,16 @@ from ..compare import (
 )
 from ..llm import CallBudgetExceeded, call_budget, complete_text, is_rate_limit, usage_meter
 from ..prompts import load_prompt, render
-from .pairset import Pair, Rubric, Split, Variant, build_variants, position_variants
+from .pairset import (
+    DATASET_VERSION,
+    PAPER_RUBRIC,
+    Pair,
+    Rubric,
+    Split,
+    Variant,
+    build_variants,
+    position_variants,
+)
 
 METHODS = ("judge", "jury", "chateval", "committee")
 KIMI_MODEL = "nvidia_nim/moonshotai/kimi-k3.1-pro"
@@ -61,10 +70,12 @@ def parse_verdict(raw: str) -> Winner | None:
 
 def _sample(system: str, user: str, model: str, seed: int) -> str:
     params: dict[str, Any] = {}
+    max_tokens = MAX_TOKENS
     if model == KIMI_MODEL:
         params["extra_body"] = {"thinking": {"type": "disabled"}}
+        max_tokens = 768
     return complete_text(system, user, model=model, temperature=TEMPERATURE,
-                         seed=seed, max_tokens=MAX_TOKENS, max_retries=0, num_retries=0, **params)
+                         seed=seed, max_tokens=max_tokens, max_retries=0, num_retries=0, **params)
 
 
 def run_votes(
@@ -134,7 +145,11 @@ def load_pairs(data_dir: Path, *, split: Split, limit: int | None = None) -> lis
     iclr = data_dir / ".cache/iclr_pairs.jsonl"
     if not iclr.is_file():
         raise ValueError("ICLR pair text is missing. Run python scripts/fetch_iclr_pairs.py first.")
-    pairs.extend(read(iclr))
+    papers = read(iclr)
+    if not papers or any(p.get("version") != DATASET_VERSION or p["rubric"] != PAPER_RUBRIC
+                         for p in papers):
+        raise ValueError("ICLR pair text is out of date. Run python scripts/fetch_iclr_pairs.py.")
+    pairs.extend(papers)
     if len({pair["id"] for pair in pairs}) != len(pairs):
         raise ValueError("Pair IDs must be unique across the synthetic and ICLR sets")
     return pairs
@@ -142,7 +157,7 @@ def load_pairs(data_dir: Path, *, split: Split, limit: int | None = None) -> lis
 
 def run_pairwise(
     pairs: Sequence[Pair],
-    rubric: Rubric,
+    rubrics: Mapping[str, Rubric],
     *,
     split: Split,
     seeds: Sequence[int] = (0, 1, 2),
@@ -160,11 +175,16 @@ def run_pairwise(
         raise ValueError(f"Choose methods from {', '.join(METHODS)}")
     if not seeds or len(set(seeds)) != len(seeds):
         raise ValueError("Supply at least one seed, with no duplicates")
-    sources = {p["id"]: p["source"] for p in selected}
+    selected_by_id = {p["id"]: p for p in selected}
+    missing = {p["rubric"] for p in selected} - rubrics.keys()
+    if missing:
+        raise ValueError(f"Missing pairwise rubrics: {', '.join(sorted(missing))}")
     variants = position_variants(selected) if position_only else build_variants(selected)
 
     def work(variant: Variant, seed: int) -> tuple[list[dict], set[str]]:
         variant_id = f"{variant['pair_id']}:{variant['kind']}:{variant['order']}"
+        pair = selected_by_id[variant["pair_id"]]
+        rubric = rubrics[pair["rubric"]]
         proposals = proposal_input(variant["a"], variant["b"], rubric)
         target = None
         rows = []
@@ -205,7 +225,7 @@ def run_pairwise(
             for name, decision in decisions.items():
                 rows.append({
                     "method": name, "seed": seed, "pair_id": variant["pair_id"],
-                    "source": sources[variant["pair_id"]], "variant_id": variant_id,
+                    "source": pair["source"], "rubric": pair["rubric"], "variant_id": variant_id,
                     "kind": variant["kind"], "order": variant["order"],
                     "better": variant["better"], **asdict(decision),
                 })
@@ -224,6 +244,7 @@ def run_pairwise(
     return {
         "split": split, "seeds": list(seeds), "methods": list(methods),
         "pair_count": len(selected), "variant_count": len(variants),
+        "dataset_version": DATASET_VERSION,
         "position_only": position_only, "max_calls": max_calls,
         "model": MODEL, "jury_models": list(JURY_MODELS),
         "temperature": TEMPERATURE, "committee_protocol": "v1", "live_attempts": budget.attempts,

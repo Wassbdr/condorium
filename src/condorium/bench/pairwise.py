@@ -21,7 +21,7 @@ from ..compare import (
     proposal_input,
     sample_seed,
 )
-from ..llm import CallBudgetExceeded, call_budget, complete_text, usage_meter
+from ..llm import CallBudgetExceeded, call_budget, complete_text, is_rate_limit, usage_meter
 from ..prompts import load_prompt, render
 from .pairset import Pair, Rubric, Split, Variant, build_variants, position_variants
 
@@ -76,7 +76,13 @@ def run_votes(
             index = len(votes)
             model = models[index % len(models)]
             seed_method = "judge" if method == "jury" and index == 0 else method
-            raw = _sample(system, proposals, model, sample_seed(seed, seed_method, variant_id, index))
+            try:
+                raw = _sample(system, proposals, model,
+                              sample_seed(seed, seed_method, variant_id, index))
+            except Exception as exc:
+                if not isinstance(exc, CallBudgetExceeded) and not is_rate_limit(exc):
+                    raise
+                return {"judge_1call": first} if first is not None else {}
             vote = parse_verdict(raw)
             votes.append(vote)
             if vote is None:
@@ -176,7 +182,14 @@ def run_pairwise(
                     decisions = {method: run_chateval(proposals, variant_id, seed)}
                 else:
                     decisions = run_votes(method, proposals, variant_id, seed, target)
+                    if method not in decisions:
+                        limited.add(method)
             except CallBudgetExceeded:
+                limited.add(method)
+                continue
+            except Exception as exc:
+                if not is_rate_limit(exc):
+                    raise
                 limited.add(method)
                 continue
             for name, decision in decisions.items():
@@ -201,8 +214,10 @@ def run_pairwise(
     return {
         "split": split, "seeds": list(seeds), "methods": list(methods),
         "pair_count": len(selected), "variant_count": len(variants),
-        "position_only": position_only, "model": MODEL, "jury_models": list(JURY_MODELS),
-        "temperature": TEMPERATURE, "live_attempts": budget.attempts,
+        "position_only": position_only, "max_calls": max_calls,
+        "model": MODEL, "jury_models": list(JURY_MODELS),
+        "temperature": TEMPERATURE, "committee_protocol": "v1", "live_attempts": budget.attempts,
         "live_calls": meter.calls - meter.cache_hits, "cache_hits": meter.cache_hits,
-        "limited_methods": sorted(limited_methods), "decisions": records,
+        "rate_limited": budget.rate_limited, "limited_methods": sorted(limited_methods),
+        "decisions": records,
     }

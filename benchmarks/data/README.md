@@ -87,6 +87,17 @@ responses in `benchmarks/cache/` or `CONDORIUM_CACHE`. Set
 and keep `CONDORIUM_RPM` at 15 or below when sharing a key. Do not publish
 responses that quote unlicensed ICLR text.
 
+Replay the checked-in synthetic smoke cache without fetching ICLR text or
+making live calls:
+
+```sh
+CONDORIUM_OFFLINE=0 panel bench pairwise --split dev --seeds 0 \
+  --limit 2 --position-only --max-calls 0
+```
+
+The smoke run stopped on repeated HTTP 429 responses. The replay shows
+only decisions completed from that cache; it is not a four-method result.
+
 The references are the pairwise judge from [MT-Bench](https://arxiv.org/abs/2306.05685),
 [PoLL](https://arxiv.org/abs/2404.18796) majority voting across three model
 families, and [ChatEval](https://arxiv.org/abs/2308.07201) with four turns.

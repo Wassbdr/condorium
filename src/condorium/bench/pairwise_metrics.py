@@ -102,7 +102,8 @@ def _render_split(report: dict) -> str:
         f"## {report['split'].capitalize()}",
         "",
         f"{report['pair_count']} pairs, {report['variant_count']} variants, "
-        f"seeds {report['seeds']}, {report['model']}, temperature {report['temperature']}.",
+        f"seeds {report['seeds']}, {report['model']}, temperature {report['temperature']}, "
+        f"committee protocol {report.get('committee_protocol', 'v1')}.",
         f"Live calls: {report['live_calls']}; live attempts: {report['live_attempts']}; "
         f"cache hits: {report['cache_hits']}.",
     ]
@@ -110,7 +111,13 @@ def _render_split(report: dict) -> str:
         lines.append("Position-only run. Verbosity and tone were not measured.")
     if report["limited_methods"]:
         skipped = ", ".join(report["limited_methods"])
-        lines.append(f"Call limit reached. Results are partial for: {skipped}.")
+        if report.get("rate_limited"):
+            cause = "Repeated HTTP 429 responses"
+        elif report.get("max_calls") == 0:
+            cause = "Cache-only replay with missing responses"
+        else:
+            cause = "Call limit reached"
+        lines.append(f"{cause}. Results are partial for: {skipped}.")
     failures = sum(len(r["failures"]) for r in records if r["method"] != "judge_1call")
     lines.extend([f"Parse failures: {failures}. See the per-decision JSON for raw outputs.", ""])
     methods = [m for m in ("judge_1call", *report["methods"]) if m != "judge_1call"

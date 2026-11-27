@@ -1,0 +1,151 @@
+{
+  "split": "dev",
+  "seeds": [
+    0
+  ],
+  "methods": [
+    "judge",
+    "jury",
+    "chateval",
+    "committee"
+  ],
+  "pair_count": 2,
+  "variant_count": 4,
+  "position_only": true,
+  "max_calls": 0,
+  "model": "nvidia_nim/nvidia/nemotron-3.5-lightning-30b-a3b",
+  "jury_models": [
+    "nvidia_nim/nvidia/nemotron-3.5-lightning-30b-a3b",
+    "nvidia_nim/poolside/laguna-xs-2.1",
+    "nvidia_nim/stepfun-ai/step-5-preview"
+  ],
+  "temperature": 0.7,
+  "committee_protocol": "v1",
+  "live_attempts": 0,
+  "live_calls": 0,
+  "cache_hits": 14,
+  "rate_limited": false,
+  "limited_methods": [
+    "chateval",
+    "committee",
+    "judge",
+    "jury"
+  ],
+  "decisions": [
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-01",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-01:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "b",
+      "winner": "b",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1458,
+        "completion_tokens": 611,
+        "total_tokens": 2069,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-01",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-01:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1458,
+        "completion_tokens": 612,
+        "total_tokens": 2070,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-01",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-01:position:ba",
+      "kind": "position",
+      "order": "ba",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 360,
+        "completion_tokens": 4,
+        "total_tokens": 364,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "committee",
+      "seed": 0,
+      "pair_id": "synthetic-dev-02",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-02:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "a",
+      "usage": {
+        "calls": 3,
+        "prompt_tokens": 1485,
+        "completion_tokens": 696,
+        "total_tokens": 2181,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    },
+    {
+      "method": "judge_1call",
+      "seed": 0,
+      "pair_id": "synthetic-dev-02",
+      "source": "synthetic",
+      "variant_id": "synthetic-dev-02:position:ab",
+      "kind": "position",
+      "order": "ab",
+      "better": "a",
+      "winner": "b",
+      "usage": {
+        "calls": 1,
+        "prompt_tokens": 369,
+        "completion_tokens": 55,
+        "total_tokens": 424,
+        "estimated": false
+      },
+      "failures": [],
+      "debated": false,
+      "evidence_dropped": 0,
+      "abstains": 0,
+      "target_tokens": null
+    }
+  ]
+}

@@ -210,6 +210,12 @@ def _is_transient(exc: Exception) -> bool:
     return any(cls.__name__ in _TRANSIENT_ERRORS for cls in type(exc).__mro__)
 
 
+def is_rate_limit(exc: Exception) -> bool:
+    return getattr(exc, "status_code", None) == 429 or any(
+        cls.__name__ == "RateLimitError" for cls in type(exc).__mro__
+    )
+
+
 class CallBudgetExceeded(RuntimeError):
     """Raised before a provider call once its live attempt limit is spent."""
 
@@ -218,6 +224,7 @@ class CallBudgetExceeded(RuntimeError):
 class CallBudget:
     limit: int | None
     attempts: int = 0
+    rate_limited: bool = False
 
 
 _budget: ContextVar[CallBudget | None] = ContextVar("call_budget", default=None)
@@ -248,6 +255,8 @@ def _spend_call() -> None:
     rpm = float(os.environ.get("CONDORIUM_RPM") or 15)
     with _calls_lock:
         budget = _budget.get()
+        if budget and budget.rate_limited:
+            raise CallBudgetExceeded("Live calls paused after repeated HTTP 429 responses")
         if budget and budget.limit is not None and budget.attempts >= budget.limit:
             raise CallBudgetExceeded(f"Live call limit of {budget.limit} reached")
         if limit and _calls_made >= int(limit):
@@ -309,12 +318,17 @@ def complete_text(
             _reported.usage = None
             reply = _completion(**request)
         except Exception as exc:
-            if attempt == attempts - 1 or not _is_transient(exc):
+            rate_limited = is_rate_limit(exc)
+            if not rate_limited and not _is_transient(exc):
                 raise
-            rate_limited = any(c.__name__ == "RateLimitError" for c in type(exc).__mro__)
             if rate_limited and (ledger := os.environ.get("CONDORIUM_CALL_LOG")):
                 with open(ledger, "a", encoding="utf-8") as fh:
                     fh.write("429\n")  # rejected attempt, not a processed call
+            if attempt == attempts - 1:
+                if rate_limited and (budget := _budget.get()):
+                    with _calls_lock:
+                        budget.rate_limited = True
+                raise
             time.sleep(min(300, 15 * 2**attempt) if rate_limited else 0.5 * (4**attempt))
         else:
             usage = _take_usage(messages, reply)

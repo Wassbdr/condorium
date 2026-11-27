@@ -194,6 +194,38 @@ def test_live_cap_is_shared_across_nested_workers_and_partial_results(monkeypatc
     assert "committee" in result["limited_methods"]
 
 
+def test_matched_judge_cap_preserves_single_vote(monkeypatch):
+    monkeypatch.setattr(llm, "_completion", _bench_completion)
+    with llm.call_budget(1):
+        decisions = pairwise.run_votes("judge", "proposals", "variant", 0, 100)
+    assert set(decisions) == {"judge_1call"}
+    assert decisions["judge_1call"].usage["calls"] == 1
+
+
+def test_exhausted_rate_limit_preserves_results_and_stops_live_calls(monkeypatch):
+    class RateLimitError(Exception):
+        status_code = 429
+
+    waits = []
+
+    def limited(**request):
+        if "impartial judge" in request["messages"][0]["content"]:
+            raise RateLimitError
+        return _bench_completion(**request)
+
+    monkeypatch.setattr(llm, "_completion", limited)
+    monkeypatch.setattr(llm.time, "sleep", waits.append)
+    result = pairwise.run_pairwise(
+        pairset.synthetic_pairs()[:1], RUBRIC, split="dev", seeds=(0,), max_calls=80,
+        position_only=True, workers=1,
+    )
+    assert result["rate_limited"]
+    assert result["live_calls"] == 3
+    assert result["live_attempts"] == 3 + llm.SETTINGS.llm_retries + 1
+    assert waits == [min(300, 15 * 2**i) for i in range(llm.SETTINGS.llm_retries)]
+    assert [row["method"] for row in result["decisions"]] == ["committee"]
+
+
 def test_legacy_versus_cli_still_dispatches(mock_llm, tmp_path):
     output = tmp_path / "versus.json"
     result = CliRunner().invoke(app, [

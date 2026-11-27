@@ -347,8 +347,13 @@ def bench_pairwise(
         raise typer.Exit(1) from exc
     typer.echo(f"Wrote {len(report['decisions'])} decisions to {output / f'{split}.json'}. "
                f"Live calls: {report['live_calls']}; cache hits: {report['cache_hits']}.")
-    if report["limited_methods"]:
-        typer.echo("Call limit reached. Rerun with the same cache to finish.", err=True)
+    if report["rate_limited"]:
+        typer.echo("NIM returned HTTP 429 after retries. Saved partial results; try again "
+                   "later with the same cache.", err=True)
+    elif report["limited_methods"]:
+        message = ("Replayed cached decisions; remaining requests are not cached."
+                   if max_calls == 0 else "Call limit reached. Rerun with the same cache to finish.")
+        typer.echo(message, err=True)
 
 
 @app.command()

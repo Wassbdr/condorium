@@ -1,12 +1,24 @@
 [project]
 name = "condorium"
-version = "0.1.0"
-description = "A two-layer multi-agent idea committee: generators upstream, a calibrated evaluation panel downstream. No flattery, no lazy rejection."
+version = "0.2.0"
+description = "Compare proposals against your own rubric with a committee that checks its evidence."
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
 authors = [{ name = "Wassim Badraoui" }]
-keywords = ["multi-agent", "langgraph", "hackathon", "idea-evaluation", "llm"]
+keywords = ["llm", "pairwise comparison", "rubric", "evaluation", "langgraph"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
+]
 dependencies = [
     "langgraph>=0.2.60",
     "langgraph-checkpoint-sqlite>=2.0.0",
@@ -20,7 +32,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "pytest-mock>=3.14", "ruff>=0.6"]
+dev = ["pytest>=8.0", "pytest-mock>=3.14", "ruff>=0.6", "mypy>=1.18,<2", "pre-commit>=4,<5"]
 ui = ["gradio>=4.44,<6"]
 showcase = ["matplotlib>=3.8"]
 
@@ -28,11 +40,18 @@ showcase = ["matplotlib>=3.8"]
 panel = "condorium.cli:main"
 
 [project.urls]
+Homepage = "https://github.com/Wassbdr/condorium"
 Repository = "https://github.com/Wassbdr/condorium"
+Documentation = "https://github.com/Wassbdr/condorium/blob/main/docs/tutorial.md"
+Issues = "https://github.com/Wassbdr/condorium/issues"
+Changelog = "https://github.com/Wassbdr/condorium/blob/main/CHANGELOG.md"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+exclude = ["/benchmarks/cache", "/benchmarks/results", "/benchmarks/results.md"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/condorium"]
@@ -42,6 +61,7 @@ packages = ["src/condorium"]
 [tool.hatch.build.targets.wheel.force-include]
 "agents" = "condorium/_data/agents"
 "fixtures/demo" = "condorium/_data/fixtures/demo"
+"benchmarks/rubrics" = "condorium/_data/rubrics"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -52,3 +72,11 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.mypy]
+python_version = "3.11"
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["yaml", "networkx", "networkx.*", "plotly", "plotly.*"]
+ignore_missing_imports = true

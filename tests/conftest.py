@@ -19,6 +19,13 @@ FAKE_PAPER = {
 }
 
 
+@pytest.fixture(autouse=True)
+def isolate_llm_environment(monkeypatch):
+    monkeypatch.setenv("CONDORIUM_RPM", "0")
+    for name in ("CACHE", "OFFLINE", "CALL_LOG", "MAX_CALLS"):
+        monkeypatch.delenv(f"CONDORIUM_{name}", raising=False)
+
+
 def _opinion(score, round_no: int, extra: dict | None = None) -> dict:
     op = {
         "score": score,

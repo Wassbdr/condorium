@@ -64,6 +64,89 @@ def show_evaluation(record: dict) -> None:
     console.print(Panel("\n".join(lines), title="Synthesis", border_style="magenta"))
 
 
+def believer_cap(record: dict) -> float | None:
+    """The cap `_normalize` applies to the believer in round 2."""
+    from .state import median, opinion_scores
+
+    others = {k: v for k, v in (record.get("round1") or {}).items() if k != "believer"}
+    med = median(list(opinion_scores(others).values()))
+    return None if med is None else med + 3
+
+
+REPLAY_BANNER = ("[bold black on yellow] REPLAY OF A RECORDED RUN [/] "
+                 "[dim]no LLM call, no API key — outputs were recorded from a past live run[/dim]")
+
+
+def show_deliberation(record: dict, pause: float = 0.0, source: str = "") -> None:
+    """Replay one recorded evaluation step by step: blind round 1, the
+    believer cap, round 2 revisions, then disagreements (never an average)."""
+    import time
+
+    def step() -> None:
+        if pause:
+            time.sleep(pause)
+
+    idea = record.get("idea", {})
+    console.print(REPLAY_BANNER)
+    if source:
+        console.print(f"[dim]trace: {source}[/dim]")
+    console.rule(f"[bold]{idea.get('title', record.get('eval_id', '?'))}")
+    console.print(f"[dim]{idea.get('text', '')}[/dim]")
+    step()
+
+    r1, r2 = record.get("round1", {}), record.get("round2", {})
+    names = [n for n in r1 if n in r2] + [n for n in r2 if n not in r1]
+    blind = Table(title="Round 1 — blind (no agent sees another)", title_justify="left")
+    blind.add_column("Agent", style="cyan")
+    blind.add_column("R1", justify="right")
+    blind.add_column("One-line view", max_width=80)
+    for name in names:
+        o1 = r1.get(name, {})
+        blind.add_row(name, _fmt_score(o1.get("score")), (o1.get("verdict") or "")[:110])
+    console.print(blind)
+    step()
+
+    believer = r2.get("believer")
+    limit = believer_cap(record)
+    if believer and limit is not None:
+        raw = believer.get("uncapped_score", believer.get("score"))
+        state = (f"[bold red]{raw} → {believer.get('score')}  CAPPED[/]" if believer.get("capped")
+                 else f"[green]{believer.get('score')} ≤ {limit:g}: within the cap[/]")
+        console.print(Panel(
+            f"believer round-2 score ≤ median(others' blind scores) + 3 = [bold]{limit:g}[/bold]"
+            f"\nbeliever asked for {raw}  ->  {state}",
+            title="Anti-sycophancy cap (enforced in code)", border_style="red"))
+        step()
+
+    deliberation = Table(title="Round 2 — after reading every round-1 opinion",
+                         title_justify="left")
+    deliberation.add_column("Agent", style="cyan")
+    deliberation.add_column("R1", justify="right")
+    deliberation.add_column("R2", justify="right")
+    deliberation.add_column("Change", max_width=80)
+    for name in names:
+        o1, o2 = r1.get(name, {}), r2.get(name, {})
+        s1, s2 = o1.get("score"), o2.get("score")
+        moved = "" if s1 == s2 else ("[green]▲[/]" if (s2 or 0) > (s1 or 0) else "[red]▼[/]")
+        deliberation.add_row(name, _fmt_score(s1), f"{_fmt_score(s2)} {moved}",
+                             (o2.get("verdict") or "")[:110])
+    console.print(deliberation)
+    step()
+
+    syn = record.get("synthesis") or {}
+    verdict = syn.get("verdict", "?")
+    lines = [f"[{VERDICT_STYLE.get(verdict, 'bold')}]{verdict}[/]  {syn.get('consensus', '')}",
+             "[dim]No average is computed: the disagreements are the output.[/dim]"]
+    for d in syn.get("disagreements") or []:
+        crit = " [red](critical)[/red]" if d.get("critical") else ""
+        lines.append(f"\n[bold]Disagreement[/bold]{crit} — {d.get('topic', '')} "
+                     f"[dim](gap {d.get('gap', '?')}: {', '.join(d.get('agents', []))})[/dim]\n"
+                     f"  {d.get('positions', '')}")
+    lines.append(f"\n[bold]Next action[/bold]: {syn.get('action', '')}")
+    console.print(Panel("\n".join(lines), title="Synthesis", border_style="magenta"))
+    console.print(REPLAY_BANNER)
+
+
 def show_ranking(run: dict, evaluations: list[dict] | None = None) -> None:
     ranking = run.get("ranking") or {}
     table = Table(title="Tournament ranking")

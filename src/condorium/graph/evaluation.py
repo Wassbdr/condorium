@@ -89,6 +89,7 @@ def _normalize(name: str, opinion: dict, state: EvalState, round_no: int) -> dic
         med = median(list(opinion_scores(others).values()))
         if med is not None and isinstance(opinion.get("score"), (int, float)):
             cap = med + 3
+            opinion["cap_limit"] = cap
             if opinion["score"] > cap:
                 opinion["uncapped_score"] = opinion["score"]
                 opinion["score"] = int(cap)

@@ -154,16 +154,22 @@ def tournament(
 
 
 @app.command()
-def demo():
-    """Replay pre-recorded evaluations (no API key needed)."""
-    fixtures = sorted((SETTINGS.root / "fixtures" / "demo").glob("*.json"))
+def demo(
+    traces_: Optional[list[Path]] = typer.Argument(None, metavar="[TRACE.json]...",
+                                                    help="Recorded traces (default: bundled)"),
+    pause: float = typer.Option(0.0, help="Seconds between deliberation steps"),
+):
+    """Replay recorded evaluations step by step (offline, no API key needed)."""
+    from .display import show_deliberation
+
+    fixtures = traces_ or sorted(SETTINGS.demo_dir.glob("*.json"))
     if not fixtures:
-        console.print("[red]no fixtures found in fixtures/demo/[/red]")
+        console.print(f"[red]no recorded traces found in {SETTINGS.demo_dir}[/red]")
         raise typer.Exit(1)
     for f in fixtures:
-        show_evaluation(json.loads(f.read_text(encoding="utf-8")))
-    console.print("\n[dim]This was a replay of recorded runs. "
-                  "Set an API key (any LiteLLM provider) for live evaluations.[/dim]")
+        show_deliberation(json.loads(f.read_text(encoding="utf-8")), pause=pause, source=f.name)
+    console.print(f"\n[bold]Replayed {len(fixtures)} recorded run(s)[/bold] — no model was "
+                  "called. Set an API key (any LiteLLM provider) for live evaluations.")
 
 
 @app.command()
@@ -250,6 +256,7 @@ def bench(
     tone: int = typer.Option(3, help="--versus: tone-sensitivity cases per seed"),
     mode: str = typer.Option("hackathon", help="--versus: general | hackathon"),
     out: Optional[Path] = typer.Option(None, help="--versus: results JSON path"),
+    workers: int = typer.Option(1, help="--versus: seeds run in parallel processes"),
 ):
     """Benchmark the committee: winner identification, formulation bias, or
     committee vs single judge (`--versus`)."""
@@ -260,7 +267,8 @@ def bench(
         dataset = dataset or SETTINGS.root / "fixtures" / "bench" / "synthetic_pairs.json"
         result = run_versus(dataset, n_pairs=n, n_tone=tone,
                             seeds=tuple(int(s) for s in seeds.split(",") if s.strip()),
-                            mode=mode, out=out, log=lambda m: console.print(f"[dim]{m}[/dim]"))
+                            mode=mode, out=out, workers=workers,
+                            log=lambda m: console.print(f"[dim]{m}[/dim]"))
         console.print(versus_table(result))
         console.print(f"[dim]model {result['model']} — "
                       f"{result['summary']['llm_calls_total']} LLM calls[/dim]")

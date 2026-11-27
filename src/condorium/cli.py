@@ -5,13 +5,14 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Optional, cast
 
 import typer
 from rich.panel import Panel
 from rich.prompt import Confirm, IntPrompt, Prompt
 
 from .analytics import traces
+from .compare_cli import compare_command
 from .config import SETTINGS
 from .display import console, show_evaluation, show_prefilter, show_ranking
 
@@ -19,6 +20,7 @@ app = typer.Typer(help="A calibrated idea committee: no flattery, no lazy reject
                   no_args_is_help=True, pretty_exceptions_show_locals=False)
 bench_app = typer.Typer(invoke_without_command=True)
 app.add_typer(bench_app, name="bench")
+app.command("compare")(compare_command)
 
 
 # ------------------------------------------------------ interrupt handling
@@ -319,13 +321,14 @@ def bench_pairwise(
     results_dir: Optional[Path] = typer.Option(None, help="Directory for per-split JSON results"),
 ):
     """Compare all four methods on the seeded proposal pairs."""
-    from .bench.pairset import load_rubric
+    from .bench.pairset import Split, load_rubric
     from .bench.pairwise import load_pairs, run_pairwise
     from .bench.pairwise_metrics import write_results
     from .llm import OfflineCacheMiss
 
     if split not in ("dev", "test"):
         raise typer.BadParameter("Choose dev or test.", param_hint="--split")
+    checked_split = cast(Split, split)
     try:
         seed_values = tuple(int(seed.strip()) for seed in seeds.split(","))
     except ValueError as exc:
@@ -336,9 +339,9 @@ def bench_pairwise(
     output = results_dir or root / "results"
     try:
         report = run_pairwise(
-            load_pairs(root / "data", split=split, limit=limit),
+            load_pairs(root / "data", split=checked_split, limit=limit),
             load_rubric(root / "rubrics/proposal.yaml"),
-            split=split, seeds=seed_values, methods=tuple(m.strip() for m in methods.split(",")),
+            split=checked_split, seeds=seed_values, methods=tuple(m.strip() for m in methods.split(",")),
             limit=limit, position_only=position_only, max_calls=max_calls,
         )
         write_results(report, output)

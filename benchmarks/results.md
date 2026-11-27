@@ -4,10 +4,11 @@ Cells show the estimate and a 95% percentile interval from 2,000 pair-bootstrap 
 
 ## Dev
 
-16 pairs, 38 variants, seeds [0], nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b, temperature 0.7, committee protocol v2.1, evaluation set v2.
-Live calls: 15; live attempts: 24; cache hits: 660.
+16 pairs, 38 variants, seeds [0], nvidia_nim/nvidia/nemotron-3.5-super-vl-120b-a12b, temperature 0.7, committee protocol v3, evaluation set v2.
+Live calls: 72; live attempts: 189; cache hits: 605.
 References replay the protocol v1 token targets from the same evaluation set.
-Parse failures: 20. See the per-decision JSON for raw outputs.
+Swapping the two input arguments does not change which proposal the committee picks. Roles alternate between the two content-based orders, so the committee's position flip rate measures a property of the protocol.
+Parse failures: 6. See the per-decision JSON for raw outputs.
 
 | Method | Seed | Decisions | Accuracy | Synthetic | ICLR | Position flip | Slot A | Verbosity delta | Tone delta |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -19,8 +20,8 @@ Parse failures: 20. See the per-decision JSON for raw outputs.
 | jury | 0 | 38 | 45% [25%, 67%] | 31% [0%, 62%] | 59% [31%, 88%] | 19% [0%, 38%] | 41% [31%, 50%] | -17 pp [-50 pp, +0 pp] | +67 pp [+0 pp, +100 pp] |
 | chateval | pooled | 38 | 56% [34%, 78%] | 56% [25%, 88%] | 56% [31%, 81%] | 25% [6%, 50%] | 50% [38%, 62%] | -33 pp [-100 pp, +0 pp] | +0 pp [+0 pp, +0 pp] |
 | chateval | 0 | 38 | 56% [34%, 78%] | 56% [25%, 88%] | 56% [31%, 81%] | 25% [6%, 50%] | 50% [38%, 62%] | -33 pp [-100 pp, +0 pp] | +0 pp [+0 pp, +0 pp] |
-| committee | pooled | 38 | 45% [31%, 61%] | 38% [25%, 53%] | 53% [31%, 75%] | 75% [50%, 94%] | 28% [12%, 44%] | +50 pp [+0 pp, +100 pp] | +0 pp [-50 pp, +50 pp] |
-| committee | 0 | 38 | 45% [31%, 61%] | 38% [25%, 53%] | 53% [31%, 75%] | 75% [50%, 94%] | 28% [12%, 44%] | +50 pp [+0 pp, +100 pp] | +0 pp [-50 pp, +50 pp] |
+| committee | pooled | 38 | 38% [19%, 56%] | 25% [6%, 44%] | 50% [12%, 88%] | 0% [0%, 0%] | 38% [28%, 47%] | +50 pp [+0 pp, +100 pp] | +17 pp [-50 pp, +100 pp] |
+| committee | 0 | 38 | 38% [19%, 56%] | 25% [6%, 44%] | 50% [12%, 88%] | 0% [0%, 0%] | 38% [28%, 47%] | +50 pp [+0 pp, +100 pp] | +17 pp [-50 pp, +100 pp] |
 
 | Method | Seed | Decisions | Tokens / decision | Calls / decision | Debate rate | Quotes dropped / decision | Abstains / decision | Violations kept / decision | Violations dropped / decision |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -32,8 +33,8 @@ Parse failures: 20. See the per-decision JSON for raw outputs.
 | jury | 0 | 38 | 3,903.7 [3,526.3, 4,280.2] | 4.9 [4.6, 5.3] | n/a | n/a | n/a | n/a | n/a |
 | chateval | pooled | 38 | 3,844.6 [3,593.8, 4,068.1] | 4.0 [4.0, 4.0] | n/a | n/a | n/a | n/a | n/a |
 | chateval | 0 | 38 | 3,844.6 [3,593.8, 4,068.1] | 4.0 [4.0, 4.0] | n/a | n/a | n/a | n/a | n/a |
-| committee | pooled | 38 | 2,391.2 [2,193.5, 2,566.5] | 3.4 [3.2, 3.7] | 11% [3%, 21%] | 0.2 [0.1, 0.3] | 0.6 [0.3, 0.9] | 0.6 [0.2, 1.0] | 0.0 [0.0, 0.1] |
-| committee | 0 | 38 | 2,391.2 [2,193.5, 2,566.5] | 3.4 [3.2, 3.7] | 11% [3%, 21%] | 0.2 [0.1, 0.3] | 0.6 [0.3, 0.9] | 0.6 [0.2, 1.0] | 0.0 [0.0, 0.1] |
+| committee | pooled | 38 | 2,461.9 [2,242.6, 2,647.3] | 3.5 [3.2, 3.8] | 13% [0%, 26%] | 0.2 [0.0, 0.4] | 0.2 [0.0, 0.5] | 0.6 [0.1, 1.1] | 0.4 [0.0, 1.1] |
+| committee | 0 | 38 | 2,461.9 [2,242.6, 2,647.3] | 3.5 [3.2, 3.8] | 13% [0%, 26%] | 0.2 [0.0, 0.4] | 0.2 [0.0, 0.5] | 0.6 [0.1, 1.1] | 0.4 [0.0, 1.1] |
 
 ## Iterations
 
@@ -74,3 +75,41 @@ Split: `dev`. Seeds: `0`.
 | chateval | Accuracy | 56.25% | n/a |
 | chateval | Position flip | 25.00% | n/a |
 | chateval | Tokens / decision | 3,844.6 | n/a |
+
+### Iteration 2: Protocol v2.1: shared requirement extraction and compact ballots
+
+Split: `dev`. Seeds: `0`.
+
+| Method | Metric | Value | Delta vs previous |
+| --- | --- | --- | --- |
+| committee | Accuracy | 45.31% | +14.06 pp |
+| committee | Position flip | 75.00% | +43.75 pp |
+| committee | Tokens / decision | 2,391.2 | -1,107.4 |
+| judge | Accuracy | 40.62% | +0.00 pp |
+| judge | Position flip | 31.25% | +0.00 pp |
+| judge | Tokens / decision | 3,831.6 | +0.0 |
+| jury | Accuracy | 45.31% | +6.25 pp |
+| jury | Position flip | 18.75% | -12.50 pp |
+| jury | Tokens / decision | 3,903.7 | +0.0 |
+| chateval | Accuracy | 56.25% | +0.00 pp |
+| chateval | Position flip | 25.00% | +0.00 pp |
+| chateval | Tokens / decision | 3,844.6 | +0.0 |
+
+### Iteration 3: Protocol v3: content-based ordering, alternating slots, and ballot recovery
+
+Split: `dev`. Seeds: `0`.
+
+| Method | Metric | Value | Delta vs previous |
+| --- | --- | --- | --- |
+| committee | Accuracy | 37.50% | -7.81 pp |
+| committee | Position flip | 0.00% | -75.00 pp |
+| committee | Tokens / decision | 2,461.9 | +70.7 |
+| judge | Accuracy | 40.62% | +0.00 pp |
+| judge | Position flip | 31.25% | +0.00 pp |
+| judge | Tokens / decision | 3,831.6 | +0.0 |
+| jury | Accuracy | 45.31% | +0.00 pp |
+| jury | Position flip | 18.75% | +0.00 pp |
+| jury | Tokens / decision | 3,903.7 | +0.0 |
+| chateval | Accuracy | 56.25% | +0.00 pp |
+| chateval | Position flip | 25.00% | +0.00 pp |
+| chateval | Tokens / decision | 3,844.6 | +0.0 |

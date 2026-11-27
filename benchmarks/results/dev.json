@@ -21,11 +21,11 @@
     "nvidia_nim/moonshotai/kimi-k3.1-pro"
   ],
   "temperature": 0.7,
-  "committee_protocol": "v2.1",
+  "committee_protocol": "v3",
   "reference_budget": "v1",
-  "live_attempts": 24,
-  "live_calls": 15,
-  "cache_hits": 660,
+  "live_attempts": 189,
+  "live_calls": 72,
+  "cache_hits": 605,
   "rate_limited": false,
   "limited_methods": [],
   "decisions": [
@@ -39,21 +39,21 @@
       "kind": "position",
       "order": "ab",
       "better": "b",
-      "winner": "a",
+      "winner": "tie",
       "usage": {
         "calls": 4,
-        "prompt_tokens": 1861,
-        "completion_tokens": 749,
-        "total_tokens": 2610,
+        "prompt_tokens": 1909,
+        "completion_tokens": 761,
+        "total_tokens": 2670,
         "estimated": false
       },
       "failures": [],
       "debated": false,
-      "evidence_dropped": 0,
-      "abstains": 0,
+      "evidence_dropped": 1,
+      "abstains": 1,
       "target_tokens": null,
       "violations_kept": 2,
-      "violations_dropped": 0
+      "violations_dropped": 5
     },
     {
       "method": "judge",
@@ -172,23 +172,18 @@
       "winner": "tie",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 1686,
-        "completion_tokens": 590,
-        "total_tokens": 2276,
+        "prompt_tokens": 1734,
+        "completion_tokens": 737,
+        "total_tokens": 2471,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "blind:skeptic",
-          "raw": "{\"scores\":{\"a\":[2,1,1,2],\"b\":[1,2,4,1],\"preferred\":\"tie\",\"confidence\":2,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Use the standard check at $19 per unit and log the result.\"}],\"checks\":[[0,\"a\",1,\"cover 38 service lines\",\"38 checks\"],[1,\"a\",0,\"hard spending limit of $1033\",\"300 + 38*19 = 1022\"],[0,\"b\",1,\"cover 38 service lines\",\"38 checks\"],[1,\"b\",0,\"hard spending limit of $1033\",\"300 + 38*20 = 1060\"]}]}"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 1,
-      "abstains": 2,
+      "abstains": 1,
       "target_tokens": null,
-      "violations_kept": 3,
-      "violations_dropped": 0
+      "violations_kept": 2,
+      "violations_dropped": 5
     },
     {
       "method": "judge",
@@ -304,16 +299,16 @@
       "kind": "position",
       "order": "ab",
       "better": "b",
-      "winner": "tie",
+      "winner": "a",
       "usage": {
-        "calls": 6,
-        "prompt_tokens": 1948,
-        "completion_tokens": 303,
-        "total_tokens": 2251,
+        "calls": 4,
+        "prompt_tokens": 1482,
+        "completion_tokens": 208,
+        "total_tokens": 1690,
         "estimated": false
       },
       "failures": [],
-      "debated": true,
+      "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
       "target_tokens": null,
@@ -437,9 +432,9 @@
       "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 1287,
-        "completion_tokens": 225,
-        "total_tokens": 1512,
+        "prompt_tokens": 1317,
+        "completion_tokens": 206,
+        "total_tokens": 1523,
         "estimated": false
       },
       "failures": [],
@@ -564,29 +559,25 @@
       "kind": "position",
       "order": "ab",
       "better": "a",
-      "winner": "b",
+      "winner": "tie",
       "usage": {
-        "calls": 4,
-        "prompt_tokens": 1949,
-        "completion_tokens": 672,
-        "total_tokens": 2621,
+        "calls": 6,
+        "prompt_tokens": 2769,
+        "completion_tokens": 677,
+        "total_tokens": 3446,
         "estimated": false
       },
       "failures": [
         {
-          "turn": "blind:skeptic",
-          "raw": "{\"scores\":{\"a\":[2,3,1,1],\"b\":[1,3,3,1]},\"preferred\":\"b\",\"confidence\":4,\"evidence\":[{\"proposal\":\"b\",\"quote\":\"Track the measure weekly for 6 weeks and compare it with the preceding 6 weeks. Publish the sample size and the week-by-week trend.\"}],\"checks\":[[0,\"a\",1,\"Use 3 shifts for the checks\",\"25 runs / 3 shifts = ~8.3 per shift, within 11 per shift\"],[0,\"b\",1,\"Use 2 shifts for the checks\",\"25 runs / 2 shifts = 12.5 per shift, exceeds 11 per shift\"],[1,\"a\",1,\"Use 3 shifts for the checks\",\"matches 3 staffed shifts\"],[1,\"b\",0,\"Use 2 shifts for the checks\",\"uses 2 shifts, not 3\"]}]}"
-        },
-        {
-          "turn": "blind:scientist",
-          "raw": "{\"scores\":{\"a\":[2,1,1,1],\"b\":[4,4,4,3],\"preferred\":\"b\",\"confidence\":4,\"evidence\":[{\"proposal\":\"b\",\"quote\":\"Use 2 shifts for the checks, then turn the last shift into a review meeting. The team will close the checklist before convening.\"}],\"checks\":[[0,\"a\",0,\"Use 3 shifts for the checks\",\"25 runs / 3 shifts = 8.33 per shift, under 11, but no confirmation all 25 runs are covered\"],[1,\"a\",1,\"There are 3 staffed shifts before handover\",\"3 shifts used, matches constraint\"],[0,\"b\",1,\"Use 2 shifts for the checks\",\"25 runs / 2 shifts = 12.5 per shift, exceeds 11 per shift limit\"],[1,\"b\",1,\"There are 3 staffed shifts before handover\",\"2 shifts for checks + last shift review = 3 shifts total\"]}}"
+          "turn": "blind:judge",
+          "raw": "{\"checks\":[[0,\"a\",0,\"Use 2 shifts for the checks, then turn the last shift into a review meeting.\",\"\"],[0,\"b\",1,\"Use 3 shifts for the checks and write up the results after the last shift.\",\"\"],[1,\"a\",1,\"Use 2 shifts for the checks\",\"\"],[1,\"b\",1,\"Use 3 shifts for the checks\",\"\"]],\"scores\":{\"a\":[2,2,2,2],\"b\":[3,3,2,2],\"preferred\":\"b\",\"confidence\":3,\"evidence\":[{\"proposal\":\"b\",\"quote\":\"Use 3 shifts for the checks and write up the results after the last shift.\"}]}"
         }
       ],
-      "debated": false,
+      "debated": true,
       "evidence_dropped": 0,
-      "abstains": 2,
+      "abstains": 1,
       "target_tokens": null,
-      "violations_kept": 0,
+      "violations_kept": 2,
       "violations_dropped": 0
     },
     {
@@ -703,20 +694,25 @@
       "kind": "position",
       "order": "ba",
       "better": "b",
-      "winner": "b",
+      "winner": "tie",
       "usage": {
-        "calls": 3,
-        "prompt_tokens": 1770,
-        "completion_tokens": 567,
-        "total_tokens": 2337,
+        "calls": 5,
+        "prompt_tokens": 2590,
+        "completion_tokens": 642,
+        "total_tokens": 3232,
         "estimated": false
       },
-      "failures": [],
-      "debated": false,
+      "failures": [
+        {
+          "turn": "blind:judge",
+          "raw": "{\"checks\":[[0,\"a\",0,\"Use 2 shifts for the checks, then turn the last shift into a review meeting.\",\"\"],[0,\"b\",1,\"Use 3 shifts for the checks and write up the results after the last shift.\",\"\"],[1,\"a\",1,\"Use 2 shifts for the checks\",\"\"],[1,\"b\",1,\"Use 3 shifts for the checks\",\"\"]],\"scores\":{\"a\":[2,2,2,2],\"b\":[3,3,2,2],\"preferred\":\"b\",\"confidence\":3,\"evidence\":[{\"proposal\":\"b\",\"quote\":\"Use 3 shifts for the checks and write up the results after the last shift.\"}]}"
+        }
+      ],
+      "debated": true,
       "evidence_dropped": 0,
-      "abstains": 0,
+      "abstains": 1,
       "target_tokens": null,
-      "violations_kept": 5,
+      "violations_kept": 2,
       "violations_dropped": 0
     },
     {
@@ -835,21 +831,16 @@
       "better": "a",
       "winner": "tie",
       "usage": {
-        "calls": 4,
-        "prompt_tokens": 1840,
-        "completion_tokens": 579,
-        "total_tokens": 2419,
+        "calls": 6,
+        "prompt_tokens": 2628,
+        "completion_tokens": 666,
+        "total_tokens": 3294,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "blind:skeptic",
-          "raw": "{\"scores\":{\"a\":[2,3,2,2],\"b\":[1,1,2,1],\"preferred\":\"a\",\"confidence\":4,\"checks\":[[0,\"a\",1,\"cover 46 laptops\",\"46\"],[1,\"a\",1,\"hard spending limit of $845\",\"140+46*15=830<=845\"],[0,\"b\",1,\"cover 46 laptops\",\"46\"],[1,\"b\",0,\"hard spending limit of $845\",\"140+46*18=968>845\"]},\"evidence\":[{\"proposal\":\"a\",\"quote\":\"hard spending limit of $845\"}]}}"
-        }
-      ],
-      "debated": false,
+      "failures": [],
+      "debated": true,
       "evidence_dropped": 0,
-      "abstains": 1,
+      "abstains": 0,
       "target_tokens": null,
       "violations_kept": 2,
       "violations_dropped": 1
@@ -968,21 +959,21 @@
       "kind": "position",
       "order": "ba",
       "better": "b",
-      "winner": "b",
+      "winner": "tie",
       "usage": {
-        "calls": 3,
-        "prompt_tokens": 1668,
-        "completion_tokens": 559,
-        "total_tokens": 2227,
+        "calls": 5,
+        "prompt_tokens": 2456,
+        "completion_tokens": 643,
+        "total_tokens": 3099,
         "estimated": false
       },
       "failures": [],
-      "debated": false,
+      "debated": true,
       "evidence_dropped": 0,
       "abstains": 0,
       "target_tokens": null,
-      "violations_kept": 3,
-      "violations_dropped": 0
+      "violations_kept": 2,
+      "violations_dropped": 1
     },
     {
       "method": "judge",
@@ -1101,9 +1092,9 @@
       "winner": "b",
       "usage": {
         "calls": 4,
-        "prompt_tokens": 1449,
-        "completion_tokens": 227,
-        "total_tokens": 1676,
+        "prompt_tokens": 1479,
+        "completion_tokens": 310,
+        "total_tokens": 1789,
         "estimated": false
       },
       "failures": [],
@@ -1228,23 +1219,18 @@
       "kind": "position",
       "order": "ba",
       "better": "b",
-      "winner": "tie",
+      "winner": "a",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 1284,
-        "completion_tokens": 256,
-        "total_tokens": 1540,
+        "prompt_tokens": 1314,
+        "completion_tokens": 308,
+        "total_tokens": 1622,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "blind:skeptic",
-          "raw": "{\"scores\":{\"a\":[2,3,2,2],\"b\":[1,4,1,4],\"preferred\":\"tie\",\"confidence\":2,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Give the contractor the spreadsheet with one line per unit and its reference number\"}]}\n\nA violates the site-wide totals-only disclosure constraint by sharing per-unit reference numbers with a contractor. B respects that constraint but lacks a testable method to compare leaks repaired before closures against the baseline."
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 1,
+      "abstains": 0,
       "target_tokens": null,
       "violations_kept": 0,
       "violations_dropped": 0
@@ -1365,23 +1351,18 @@
       "better": "a",
       "winner": "b",
       "usage": {
-        "calls": 6,
-        "prompt_tokens": 2588,
-        "completion_tokens": 567,
-        "total_tokens": 3155,
+        "calls": 4,
+        "prompt_tokens": 1987,
+        "completion_tokens": 654,
+        "total_tokens": 2641,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "blind:skeptic",
-          "raw": "{\"scores\":{\"a\":[2,3,1,1],\"b\":[1,4,4,1]},\"preferred\":\"tie\",\"confidence\":2,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Use 4 shifts for the checks\"}],\"checks\":[[0,\"a\",1,\"Use 4 shifts for the checks\",\"36 cases / 4 shifts = 9 per shift (≤10)\"],[0,\"b\",1,\"Use 3 shifts for the checks\",\"36 cases / 3 shifts = 12 per shift (>10)\"],[1,\"a\",1,\"Use 4 shifts for the checks\",\"4 shifts used = 4 available\"],[1,\"b\",0,\"Use 3 shifts for the checks, then turn the last shift into a review meeting\",\"3 shifts used ≠ 4 available\"]}]"
-        }
-      ],
-      "debated": true,
+      "failures": [],
+      "debated": false,
       "evidence_dropped": 0,
-      "abstains": 1,
+      "abstains": 0,
       "target_tokens": null,
-      "violations_kept": 2,
+      "violations_kept": 0,
       "violations_dropped": 0
     },
     {
@@ -1498,12 +1479,12 @@
       "kind": "position",
       "order": "ba",
       "better": "b",
-      "winner": "b",
+      "winner": "a",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 1758,
-        "completion_tokens": 481,
-        "total_tokens": 2239,
+        "prompt_tokens": 1806,
+        "completion_tokens": 619,
+        "total_tokens": 2425,
         "estimated": false
       },
       "failures": [],
@@ -1511,7 +1492,7 @@
       "evidence_dropped": 0,
       "abstains": 0,
       "target_tokens": null,
-      "violations_kept": 2,
+      "violations_kept": 0,
       "violations_dropped": 0
     },
     {
@@ -1628,26 +1609,21 @@
       "kind": "position",
       "order": "ab",
       "better": "b",
-      "winner": "b",
+      "winner": "tie",
       "usage": {
-        "calls": 6,
-        "prompt_tokens": 2474,
-        "completion_tokens": 800,
-        "total_tokens": 3274,
+        "calls": 4,
+        "prompt_tokens": 1903,
+        "completion_tokens": 705,
+        "total_tokens": 2608,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "blind:skeptic",
-          "raw": "{\"scores\":{\"a\":[2,3,2,2],\"b\":[1,4,1,2]},\"preferred\":\"a\",\"confidence\":4,\"checks\":[[0,\"a\",1,\"cover 28 delivery runs\",\"\"],[1,\"a\",1,\"hard spending limit of $899\",\"130+29*28=942 > 899\"],[0,\"b\",1,\"cover 28 delivery runs\",\"\"],[1,\"b\",0,\"hard spending limit of $899\",\"130+27*28=886 <= 899\"]},\"evidence\":[{\"proposal\":\"a\",\"quote\":\"hard spending limit of $899\"}]}\n\nCalculation: A costs $942 (violates), B costs $886 (compliant). Preferred is A because B's budget compliance depends on excluding the mandatory $130 setup fee; if included, B also violates, leaving no valid plan. A best fits the alert requirement. Confidence reflects ambiguity in whether the setup fee applies to both plans.{\"scores\":{\"a\":[2,3,2,2],\"b\":[1,4,1,2]},\"preferred\":\"a\",\"confidence\":4,\"checks\":[[0,\"a\",1,\"cover 28 delivery runs\",\"\"],[1,\"a\",0,\"hard spending limit of $899\",\"130+29*2"
-        }
-      ],
-      "debated": true,
+      "failures": [],
+      "debated": false,
       "evidence_dropped": 0,
-      "abstains": 1,
+      "abstains": 0,
       "target_tokens": null,
-      "violations_kept": 1,
-      "violations_dropped": 0
+      "violations_kept": 3,
+      "violations_dropped": 2
     },
     {
       "method": "judge",
@@ -1763,30 +1739,21 @@
       "kind": "position",
       "order": "ba",
       "better": "a",
-      "winner": "b",
+      "winner": "tie",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 1683,
-        "completion_tokens": 605,
-        "total_tokens": 2288,
+        "prompt_tokens": 1731,
+        "completion_tokens": 682,
+        "total_tokens": 2413,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "blind:skeptic",
-          "raw": "{\"scores\":{\"a\":[2,3,2,2],\"b\":[1,4,3,2]},\"preferred\":\"a\",\"confidence\":4,\"checks\":[[0,\"a\",1,\"cover 28 delivery runs\",\"\"],[1,\"a\",1,\"hard spending limit of $899\",\"130+27*28=886<=899\"],[0,\"b\",1,\"cover 28 delivery runs\",\"\"],[1,\"b\",0,\"hard spending limit of $899\",\"130+29*28=942>899\"]},\"evidence\":[{\"proposal\":\"a\",\"quote\":\"130+27*28=886<=899\"}]}"
-        },
-        {
-          "turn": "blind:scientist",
-          "raw": "{\"scores\":{\"a\":[2,3,2,2],\"b\":[2,3,2,2]},\"preferred\":\"tie\",\"confidence\":4,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Use the standard check at $27 per unit and log the result.\"}],\"checks\":[[\"cover 28 delivery runs\",\"a\",1,\"Use the standard check at $27 per unit and log the result.\",\"\"],[\"hard spending limit of $899\",\"a\",0,\"Use the standard check at $27 per unit and log the result.\",\"130+28*27=886<=899\"],[\"cover 28 delivery runs\",\"b\",1,\"Use the priority check at $29 per unit so each result comes back before the next check begins.\",\"\"],[\"hard spending limit of $899\",\"b\",0,\"Use the priority check at $29 per unit so each result comes back before the next check begins.\",\"130+28*29=942>899\"]}"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 2,
+      "abstains": 0,
       "target_tokens": null,
-      "violations_kept": 2,
-      "violations_dropped": 0
+      "violations_kept": 3,
+      "violations_dropped": 2
     },
     {
       "method": "judge",
@@ -1905,9 +1872,9 @@
       "winner": "a",
       "usage": {
         "calls": 4,
-        "prompt_tokens": 1444,
-        "completion_tokens": 227,
-        "total_tokens": 1671,
+        "prompt_tokens": 1474,
+        "completion_tokens": 215,
+        "total_tokens": 1689,
         "estimated": false
       },
       "failures": [],
@@ -2035,9 +2002,9 @@
       "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 1281,
-        "completion_tokens": 233,
-        "total_tokens": 1514,
+        "prompt_tokens": 1311,
+        "completion_tokens": 213,
+        "total_tokens": 1524,
         "estimated": false
       },
       "failures": [],
@@ -2165,15 +2132,15 @@
       "winner": "a",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2469,
-        "completion_tokens": 274,
-        "total_tokens": 2743,
+        "prompt_tokens": 2499,
+        "completion_tokens": 376,
+        "total_tokens": 2875,
         "estimated": false
       },
       "failures": [],
       "debated": false,
-      "evidence_dropped": 1,
-      "abstains": 1,
+      "evidence_dropped": 0,
+      "abstains": 0,
       "target_tokens": null,
       "violations_kept": 0,
       "violations_dropped": 0
@@ -2295,9 +2262,9 @@
       "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2469,
-        "completion_tokens": 351,
-        "total_tokens": 2820,
+        "prompt_tokens": 2499,
+        "completion_tokens": 376,
+        "total_tokens": 2875,
         "estimated": false
       },
       "failures": [],
@@ -2422,22 +2389,17 @@
       "kind": "position",
       "order": "ab",
       "better": "a",
-      "winner": "tie",
+      "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2232,
-        "completion_tokens": 351,
-        "total_tokens": 2583,
+        "prompt_tokens": 2262,
+        "completion_tokens": 358,
+        "total_tokens": 2620,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "blind:judge",
-          "raw": "{\"scores\":{\"a\":[4,4,3,4],\"b\":[4,4,5,4]},\"preferred\":\"b\",\"confidence\":4,\"evidence\":[{\"proposal\":\"b\",\"quote\":\"Comprehensive experiments confirm that Bi-tuning achieves state-of-the-art results for fine-tuning tasks of both supervised and unsupervised pre-trained models by large margins (e.g.~10.7\\% absolute rise in accuracy on CUB in low-data regime).\"}]}\n"
-        }
-      ],
+      "failures": [],
       "debated": false,
-      "evidence_dropped": 1,
+      "evidence_dropped": 2,
       "abstains": 2,
       "target_tokens": null,
       "violations_kept": 0,
@@ -2565,19 +2527,14 @@
       "winner": "a",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2232,
-        "completion_tokens": 383,
-        "total_tokens": 2615,
+        "prompt_tokens": 2262,
+        "completion_tokens": 358,
+        "total_tokens": 2620,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "blind:skeptic",
-          "raw": "{\"scores\":{\"a\":[4,4,5,4],\"b\":[4,3,3,3]},\"preferred\":\"a\",\"confidence\":4,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Comprehensive experiments confirm that Bi-tuning achieves state-of-the-art results for fine-tuning tasks of both supervised and unsupervised pre-trained models by large margins (e.g.~10.7\\% absolute rise in accuracy on CUB in low-data regime).\"}]}\n}"
-        }
-      ],
+      "failures": [],
       "debated": false,
-      "evidence_dropped": 1,
+      "evidence_dropped": 2,
       "abstains": 2,
       "target_tokens": null,
       "violations_kept": 0,
@@ -2700,9 +2657,9 @@
       "winner": "a",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 1941,
+        "prompt_tokens": 1971,
         "completion_tokens": 220,
-        "total_tokens": 2161,
+        "total_tokens": 2191,
         "estimated": false
       },
       "failures": [],
@@ -2827,23 +2784,18 @@
       "kind": "position",
       "order": "ba",
       "better": "a",
-      "winner": "tie",
+      "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 1941,
-        "completion_tokens": 207,
-        "total_tokens": 2148,
+        "prompt_tokens": 1971,
+        "completion_tokens": 220,
+        "total_tokens": 2191,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "blind:skeptic",
-          "raw": "{\"scores\":{\"a\":[2,3,2,4],\"b\":[4,3,4,4]},\"preferred\":\"b\",\"confidence\":4,\"evidence\":[{\"proposal\":\"b\",\"quote\":\"We demonstrate improved convergence in practice on $\\ell_2$-regularized logistic regression problems.\"}]}"
-        }
-      ],
+      "failures": [],
       "debated": false,
-      "evidence_dropped": 2,
-      "abstains": 3,
+      "evidence_dropped": 0,
+      "abstains": 0,
       "target_tokens": null,
       "violations_kept": 0,
       "violations_dropped": 0
@@ -2964,21 +2916,16 @@
       "better": "b",
       "winner": "a",
       "usage": {
-        "calls": 5,
-        "prompt_tokens": 2744,
-        "completion_tokens": 386,
-        "total_tokens": 3130,
+        "calls": 3,
+        "prompt_tokens": 2304,
+        "completion_tokens": 207,
+        "total_tokens": 2511,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "blind:scientist",
-          "raw": "{\"scores\":{\"a\":[4,4,3,4],\"b\":[3,4,3,4]},\"preferred\":\"a\",\"confidence\":4,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Given a pre-trained flow model $p(\\boldsymbol{x})$, we wish to estimate $p(\\boldsymbol{x}_2 \\mid \\boldsymbol{x}_1)$ for some arbitrary partitioning of the variables $\\boldsymbol{x} = (\\boldsymbol{x}_1, \\boldsymbol{x}_2)$.\"}]}"
-        }
-      ],
-      "debated": true,
+      "failures": [],
+      "debated": false,
       "evidence_dropped": 0,
-      "abstains": 1,
+      "abstains": 0,
       "target_tokens": null,
       "violations_kept": 0,
       "violations_dropped": 0
@@ -3097,12 +3044,12 @@
       "kind": "position",
       "order": "ba",
       "better": "a",
-      "winner": "a",
+      "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2274,
-        "completion_tokens": 232,
-        "total_tokens": 2506,
+        "prompt_tokens": 2304,
+        "completion_tokens": 207,
+        "total_tokens": 2511,
         "estimated": false
       },
       "failures": [],
@@ -3230,9 +3177,9 @@
       "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 1860,
-        "completion_tokens": 304,
-        "total_tokens": 2164,
+        "prompt_tokens": 1890,
+        "completion_tokens": 299,
+        "total_tokens": 2189,
         "estimated": false
       },
       "failures": [],
@@ -3357,12 +3304,12 @@
       "kind": "position",
       "order": "ba",
       "better": "a",
-      "winner": "b",
+      "winner": "a",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 1860,
-        "completion_tokens": 271,
-        "total_tokens": 2131,
+        "prompt_tokens": 1890,
+        "completion_tokens": 299,
+        "total_tokens": 2189,
         "estimated": false
       },
       "failures": [],
@@ -3490,9 +3437,9 @@
       "winner": "a",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2010,
+        "prompt_tokens": 2040,
         "completion_tokens": 225,
-        "total_tokens": 2235,
+        "total_tokens": 2265,
         "estimated": false
       },
       "failures": [],
@@ -3620,9 +3567,9 @@
       "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2010,
+        "prompt_tokens": 2040,
         "completion_tokens": 225,
-        "total_tokens": 2235,
+        "total_tokens": 2265,
         "estimated": false
       },
       "failures": [],
@@ -3752,12 +3699,12 @@
       "kind": "position",
       "order": "ab",
       "better": "a",
-      "winner": "tie",
+      "winner": "a",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2175,
-        "completion_tokens": 317,
-        "total_tokens": 2492,
+        "prompt_tokens": 2205,
+        "completion_tokens": 238,
+        "total_tokens": 2443,
         "estimated": false
       },
       "failures": [],
@@ -3885,9 +3832,9 @@
       "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2175,
-        "completion_tokens": 471,
-        "total_tokens": 2646,
+        "prompt_tokens": 2205,
+        "completion_tokens": 238,
+        "total_tokens": 2443,
         "estimated": false
       },
       "failures": [],
@@ -4020,8 +3967,8 @@
       "winner": "a",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2178,
-        "completion_tokens": 360,
+        "prompt_tokens": 2208,
+        "completion_tokens": 330,
         "total_tokens": 2538,
         "estimated": false
       },
@@ -4150,9 +4097,9 @@
       "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2178,
-        "completion_tokens": 400,
-        "total_tokens": 2578,
+        "prompt_tokens": 2208,
+        "completion_tokens": 330,
+        "total_tokens": 2538,
         "estimated": false
       },
       "failures": [],
@@ -4277,33 +4224,20 @@
       "kind": "verbosity",
       "order": "ab",
       "better": "a",
-      "winner": "tie",
+      "winner": "a",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2205,
-        "completion_tokens": 667,
-        "total_tokens": 2872,
+        "prompt_tokens": 2253,
+        "completion_tokens": 541,
+        "total_tokens": 2794,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "blind:judge",
-          "raw": "{\"scores\":{\"a\":[2,3,2,2],\"b\":[4,4,4,3]},\"preferred\":\"b\",\"confidence\":4,\"checks\":[[0,\"a\",0,\"Use 3 shifts for the checks\",\"25 runs / 3 shifts = 8.33 per shift, within 11; capacity met but sign-off timing after last shift violates pre-handover requirement\"],[1,\"a\",0,\"write up the results after the last shift\",\"Handover occurs immediately after the third shift, so post-shift sign-off violates the 3-shift-before-handover constraint\"],[0,\"b\",1,\"Use 2 shifts for the checks\",\"25 runs / 2 shifts = 12.5 per shift, exceeds the 11-run per-shift cap\"],[1,\"b\",0,\"then turn the last shift into a review meeting\",\"Only 2 shifts used for checks, leaving the third shift as review rather than completing all checks before handover\"]},\"evidence\":[{\"proposal\":\"b\",\"quote\":\"Track the measure weekly for 6 weeks and compare it with the preceding 6 weeks. Publish the sample size and the week-by-week trend.\"}]}"
-        },
-        {
-          "turn": "blind:skeptic",
-          "raw": "{\"scores\":{\"a\":[2,3,1,1],\"b\":[1,4,4,3],\"preferred\":\"tie\",\"confidence\":2,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Use 3 shifts for the checks\"}],\"checks\":[[0,\"a\",1,\"Use 3 shifts for the checks\",\"\"],[1,\"a\",1,\"Use 3 shifts for the checks\",\"\"],[0,\"b\",0,\"Use 2 shifts for the checks\",\"25 runs / 11 per shift = 2.27 => 3 shifts needed; plan uses 2\"],[1,\"b\",1,\"Use 2 shifts for the checks, then turn the last shift into a review meeting\",\"2 shifts + review shift = 3 staffed shifts\"]}}"
-        },
-        {
-          "turn": "blind:scientist",
-          "raw": "{\"scores\":{\"a\":[2,1,1,1],\"b\":[1,1,2,1]},\"preferred\":\"a\",\"confidence\":5,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Use 3 shifts for the checks and write up the results after the last shift.\"}],\"checks\":[[0,\"a\",1,\"Sign-off requires every one of the 25 selected delivery runs to be checked.\",\"25 runs / 3 shifts = 8.33 per shift, within the 11-per-shift cap.\"],[1,\"a\",1,\"There are 3 staffed shifts before handover.\",\"Uses exactly 3 shifts.\"],[0,\"b\",0,\"Use 2 shifts for the checks, then turn the last shift into a review meeting.\",\"25 runs / 2 shifts = 12.5 per shift, exceeding the 11-per-shift cap.\"],[1,\"b\",1,\"There are 3 staffed shifts before handover.\",\"Uses all 3 shifts (2 checks + 1 review).\"}]}"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 3,
+      "abstains": 0,
       "target_tokens": null,
-      "violations_kept": 0,
+      "violations_kept": 5,
       "violations_dropped": 0
     },
     {
@@ -4428,9 +4362,9 @@
       "winner": "a",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2493,
-        "completion_tokens": 267,
-        "total_tokens": 2760,
+        "prompt_tokens": 2523,
+        "completion_tokens": 254,
+        "total_tokens": 2777,
         "estimated": false
       },
       "failures": [],
@@ -4558,9 +4492,9 @@
       "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2937,
-        "completion_tokens": 316,
-        "total_tokens": 3253,
+        "prompt_tokens": 2967,
+        "completion_tokens": 219,
+        "total_tokens": 3186,
         "estimated": false
       },
       "failures": [],
@@ -4688,9 +4622,9 @@
       "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 1671,
-        "completion_tokens": 223,
-        "total_tokens": 1894,
+        "prompt_tokens": 1701,
+        "completion_tokens": 230,
+        "total_tokens": 1931,
         "estimated": false
       },
       "failures": [],
@@ -4818,9 +4752,9 @@
       "winner": "a",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2253,
-        "completion_tokens": 248,
-        "total_tokens": 2501,
+        "prompt_tokens": 2283,
+        "completion_tokens": 216,
+        "total_tokens": 2499,
         "estimated": false
       },
       "failures": [],
@@ -4945,16 +4879,16 @@
       "kind": "tone",
       "order": "ab",
       "better": "b",
-      "winner": "a",
+      "winner": "b",
       "usage": {
-        "calls": 3,
-        "prompt_tokens": 2007,
-        "completion_tokens": 244,
-        "total_tokens": 2251,
+        "calls": 5,
+        "prompt_tokens": 2621,
+        "completion_tokens": 344,
+        "total_tokens": 2965,
         "estimated": false
       },
       "failures": [],
-      "debated": false,
+      "debated": true,
       "evidence_dropped": 0,
       "abstains": 0,
       "target_tokens": null,

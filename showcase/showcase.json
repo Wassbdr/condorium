@@ -60,6 +60,6 @@
     "The demo GIF is a replay of a recorded run, not a live computation.",
     "One open model (via NIM) was measured; other providers are untested here."
   ],
-  "role": "TODO",
+  "role": "Sole developer.",
   "repo": "https://github.com/Wassbdr/condorium"
 }

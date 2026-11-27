@@ -10,6 +10,12 @@ from condorium.bench.versus import readme_table
 from condorium.display import believer_cap
 
 root = Path(__file__).resolve().parents[1]
+showcase_path = root / "showcase/showcase.json"
+try:
+    previous = json.loads(showcase_path.read_text(encoding="utf-8"))
+except FileNotFoundError:
+    previous = {}
+
 results = json.loads((root / "showcase/results/versus_results.json").read_text())
 trace = sys.argv[1] if len(sys.argv) > 1 else "fixtures/demo/01-transit-copilot.json"
 s = results["summary"]
@@ -83,11 +89,11 @@ showcase = {
         "The demo GIF is a replay of a recorded run, not a live computation.",
         "One open model (via NIM) was measured; other providers are untested here.",
     ],
-    "role": "TODO",
+    "role": previous.get("role", "Sole developer."),
     "repo": "https://github.com/Wassbdr/condorium",
 }
-(root / "showcase/showcase.json").write_text(json.dumps(showcase, indent=2, ensure_ascii=False)
-                                             + "\n")
+showcase_path.write_text(json.dumps(showcase, indent=2, ensure_ascii=False) + "\n",
+                         encoding="utf-8")
 print("wrote showcase/showcase.json")
 
 

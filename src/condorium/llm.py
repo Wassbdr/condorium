@@ -323,7 +323,7 @@ def complete_text(
                 raise
             if rate_limited and (ledger := os.environ.get("CONDORIUM_CALL_LOG")):
                 with open(ledger, "a", encoding="utf-8") as fh:
-                    fh.write("429\n")  # rejected attempt, not a processed call
+                    fh.write(f"429 {model}\n")
             if attempt == attempts - 1:
                 if rate_limited and (budget := _budget.get()):
                     with _calls_lock:

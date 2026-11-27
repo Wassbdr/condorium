@@ -159,7 +159,10 @@ def complete_text(system: str, user: str, *, model: str | None = None, timeout: 
             if attempt == attempts - 1 or not _is_transient(exc):
                 raise
             rate_limited = any(c.__name__ == "RateLimitError" for c in type(exc).__mro__)
-            time.sleep((15 * (attempt + 1)) if rate_limited else 0.5 * (4**attempt))
+            if rate_limited and (ledger := os.environ.get("CONDORIUM_CALL_LOG")):
+                with open(ledger, "a", encoding="utf-8") as fh:
+                    fh.write("429\n")  # rejected attempt, not a processed call
+            time.sleep(min(300, 15 * 2**attempt) if rate_limited else 0.5 * (4**attempt))
     raise RuntimeError("unreachable")
 
 

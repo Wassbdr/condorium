@@ -164,18 +164,27 @@ def _entry_key(title: str, text: str, mode: str, seed: int) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()[:16]
 
 
-def evaluate_entry_cached(title: str, text: str, mode: str, seed: int) -> dict:
-    key = _entry_key(title, text, mode, seed)
+def _cached(key: str, compute: Callable[[], dict]) -> dict:
     if ENTRY_CACHE and ENTRY_CACHE.exists():
         for line in ENTRY_CACHE.read_text(encoding="utf-8").splitlines():
             row = json.loads(line)
             if row["key"] == key:
-                return row["entry"]
-    entry = evaluate_entry(title, text, mode, seed)
+                return row["value"]
+    value = compute()
     if ENTRY_CACHE:
         with ENTRY_CACHE.open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps({"key": key, "entry": entry}, ensure_ascii=False) + "\n")
-    return entry
+            fh.write(json.dumps({"key": key, "value": value}, ensure_ascii=False) + "\n")
+    return value
+
+
+def evaluate_entry_cached(title: str, text: str, mode: str, seed: int) -> dict:
+    """`evaluate_entry` with the committee and the judge cached separately, so a
+    crash during judge sampling does not lose the committee run."""
+    key = _entry_key(title, text, mode, seed)
+    committee = _cached(key + ":committee", lambda: run_committee(title, text, mode))
+    judge = _cached(key + ":judge", lambda: run_single_judge(
+        title, text, mode, committee["usage"]["total_tokens"], seed))
+    return {"committee": committee, "judge": judge}
 
 
 # --------------------------------------------------------------- runner

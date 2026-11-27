@@ -129,7 +129,8 @@ def test_resume_reuses_finished_entries(substance_llm, sandbox, monkeypatch):
     versus.run_versus(_dataset(sandbox), n_pairs=2, n_tone=0, seeds=(0,), out=out, resume=True)
     assert out.with_suffix(".entries.jsonl").exists()
     out.unlink()  # seed lost, entries kept: nothing may be re-evaluated
-    monkeypatch.setattr(versus, "evaluate_entry", lambda *a: pytest.fail("re-paid an entry"))
+    monkeypatch.setattr(versus, "run_committee", lambda *a: pytest.fail("re-paid a committee"))
+    monkeypatch.setattr(versus, "run_single_judge", lambda *a: pytest.fail("re-paid a judge"))
     report = versus.run_versus(_dataset(sandbox), n_pairs=2, n_tone=0, seeds=(0,), out=out,
                                resume=True)
     assert report["summary"]["n_pairs_per_seed"] == [2]

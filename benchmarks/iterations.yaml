@@ -37,3 +37,13 @@
     judge: {accuracy: 0.40625, position_flip: 0.3125, tokens: 3831.5789473684213}
     jury: {accuracy: 0.453125, position_flip: 0.1875, tokens: 3903.7105263157896}
     chateval: {accuracy: 0.5625, position_flip: 0.25, tokens: 3844.6052631578946}
+- id: 4
+  change: "Protocol v4: explicit briefs and typed hard requirements"
+  split: dev
+  seeds: [0]
+  dataset_version: 2
+  metrics:
+    committee: {accuracy: 0.65625, position_flip: 0.0, tokens: 2658.157894736842}
+    judge: {accuracy: 0.40625, position_flip: 0.3125, tokens: 3831.5789473684213}
+    jury: {accuracy: 0.453125, position_flip: 0.1875, tokens: 3903.7105263157896}
+    chateval: {accuracy: 0.5625, position_flip: 0.25, tokens: 3844.6052631578946}

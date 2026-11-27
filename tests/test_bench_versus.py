@@ -122,3 +122,14 @@ def test_resume_keeps_finished_seeds(substance_llm, sandbox, monkeypatch):
     report = versus.run_versus(_dataset(sandbox), n_pairs=2, n_tone=0, seeds=(0, 1), out=out,
                                resume=True)
     assert ran == [1] and report["summary"]["seeds"] == [0, 1]
+
+
+def test_resume_reuses_finished_entries(substance_llm, sandbox, monkeypatch):
+    out = sandbox / "v.json"
+    versus.run_versus(_dataset(sandbox), n_pairs=2, n_tone=0, seeds=(0,), out=out, resume=True)
+    assert out.with_suffix(".entries.jsonl").exists()
+    out.unlink()  # seed lost, entries kept: nothing may be re-evaluated
+    monkeypatch.setattr(versus, "evaluate_entry", lambda *a: pytest.fail("re-paid an entry"))
+    report = versus.run_versus(_dataset(sandbox), n_pairs=2, n_tone=0, seeds=(0,), out=out,
+                               resume=True)
+    assert report["summary"]["n_pairs_per_seed"] == [2]

@@ -17,6 +17,7 @@ code path.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import random
@@ -153,6 +154,30 @@ def evaluate_entry(title: str, text: str, mode: str, seed: int) -> dict:
     return {"committee": committee, "judge": judge}
 
 
+# Finished entries are appended here (JSONL) so an interrupted live run
+# (rate limit, crash) resumes without re-paying them; set by run_versus.
+ENTRY_CACHE: Path | None = None
+
+
+def _entry_key(title: str, text: str, mode: str, seed: int) -> str:
+    raw = f"{SETTINGS.model}|{mode}|{seed}|{title}|{text}"
+    return hashlib.sha256(raw.encode()).hexdigest()[:16]
+
+
+def evaluate_entry_cached(title: str, text: str, mode: str, seed: int) -> dict:
+    key = _entry_key(title, text, mode, seed)
+    if ENTRY_CACHE and ENTRY_CACHE.exists():
+        for line in ENTRY_CACHE.read_text(encoding="utf-8").splitlines():
+            row = json.loads(line)
+            if row["key"] == key:
+                return row["entry"]
+    entry = evaluate_entry(title, text, mode, seed)
+    if ENTRY_CACHE:
+        with ENTRY_CACHE.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps({"key": key, "entry": entry}, ensure_ascii=False) + "\n")
+    return entry
+
+
 # --------------------------------------------------------------- runner
 
 def _tone_variants(rows: list[dict]) -> dict[str, str]:
@@ -177,7 +202,8 @@ def run_seed(dataset: Path, n_pairs: int, n_tone: int, seed: int, mode: str = "h
             evs = {}
             for entry in pair["entries"]:
                 t0 = time.time()
-                evs[entry["role"]] = evaluate_entry(entry["title"], entry["text"], mode, seed)
+                evs[entry["role"]] = evaluate_entry_cached(entry["title"], entry["text"], mode,
+                                                           seed)
                 evs[entry["role"]]["title"] = entry["title"]
                 evs[entry["role"]]["text"] = entry["text"]
                 log(f"seed {seed} {pair['hackathon']} / {entry['role']}: "
@@ -202,7 +228,8 @@ def run_seed(dataset: Path, n_pairs: int, n_tone: int, seed: int, mode: str = "h
         for case, role in candidates[:n_tone]:
             neutral = case["entries"][role]
             try:
-                hyped = evaluate_entry(neutral["title"], variants[neutral["title"]], mode, seed)
+                hyped = evaluate_entry_cached(neutral["title"], variants[neutral["title"]],
+                                              mode, seed)
             except CallBudgetExceeded:
                 truncated = True  # keep the finished pairs, report fewer tone cases
                 log(f"seed {seed}: call budget reached, tone cases truncated")
@@ -314,6 +341,8 @@ def run_versus(dataset: Path, n_pairs: int = 6, n_tone: int = 3, seeds: tuple[in
             runs = [r for r in prev["runs"] if r["seed"] in seeds]
             log(f"resume: seeds {[r['seed'] for r in runs]} kept from {out}")
     seeds_todo = tuple(s for s in seeds if s not in {r["seed"] for r in runs})
+    global ENTRY_CACHE
+    ENTRY_CACHE = out.with_suffix(".entries.jsonl") if resume else None
 
     def write() -> dict:
         report = {"model": SETTINGS.model, "mode": mode, "dataset": str(dataset),

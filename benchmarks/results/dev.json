@@ -21,10 +21,11 @@
     "nvidia_nim/moonshotai/kimi-k3.1-pro"
   ],
   "temperature": 0.7,
-  "committee_protocol": "v1",
-  "live_attempts": 683,
-  "live_calls": 635,
-  "cache_hits": 38,
+  "committee_protocol": "v2.1",
+  "reference_budget": "v1",
+  "live_attempts": 24,
+  "live_calls": 15,
+  "cache_hits": 660,
   "rate_limited": false,
   "limited_methods": [],
   "decisions": [
@@ -40,17 +41,19 @@
       "better": "b",
       "winner": "a",
       "usage": {
-        "calls": 3,
-        "prompt_tokens": 1893,
-        "completion_tokens": 855,
-        "total_tokens": 2748,
+        "calls": 4,
+        "prompt_tokens": 1861,
+        "completion_tokens": 749,
+        "total_tokens": 2610,
         "estimated": false
       },
       "failures": [],
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 2,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -74,7 +77,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2748
+      "target_tokens": 2748,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -98,7 +103,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -122,7 +129,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2748
+      "target_tokens": 2748,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -146,7 +155,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -158,19 +169,26 @@
       "kind": "position",
       "order": "ba",
       "better": "a",
-      "winner": "b",
+      "winner": "tie",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 1893,
-        "completion_tokens": 720,
-        "total_tokens": 2613,
+        "prompt_tokens": 1686,
+        "completion_tokens": 590,
+        "total_tokens": 2276,
         "estimated": false
       },
-      "failures": [],
+      "failures": [
+        {
+          "turn": "blind:skeptic",
+          "raw": "{\"scores\":{\"a\":[2,1,1,2],\"b\":[1,2,4,1],\"preferred\":\"tie\",\"confidence\":2,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Use the standard check at $19 per unit and log the result.\"}],\"checks\":[[0,\"a\",1,\"cover 38 service lines\",\"38 checks\"],[1,\"a\",0,\"hard spending limit of $1033\",\"300 + 38*19 = 1022\"],[0,\"b\",1,\"cover 38 service lines\",\"38 checks\"],[1,\"b\",0,\"hard spending limit of $1033\",\"300 + 38*20 = 1060\"]}]}"
+        }
+      ],
       "debated": false,
-      "evidence_dropped": 0,
-      "abstains": 0,
-      "target_tokens": null
+      "evidence_dropped": 1,
+      "abstains": 2,
+      "target_tokens": null,
+      "violations_kept": 3,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -194,7 +212,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2613
+      "target_tokens": 2613,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -218,7 +238,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -238,16 +260,13 @@
         "total_tokens": 2940,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "nvidia_nim/moonshotai/kimi-k3.1-pro:2",
-          "raw": "I should evaluate two proposals against rubric. Should carefully parse hidden feasibility math. 38 lines, hard $1033, setup 300. A standard check $19/unit: 300+38*19 = 300+722 = 1022 <=1033, leaves 11. B priority $20/unit: 300+760=1060 >1033 by 27, violates hard limit. B adds sequential result before next check and logging, weekly snapshots and final chart baseline sample size. A says reasonable first pass and summary clearer heading (odd meta). Main difference A feasible within budget, B not. Evidence B better reporting but A has comparison to baseline and log result. A wins problem fit/feasibility hard constraint. Should briefly explain most important difference, not length/tone. End exactly verdict [[A]]. Could mention calculations and B's stronger evaluation doesn't offset. Make sure no ambiguity units maybe checks per service line one each. Yes. \"A funds all 38 lines: $300 + 38×$19 = $1,022, under $1,033. B costs $300 + 38×$20 = $1,060, exceeding the hard cap by $27. B’s weekly snapshots and final reporting improve evidence, but cannot cure infeasibility; A retains baseline comparison and logging, though it could specify success criteria and risks better.\" Trade-offs both weak. End verdict. Should have no extra after.The decisive difference is budget feasibility. Proposal A covers all 38 lines for **$300 + 38 × $19 = $1,022**, staying within the $1,033 hard limit. Proposal B costs **$300 + 38 × $20 = $1,060**, exceeding that limit by $27.\n\nB provides stronger outcome reporting through weekly snapshots and a final baseline comparison with sample size. However, that does not offset its violation of a core constraint. A retains the baseline comparison and result logging, though both proposals could better define success thresholds and address risks.\n\n[[A]]"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 1,
-      "target_tokens": 2613
+      "abstains": 0,
+      "target_tokens": 2613,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -271,7 +290,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -283,19 +304,21 @@
       "kind": "position",
       "order": "ab",
       "better": "b",
-      "winner": "a",
+      "winner": "tie",
       "usage": {
-        "calls": 4,
-        "prompt_tokens": 2386,
-        "completion_tokens": 1222,
-        "total_tokens": 3608,
+        "calls": 6,
+        "prompt_tokens": 1948,
+        "completion_tokens": 303,
+        "total_tokens": 2251,
         "estimated": false
       },
       "failures": [],
-      "debated": false,
+      "debated": true,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -319,7 +342,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3608
+      "target_tokens": 3608,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -343,7 +368,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -367,7 +394,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3608
+      "target_tokens": 3608,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -391,7 +420,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -406,16 +437,18 @@
       "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 1791,
-        "completion_tokens": 719,
-        "total_tokens": 2510,
+        "prompt_tokens": 1287,
+        "completion_tokens": 225,
+        "total_tokens": 1512,
         "estimated": false
       },
       "failures": [],
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -439,7 +472,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2510
+      "target_tokens": 2510,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -463,7 +498,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -487,7 +524,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2510
+      "target_tokens": 2510,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -511,7 +550,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -526,16 +567,27 @@
       "winner": "b",
       "usage": {
         "calls": 4,
-        "prompt_tokens": 2649,
-        "completion_tokens": 1433,
-        "total_tokens": 4082,
+        "prompt_tokens": 1949,
+        "completion_tokens": 672,
+        "total_tokens": 2621,
         "estimated": false
       },
-      "failures": [],
+      "failures": [
+        {
+          "turn": "blind:skeptic",
+          "raw": "{\"scores\":{\"a\":[2,3,1,1],\"b\":[1,3,3,1]},\"preferred\":\"b\",\"confidence\":4,\"evidence\":[{\"proposal\":\"b\",\"quote\":\"Track the measure weekly for 6 weeks and compare it with the preceding 6 weeks. Publish the sample size and the week-by-week trend.\"}],\"checks\":[[0,\"a\",1,\"Use 3 shifts for the checks\",\"25 runs / 3 shifts = ~8.3 per shift, within 11 per shift\"],[0,\"b\",1,\"Use 2 shifts for the checks\",\"25 runs / 2 shifts = 12.5 per shift, exceeds 11 per shift\"],[1,\"a\",1,\"Use 3 shifts for the checks\",\"matches 3 staffed shifts\"],[1,\"b\",0,\"Use 2 shifts for the checks\",\"uses 2 shifts, not 3\"]}]}"
+        },
+        {
+          "turn": "blind:scientist",
+          "raw": "{\"scores\":{\"a\":[2,1,1,1],\"b\":[4,4,4,3],\"preferred\":\"b\",\"confidence\":4,\"evidence\":[{\"proposal\":\"b\",\"quote\":\"Use 2 shifts for the checks, then turn the last shift into a review meeting. The team will close the checklist before convening.\"}],\"checks\":[[0,\"a\",0,\"Use 3 shifts for the checks\",\"25 runs / 3 shifts = 8.33 per shift, under 11, but no confirmation all 25 runs are covered\"],[1,\"a\",1,\"There are 3 staffed shifts before handover\",\"3 shifts used, matches constraint\"],[0,\"b\",1,\"Use 2 shifts for the checks\",\"25 runs / 2 shifts = 12.5 per shift, exceeds 11 per shift limit\"],[1,\"b\",1,\"There are 3 staffed shifts before handover\",\"2 shifts for checks + last shift review = 3 shifts total\"]}}"
+        }
+      ],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 0,
-      "target_tokens": null
+      "abstains": 2,
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -559,7 +611,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 4082
+      "target_tokens": 4082,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -583,7 +637,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -595,7 +651,7 @@
       "kind": "position",
       "order": "ab",
       "better": "a",
-      "winner": "tie",
+      "winner": "a",
       "usage": {
         "calls": 6,
         "prompt_tokens": 3176,
@@ -603,20 +659,13 @@
         "total_tokens": 4181,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "nvidia_nim/moonshotai/kimi-k3.1-pro:2",
-          "raw": "I need evaluate. Should carefully compare rubric. Should infer feasibility: 25 runs, max 11/shift, 3 shifts. A uses 3 shifts capacity 33, feasible, write results after last shift. B uses 2 shifts capacity 22 <25, infeasible, even though says close checklist before review impossible. A evidence baseline comparison, but no tracking duration/sample etc. B evidence stronger 6 weeks etc but violates core constraint. A has weird meta \"reasonable first pass. summary clearer heading\" not material perhaps tone ignore. Should explain most important difference briefly and verdict exactly. Could say A is feasible because 3 shifts provide capacity for all 25 checks (33), whereas B's two checking shifts accommodate at most 22, so cannot meet mandatory sign-off despite stronger evaluation plan. A addresses problem and measurement credible, tradeoffs both thin. End [[A]]. Make sure exactly one verdict end. Could include concise paragraph. Should I discuss A write up after last shift before handover? \"There are 3 staffed shifts before handover\" and A write results after last shift perhaps time concern? Still uses all shifts checks and write after last shift, perhaps handover immediate? B infeasible definitely. A best. Should not overdo. Respond with verdict.The decisive difference is feasibility: Proposal A uses all three shifts, providing capacity for up to 33 checks and therefore covering all 25 required runs. Proposal B allows only two checking shifts, with capacity for 22 runs, so it cannot satisfy mandatory sign-off. B has a stronger evaluation plan, but that does not overcome its core constraint violation.\n\n[[A]]"
-        },
-        {
-          "turn": "nvidia_nim/moonshotai/kimi-k3.1-pro:5",
-          "raw": "I need evaluate. Should carefully compare rubric. Should infer feasibility: 25 runs, max 11/shift, 3 shifts. A uses 3 shifts capacity 33 enough, write after last. B uses 2 shifts capacity 22 insufficient 25, then last review, infeasible sign-off every 25. Unless close checklist before convening impossible. A meets. Both evidence same baseline, B adds weekly 6 weeks sample trend but time available? There are 3 staffed shifts before handover, 6 week tracking perhaps post handover not necessarily impossible but B fatal. A odd self-comment reasonable first pass summary clearer heading irrelevant. Should have concise important difference. End exactly verdict [[A]]. Should explain A fits 25 over 3 shifts, B only 22 in 2, so cannot meet signoff. B stronger evaluation tracking but doesn't cure. A evidence supports main claims and test expected outcome baseline. Trade-offs neither much risks/alternatives, B review perhaps. Should not overdo. Respond perhaps paragraph and verdict. Ensure exactly one verdict end.The decisive difference is feasibility: Proposal A schedules all 25 required checks across 3 shifts, within the capacity of 33. Proposal B allows only 2 shifts for checks, providing capacity for just 22, so it cannot satisfy the mandatory sign-off requirement. B’s six-week tracking and week-by-week reporting strengthen its evidence plan, but do not overcome that constraint failure. Neither proposal substantially addresses risks or alternatives.\n\n[[A]]"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 2,
-      "target_tokens": 4082
+      "abstains": 0,
+      "target_tokens": 4082,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -636,16 +685,13 @@
         "total_tokens": 4295,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "critic:0",
-          "raw": "[[A]]\n\n**Why A is preferable:**\n\n*   **Problem fit:** Proposal B fails its core operational constraint. Sign-off requires all 25 delivery runs to be checked, but B allocates only 2 shifts for checks. With a maximum capacity of 11 checks per shift, B can only complete 22 checks before handover, leaving 3 runs unsigned. Proposal A uses all 3 shifts for checks (capacity 33), satisfying the requirement to check all 25 runs.\n*   **Evidence:** Proposal B’s plan to track weekly trends over 6 weeks is undermined because its check process cannot cover the full sample set. Proposal A’s post-hoc write-up after the last shift is lighter documentation, but it at least ensures the mandatory checks actually occur.\n*   **Trade-offs:** Proposal B’s review meeting is a nice-to-have, not a substitute for the required checks. Proposal A correctly prioritizes the hard constraint (all 25 runs checked) over optional review time.\n\n**Hidden assumptions & drawbacks:**\nBoth proposals assume drivers can act on alerts in time to prevent excursions, and neither addresses what happens if logger data is missing or if the 11-check shift cap is hit by absenteeism. Proposal A’s “write up after the last shift” risks rushed documentation, but this is a lesser operational failure than Proposal B’s inability to complete the required sign-off.\n\n[[A]]"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -657,19 +703,21 @@
       "kind": "position",
       "order": "ba",
       "better": "b",
-      "winner": "a",
+      "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 1986,
-        "completion_tokens": 896,
-        "total_tokens": 2882,
+        "prompt_tokens": 1770,
+        "completion_tokens": 567,
+        "total_tokens": 2337,
         "estimated": false
       },
       "failures": [],
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 5,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -693,7 +741,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2882
+      "target_tokens": 2882,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -717,7 +767,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -729,7 +781,7 @@
       "kind": "position",
       "order": "ba",
       "better": "b",
-      "winner": "tie",
+      "winner": "b",
       "usage": {
         "calls": 5,
         "prompt_tokens": 2658,
@@ -737,16 +789,13 @@
         "total_tokens": 3518,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "nvidia_nim/moonshotai/kimi-k3.1-pro:2",
-          "raw": "I need evaluate proposals A and B according rubric. Should carefully parse constraints and calculations. I'll output brief explanation most important difference and exactly verdict [[A]]/[[B]]/[[C]]. Should not be influenced length etc. Should assess A vs B.\n\nI have problem: meal distributor fewer temp excursions, signoff every 25 selected runs checked. 3 staffed shifts before handover. Team max 11 per shift; only team sign off. A: use 2 shifts for checks, then last shift review meeting. Team close checklist before convening. 2 shifts*11=22 <25, so infeasible cannot check all 25 in 2 shifts. B: use 3 shifts checks, write up after last shift. 3*11=33 capacity enough 25. So B respects signoff feasibility; A doesn't. A has better evidence plan tracking weekly 6 weeks compare preceding 6 weeks sample size trend, whereas B lacks explicit outcome testing details beyond baseline measure. But primary difference A violates hard capacity constraint; B meets. B likely better despite less evaluation detail. Should consider B phrase \"write up results after last shift\" perhaps after handover? There are 3 staffed shifts before handover, checks in 3 shifts, write up after last shift perhaps signoff? But A impossible. B is straightforward feasible. I'll mention A's 2 shifts accommodate at most 22 of required 25, so cannot secure sign-off; B's 3 shifts provide sufficient capacity. A's stronger measurement plan doesn't offset. Verdict B. Make sure exactly one verdict end. Could say \"Proposal A’s two checking shifts can cover at most 22 runs, leaving 3 of the required 25 unchecked and making its sign-off plan infeasible. Proposal B uses all three shifts, providing enough capacity (33 checks) to complete the required checks. Although A offers a stronger evaluation plan, B better satisfies the decisive operating constraint.\\n\\n[[B]]\". That's concise. Should have no extra verdict. Done.Proposal A’s two checking shifts can cover at most 22 runs, leaving 3 of the required 25 unchecked and making sign-off infeasible. Proposal B uses all three shifts, providing enough capacity to complete every check. Although A has a stronger outcome-evaluation plan, B better satisfies the decisive operating constraint.\n\n[[B]]"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 1,
-      "target_tokens": 2882
+      "abstains": 0,
+      "target_tokens": 2882,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -770,7 +819,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -782,19 +833,26 @@
       "kind": "position",
       "order": "ab",
       "better": "a",
-      "winner": "b",
+      "winner": "tie",
       "usage": {
-        "calls": 3,
-        "prompt_tokens": 1878,
-        "completion_tokens": 815,
-        "total_tokens": 2693,
+        "calls": 4,
+        "prompt_tokens": 1840,
+        "completion_tokens": 579,
+        "total_tokens": 2419,
         "estimated": false
       },
-      "failures": [],
+      "failures": [
+        {
+          "turn": "blind:skeptic",
+          "raw": "{\"scores\":{\"a\":[2,3,2,2],\"b\":[1,1,2,1],\"preferred\":\"a\",\"confidence\":4,\"checks\":[[0,\"a\",1,\"cover 46 laptops\",\"46\"],[1,\"a\",1,\"hard spending limit of $845\",\"140+46*15=830<=845\"],[0,\"b\",1,\"cover 46 laptops\",\"46\"],[1,\"b\",0,\"hard spending limit of $845\",\"140+46*18=968>845\"]},\"evidence\":[{\"proposal\":\"a\",\"quote\":\"hard spending limit of $845\"}]}}"
+        }
+      ],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 0,
-      "target_tokens": null
+      "abstains": 1,
+      "target_tokens": null,
+      "violations_kept": 2,
+      "violations_dropped": 1
     },
     {
       "method": "judge",
@@ -818,7 +876,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2693
+      "target_tokens": 2693,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -842,7 +902,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -862,16 +924,13 @@
         "total_tokens": 3223,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "nvidia_nim/moonshotai/kimi-k3.1-pro:2",
-          "raw": "I need evaluate A vs B rubric. Should carefully parse hidden feasibility math. 46 laptops hard $845, setup 140. Standard $15/unit => 140+46*15=140+690=830 <=845. Priority $18 => 140+828=968 >845. B infeasible budget. A feasible. Both same problem fit/evidence except B scorecard/dashboard better evidence but violates hard constraint. Should choose A. Should explain most important difference briefly. Could mention A total $830 within $845; B $968 exceeds. A standard checks maybe no sequential latency? B priority sequential before next begins, logging etc irrelevant. A vague \"This seems worth trying. The first readout may look a bit plain.\" B more testing detail. But decisive feasibility. Should end exactly [[A]]. I should provide concise comparison perhaps one paragraph. Ensure no other verdict. \"Proposal A is feasible: $140 + 46×$15 = $830, within the $845 cap. Proposal B costs $140 + 46×$18 = $968, violating the hard spending limit. Although B defines a clearer scorecard and dashboard, that evidence benefit cannot offset its infeasibility; both otherwise address the same waiting-time problem and measurement approach.\\n\\n[[A]]\" Good. Perhaps note A doesn't explicitly define 2-week scorecard but baseline comparison enough. Most important difference brief. End exactly.The decisive difference is feasibility. Proposal A costs **$140 + 46 × $15 = $830**, staying within the $845 hard limit. Proposal B costs **$140 + 46 × $18 = $968**, exceeding it by $123. Although B provides a clearer scorecard and dashboard, that evidence benefit cannot overcome its violation of a mandatory constraint.\n\n[[A]]"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 1,
-      "target_tokens": 2693
+      "abstains": 0,
+      "target_tokens": 2693,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -895,7 +954,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -907,19 +968,21 @@
       "kind": "position",
       "order": "ba",
       "better": "b",
-      "winner": "a",
+      "winner": "b",
       "usage": {
-        "calls": 4,
-        "prompt_tokens": 2505,
-        "completion_tokens": 1216,
-        "total_tokens": 3721,
+        "calls": 3,
+        "prompt_tokens": 1668,
+        "completion_tokens": 559,
+        "total_tokens": 2227,
         "estimated": false
       },
       "failures": [],
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 3,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -943,7 +1006,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3721
+      "target_tokens": 3721,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -967,7 +1032,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -991,7 +1058,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3721
+      "target_tokens": 3721,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -1015,7 +1084,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -1027,24 +1098,21 @@
       "kind": "position",
       "order": "ab",
       "better": "a",
-      "winner": "tie",
+      "winner": "b",
       "usage": {
         "calls": 4,
-        "prompt_tokens": 2373,
-        "completion_tokens": 1339,
-        "total_tokens": 3712,
+        "prompt_tokens": 1449,
+        "completion_tokens": 227,
+        "total_tokens": 1676,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "blind:skeptic",
-          "raw": "{\"scores\":{\"a\":{\"Problem fit\":1,\"Feasibility\":4,\"Evidence\":2,\"Trade-offs\":2},\"b\":{\"Problem fit\":1,\"Feasibility\":4,\"Evidence\":3,\"Trade-offs\":2},\"preferred\":\"tie\",\"confidence\":2,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Policy permits disclosure to third parties only as site-wide totals.\"},{\"proposal\":\"b\",\"quote\":\"Give the contractor the spreadsheet with one line per unit and its reference number so the contractor can check each entry against the summary.\"},{\"proposal\":\"b\",\"quote\":\"Publish 2 weekly snapshots and a final chart against the prior 2-week baseline.\"}]}\n\n**Skeptic notes:** Both proposals violate the disclosure policy by giving the contractor unit-level data (B explicitly; A implicitly through asking the contractor to review a single count that would be derived from unit-level checks). Both rely on the same vague method (\"combine recurring low-flow alerts with repair tickets\") without specifying resources, access, or time, making feasibility claims unsupported. Evidence criteria are weak because neither defines a clear statistical test or success threshold; B at least proposes snapshots and a baseline comparison, but still lacks a defined test. Trade-offs are minimally addressed in both; neither accounts for material risks or existing alternatives.{\n  \"scores\": {\n    \"a\": {\n      \"Problem fit\": 1,\n      \"Feasibility\": 2,\n      \"Evidence\": 2,\n      \"Trade-offs\": 1\n    },\n    \"b\": {\n      \"Problem fit\": 1,\n      \"Feasibility\": 2,\n      \"Evidence\": 3,\n      \"Trade-offs\": 1\n    }\n  },\n  \"preferred\": \"tie\",\n  \"confidence\": 4,\n  \"evidence\": [\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"Policy permits disclosure to third parties only as site-wide totals.\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"Ask the contractor to review a single count for the whole operation.\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"Give the contractor the spreadsheet with one line per unit and its reference number so the contractor can check each entry against the summary.\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"Publish 2 weekly snapshots and a final chart against the prior 2-week baseline. The closing report will show the change and the size of the sample.\"\n    }\n  ]\n}"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 1,
-      "target_tokens": null
+      "abstains": 0,
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -1068,7 +1136,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3712
+      "target_tokens": 3712,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -1092,7 +1162,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -1116,7 +1188,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3712
+      "target_tokens": 3712,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -1140,7 +1214,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -1152,19 +1228,26 @@
       "kind": "position",
       "order": "ba",
       "better": "b",
-      "winner": "a",
+      "winner": "tie",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 1779,
-        "completion_tokens": 779,
-        "total_tokens": 2558,
+        "prompt_tokens": 1284,
+        "completion_tokens": 256,
+        "total_tokens": 1540,
         "estimated": false
       },
-      "failures": [],
+      "failures": [
+        {
+          "turn": "blind:skeptic",
+          "raw": "{\"scores\":{\"a\":[2,3,2,2],\"b\":[1,4,1,4],\"preferred\":\"tie\",\"confidence\":2,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Give the contractor the spreadsheet with one line per unit and its reference number\"}]}\n\nA violates the site-wide totals-only disclosure constraint by sharing per-unit reference numbers with a contractor. B respects that constraint but lacks a testable method to compare leaks repaired before closures against the baseline."
+        }
+      ],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 0,
-      "target_tokens": null
+      "abstains": 1,
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -1188,7 +1271,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2558
+      "target_tokens": 2558,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -1212,7 +1297,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -1224,7 +1311,7 @@
       "kind": "position",
       "order": "ba",
       "better": "b",
-      "winner": "tie",
+      "winner": "b",
       "usage": {
         "calls": 4,
         "prompt_tokens": 1862,
@@ -1232,16 +1319,13 @@
         "total_tokens": 2650,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "nvidia_nim/moonshotai/kimi-k3.1-pro:2",
-          "raw": "I need evaluate proposals A and B per rubric impartial judge, explain most important difference briefly, end exactly verdict. Should analyze thoroughly but concise final. Should understand prompt likely designed privacy disclosure difference. Both same except contractor spreadsheet per unit vs single count whole operation; A publishes 2 weekly snapshots and final chart baseline sample vs B vague. Policy third parties only site-wide totals. A gives contractor spreadsheet one line per unit and ref number to check each entry against summary, violates policy. B asks contractor review single count whole operation, complies. Should weigh evidence A stronger reporting but fatal problem fit constraint. B better. Should explain most important difference briefly. Could say A's unit-level contractor spreadsheet conflicts with site-wide-totals-only disclosure policy, despite stronger evaluation/reporting. B uses aggregate count, respects constraint and retains same basic plan, though evaluation less developed. Verdict [[B]]. Make sure no overlooked possibility: contractor third party? Yes. Policy permits disclosure to third parties only as site-wide totals. A spreadsheet per unit violates. B single count whole operation site-wide total. A more evidence but infeasible due privacy. B lacks test specificity? Both share baseline compare, B no snapshots/final chart but still compare. So B.\n\nShould respond brief, exactly one verdict at end. Could include 2 sentences. \"The decisive difference is disclosure: A gives the contractor unit-level rows and reference numbers, violating the site-wide-totals-only policy. B’s single operation-wide count respects that constraint while preserving the core dispatch and baseline-comparison plan, although its reporting and evaluation details are weaker.\\n\\n[[B]]\" This is good. Should not overdo. Ensure final verdict exactly.The decisive difference is disclosure: A’s unit-level contractor spreadsheet violates the site-wide-totals-only policy, despite its stronger reporting plan. B’s single operation-wide count respects that constraint while retaining the core dispatch and baseline-comparison approach, though its evaluation details are weaker.\n\n[[B]]"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 1,
-      "target_tokens": 2558
+      "abstains": 0,
+      "target_tokens": 2558,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -1265,7 +1349,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -1279,17 +1365,24 @@
       "better": "a",
       "winner": "b",
       "usage": {
-        "calls": 3,
-        "prompt_tokens": 1977,
-        "completion_tokens": 840,
-        "total_tokens": 2817,
+        "calls": 6,
+        "prompt_tokens": 2588,
+        "completion_tokens": 567,
+        "total_tokens": 3155,
         "estimated": false
       },
-      "failures": [],
-      "debated": false,
+      "failures": [
+        {
+          "turn": "blind:skeptic",
+          "raw": "{\"scores\":{\"a\":[2,3,1,1],\"b\":[1,4,4,1]},\"preferred\":\"tie\",\"confidence\":2,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Use 4 shifts for the checks\"}],\"checks\":[[0,\"a\",1,\"Use 4 shifts for the checks\",\"36 cases / 4 shifts = 9 per shift (≤10)\"],[0,\"b\",1,\"Use 3 shifts for the checks\",\"36 cases / 3 shifts = 12 per shift (>10)\"],[1,\"a\",1,\"Use 4 shifts for the checks\",\"4 shifts used = 4 available\"],[1,\"b\",0,\"Use 3 shifts for the checks, then turn the last shift into a review meeting\",\"3 shifts used ≠ 4 available\"]}]"
+        }
+      ],
+      "debated": true,
       "evidence_dropped": 0,
-      "abstains": 0,
-      "target_tokens": null
+      "abstains": 1,
+      "target_tokens": null,
+      "violations_kept": 2,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -1313,7 +1406,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2817
+      "target_tokens": 2817,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -1337,7 +1432,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -1361,7 +1458,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2817
+      "target_tokens": 2817,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -1385,7 +1484,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -1397,19 +1498,21 @@
       "kind": "position",
       "order": "ba",
       "better": "b",
-      "winner": "a",
+      "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 1977,
-        "completion_tokens": 726,
-        "total_tokens": 2703,
+        "prompt_tokens": 1758,
+        "completion_tokens": 481,
+        "total_tokens": 2239,
         "estimated": false
       },
       "failures": [],
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 2,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -1433,7 +1536,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2703
+      "target_tokens": 2703,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -1457,7 +1562,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -1477,16 +1584,13 @@
         "total_tokens": 2914,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "nvidia_nim/moonshotai/kimi-k3.1-pro:2",
-          "raw": "I need evaluate. Should carefully compare rubric. Should end exactly one verdict [[A]] or [[B]] etc. Should explain most important difference briefly. I have proposals. Should impartial. Should analyze constraints 36 cases, 4 shifts, team max10/shift. A use3 shifts checks = max30, cannot check all36. Then last review meeting. So A infeasible and violates signoff. B use4 shifts checks capacity40, can check36, write after last. Both use sensors no rewiring, conservator desiccant. A evidence stronger: measure weekly3 weeks compare preceding3, publish sample size and week trend. B vague \"useful start even if first chart not pretty\" no defined testing beyond sensor compare baseline. Main difference likely A has better evaluation plan but fails hard checking requirement; B meets feasibility/signoff. Should decide B better due problem fit/feasibility. Should check A wording: \"Use 3 shifts for the checks, then turn the last shift into a review meeting. The team will close the checklist before convening.\" 3 shifts*10=30 <36. Impossible. B 4 shifts enough. A's evidence plan may also timeline issue: 4 staffed shifts before handover, tracking weekly3 weeks perhaps after? Not necessarily infeasible, but main. Trade-offs neither substantial; A review meeting perhaps risk management, B no. Should mention B is weaker on evidence but satisfies mandatory checks. End exactly verdict. Could respond 2 sentences. \"Proposal A’s three checking shifts can cover at most 30 of the 36 cases, so its checklist cannot legitimately be closed; Proposal B’s four shifts provide enough capacity and preserve the required sign-off. Although A offers a much stronger measurement plan, B is more feasible and better fits the non-negotiable operating constraints. [[B]]\" Make sure exactly one verdict end. That's good. Should I discuss evidence? Briefly. Most important difference. No need lengthy. Use \"at most 30\" and B capacity40. B better despite weak evaluation. End [[B]].Proposal A’s three checking shifts can cover at most 30 of the 36 cases, so it cannot satisfy the mandatory sign-off requirement. Proposal B’s four shifts provide sufficient capacity, making it more feasible and better aligned with the operating constraints, though A has the stronger outcome-evaluation plan. [[B]]"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 1,
-      "target_tokens": 2703
+      "abstains": 0,
+      "target_tokens": 2703,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -1510,7 +1614,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -1522,19 +1628,26 @@
       "kind": "position",
       "order": "ab",
       "better": "b",
-      "winner": "a",
+      "winner": "b",
       "usage": {
-        "calls": 3,
-        "prompt_tokens": 1896,
-        "completion_tokens": 737,
-        "total_tokens": 2633,
+        "calls": 6,
+        "prompt_tokens": 2474,
+        "completion_tokens": 800,
+        "total_tokens": 3274,
         "estimated": false
       },
-      "failures": [],
-      "debated": false,
+      "failures": [
+        {
+          "turn": "blind:skeptic",
+          "raw": "{\"scores\":{\"a\":[2,3,2,2],\"b\":[1,4,1,2]},\"preferred\":\"a\",\"confidence\":4,\"checks\":[[0,\"a\",1,\"cover 28 delivery runs\",\"\"],[1,\"a\",1,\"hard spending limit of $899\",\"130+29*28=942 > 899\"],[0,\"b\",1,\"cover 28 delivery runs\",\"\"],[1,\"b\",0,\"hard spending limit of $899\",\"130+27*28=886 <= 899\"]},\"evidence\":[{\"proposal\":\"a\",\"quote\":\"hard spending limit of $899\"}]}\n\nCalculation: A costs $942 (violates), B costs $886 (compliant). Preferred is A because B's budget compliance depends on excluding the mandatory $130 setup fee; if included, B also violates, leaving no valid plan. A best fits the alert requirement. Confidence reflects ambiguity in whether the setup fee applies to both plans.{\"scores\":{\"a\":[2,3,2,2],\"b\":[1,4,1,2]},\"preferred\":\"a\",\"confidence\":4,\"checks\":[[0,\"a\",1,\"cover 28 delivery runs\",\"\"],[1,\"a\",0,\"hard spending limit of $899\",\"130+29*2"
+        }
+      ],
+      "debated": true,
       "evidence_dropped": 0,
-      "abstains": 0,
-      "target_tokens": null
+      "abstains": 1,
+      "target_tokens": null,
+      "violations_kept": 1,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -1558,7 +1671,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2633
+      "target_tokens": 2633,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -1582,7 +1697,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -1602,16 +1719,13 @@
         "total_tokens": 3173,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "nvidia_nim/moonshotai/kimi-k3.1-pro:2",
-          "raw": "I need evaluate A vs B with rubric. Should infer hidden arithmetic? Should scrutinize. Both same except A priority $29 per unit so each result comes back before next check begins. Log result as soon as arrives. Scorecard compare 6-week pilot preceding 6 weeks weekly dashboard numerator denominator. B standard $27 per unit log result. This seems worth trying. First readout plain.\n\nI need determine feasibility hard budget 28 runs, fixed 130. A cost 130+28*29=130+812=942 >899. Infeasible. B 130+28*27=130+756=886 <=899. B better feasibility. A stronger evidence scorecard, but violates hard budget. Should explain most important difference briefly and verdict B. Perhaps consider units per run? It says per unit and 28 delivery runs, likely 28 checks. A $942 > limit, B $886. A's sequential priority results maybe time constraint? No explicit total time except 6-week. B fits. Evidence A better, B weak no test plan beyond baseline comparison. But main difference budget. I should concise with calculations and note A's measurement plan doesn't offset. End exactly [[B]]. Make sure no extra after verdict. Could say \"Proposal A’s priority checks cost $130 + 28 × $29 = $942, exceeding the $899 hard cap. Proposal B costs $886 and therefore covers all 28 runs within budget. Although A offers a stronger evaluation scorecard, its pilot is infeasible as written; B respects the central operating constraint while retaining the core measurement approach.\" Then verdict. That is enough. Should impartial, no order length tone. Yes.The key difference is feasibility under the hard budget. Proposal A costs $130 + (28 × $29) = **$942**, exceeding the $899 limit. Proposal B costs $130 + (28 × $27) = **$886**, covering all 28 runs within budget.\n\nA provides a stronger evaluation plan through its six-week scorecard and weekly dashboard, but that does not overcome its budget violation. B retains the core baseline comparison and alerting approach while satisfying the essential spending constraint.\n\n[[B]]"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 1,
-      "target_tokens": 2633
+      "abstains": 0,
+      "target_tokens": 2633,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -1635,7 +1749,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -1650,16 +1766,27 @@
       "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 1896,
-        "completion_tokens": 864,
-        "total_tokens": 2760,
+        "prompt_tokens": 1683,
+        "completion_tokens": 605,
+        "total_tokens": 2288,
         "estimated": false
       },
-      "failures": [],
+      "failures": [
+        {
+          "turn": "blind:skeptic",
+          "raw": "{\"scores\":{\"a\":[2,3,2,2],\"b\":[1,4,3,2]},\"preferred\":\"a\",\"confidence\":4,\"checks\":[[0,\"a\",1,\"cover 28 delivery runs\",\"\"],[1,\"a\",1,\"hard spending limit of $899\",\"130+27*28=886<=899\"],[0,\"b\",1,\"cover 28 delivery runs\",\"\"],[1,\"b\",0,\"hard spending limit of $899\",\"130+29*28=942>899\"]},\"evidence\":[{\"proposal\":\"a\",\"quote\":\"130+27*28=886<=899\"}]}"
+        },
+        {
+          "turn": "blind:scientist",
+          "raw": "{\"scores\":{\"a\":[2,3,2,2],\"b\":[2,3,2,2]},\"preferred\":\"tie\",\"confidence\":4,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Use the standard check at $27 per unit and log the result.\"}],\"checks\":[[\"cover 28 delivery runs\",\"a\",1,\"Use the standard check at $27 per unit and log the result.\",\"\"],[\"hard spending limit of $899\",\"a\",0,\"Use the standard check at $27 per unit and log the result.\",\"130+28*27=886<=899\"],[\"cover 28 delivery runs\",\"b\",1,\"Use the priority check at $29 per unit so each result comes back before the next check begins.\",\"\"],[\"hard spending limit of $899\",\"b\",0,\"Use the priority check at $29 per unit so each result comes back before the next check begins.\",\"130+28*29=942>899\"]}"
+        }
+      ],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 0,
-      "target_tokens": null
+      "abstains": 2,
+      "target_tokens": null,
+      "violations_kept": 2,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -1683,7 +1810,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2760
+      "target_tokens": 2760,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -1707,7 +1836,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -1731,7 +1862,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2760
+      "target_tokens": 2760,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -1755,7 +1888,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -1769,17 +1904,19 @@
       "better": "b",
       "winner": "a",
       "usage": {
-        "calls": 3,
-        "prompt_tokens": 1779,
-        "completion_tokens": 715,
-        "total_tokens": 2494,
+        "calls": 4,
+        "prompt_tokens": 1444,
+        "completion_tokens": 227,
+        "total_tokens": 1671,
         "estimated": false
       },
       "failures": [],
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -1803,7 +1940,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2494
+      "target_tokens": 2494,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -1827,7 +1966,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -1851,7 +1992,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2494
+      "target_tokens": 2494,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -1875,7 +2018,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -1890,16 +2035,18 @@
       "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 1779,
-        "completion_tokens": 736,
-        "total_tokens": 2515,
+        "prompt_tokens": 1281,
+        "completion_tokens": 233,
+        "total_tokens": 1514,
         "estimated": false
       },
       "failures": [],
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -1923,7 +2070,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2515
+      "target_tokens": 2515,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -1947,7 +2096,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -1971,7 +2122,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2515
+      "target_tokens": 2515,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -1995,7 +2148,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -2009,17 +2164,19 @@
       "better": "b",
       "winner": "a",
       "usage": {
-        "calls": 4,
-        "prompt_tokens": 3654,
-        "completion_tokens": 1172,
-        "total_tokens": 4826,
+        "calls": 3,
+        "prompt_tokens": 2469,
+        "completion_tokens": 274,
+        "total_tokens": 2743,
         "estimated": false
       },
       "failures": [],
       "debated": false,
-      "evidence_dropped": 3,
-      "abstains": 0,
-      "target_tokens": null
+      "evidence_dropped": 1,
+      "abstains": 1,
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -2043,7 +2200,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 4826
+      "target_tokens": 4826,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -2067,7 +2226,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -2091,7 +2252,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 4826
+      "target_tokens": 4826,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -2115,7 +2278,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -2127,19 +2292,21 @@
       "kind": "position",
       "order": "ba",
       "better": "a",
-      "winner": "a",
+      "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2742,
-        "completion_tokens": 774,
-        "total_tokens": 3516,
+        "prompt_tokens": 2469,
+        "completion_tokens": 351,
+        "total_tokens": 2820,
         "estimated": false
       },
       "failures": [],
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -2163,7 +2330,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3516
+      "target_tokens": 3516,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -2187,7 +2356,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -2211,7 +2382,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3516
+      "target_tokens": 3516,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -2235,7 +2408,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -2249,17 +2424,24 @@
       "better": "a",
       "winner": "tie",
       "usage": {
-        "calls": 6,
-        "prompt_tokens": 5530,
-        "completion_tokens": 2094,
-        "total_tokens": 7624,
+        "calls": 3,
+        "prompt_tokens": 2232,
+        "completion_tokens": 351,
+        "total_tokens": 2583,
         "estimated": false
       },
-      "failures": [],
-      "debated": true,
-      "evidence_dropped": 2,
-      "abstains": 0,
-      "target_tokens": null
+      "failures": [
+        {
+          "turn": "blind:judge",
+          "raw": "{\"scores\":{\"a\":[4,4,3,4],\"b\":[4,4,5,4]},\"preferred\":\"b\",\"confidence\":4,\"evidence\":[{\"proposal\":\"b\",\"quote\":\"Comprehensive experiments confirm that Bi-tuning achieves state-of-the-art results for fine-tuning tasks of both supervised and unsupervised pre-trained models by large margins (e.g.~10.7\\% absolute rise in accuracy on CUB in low-data regime).\"}]}\n"
+        }
+      ],
+      "debated": false,
+      "evidence_dropped": 1,
+      "abstains": 2,
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -2283,7 +2465,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 7624
+      "target_tokens": 7624,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -2307,7 +2491,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -2336,7 +2522,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 1,
-      "target_tokens": 7624
+      "target_tokens": 7624,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -2360,7 +2548,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -2375,16 +2565,23 @@
       "winner": "a",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2505,
-        "completion_tokens": 872,
-        "total_tokens": 3377,
+        "prompt_tokens": 2232,
+        "completion_tokens": 383,
+        "total_tokens": 2615,
         "estimated": false
       },
-      "failures": [],
+      "failures": [
+        {
+          "turn": "blind:skeptic",
+          "raw": "{\"scores\":{\"a\":[4,4,5,4],\"b\":[4,3,3,3]},\"preferred\":\"a\",\"confidence\":4,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Comprehensive experiments confirm that Bi-tuning achieves state-of-the-art results for fine-tuning tasks of both supervised and unsupervised pre-trained models by large margins (e.g.~10.7\\% absolute rise in accuracy on CUB in low-data regime).\"}]}\n}"
+        }
+      ],
       "debated": false,
-      "evidence_dropped": 0,
-      "abstains": 0,
-      "target_tokens": null
+      "evidence_dropped": 1,
+      "abstains": 2,
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -2408,7 +2605,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3377
+      "target_tokens": 3377,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -2432,7 +2631,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -2452,16 +2653,13 @@
         "total_tokens": 3853,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "nvidia_nim/moonshotai/kimi-k3.1-pro:2",
-          "raw": "I need evaluate proposals A and B as paper abstracts using rubric significance novelty soundness clarity. Should choose better. Should be impartial, no order length tone. Should end exactly one verdict [[A]]/[[B]]/[[C]]. Should explain most important difference briefly. I need analyze deeply likely both are actual papers. A Bi-tuning of Pre-trained Representations (NeurIPS? 2020?) B Intrinsic Dimension of Images and Its Impact on Learning (Pope et al 2021). Should judge based abstracts only. Should compare.\n\nI need determine which better overall. A: common pretrain then finetune; proposes Bi-tuning general framework with two heads classifier improved contrastive cross entropy and projector categorical contrastive learning. Comprehensive experiments SOTA large margins e.g. 10.7% absolute CUB low-data. Significance: transfer learning important, strong practical contribution. Novelty: clear method but incremental combination of supervised contrastive and unsupervised structure. Soundness: claims comprehensive experiments but abstract no details/baselines/ablations; \"SOTA by large margins\" supports somewhat. Clarity: clear question, methods, findings, though jargon dense and grammatical issues.\n\nB: fundamental question intrinsic dimension of images and impact on learning. Finds datasets low ID, low-dimensional datasets easier to learn and generalize better. Develops validation technique on synthetic GAN data manipulating ID. Significance: high conceptual importance, explains deep learning success/generalization. Novelty: applying dimension estimation tools to datasets and investigating role; validation on GANs novel. Soundness: correlational claim \"low dimensional datasets are easier ... generalize better\" but synthetic manipulation allows causal investigation; abstract doesn't specify controls, estimation reliability. Clarity: very clear question methods findings, code. Could be more scientifically significant/novel than A, but evidence less strong in abstract. Should decide likely B better due fundamental significance and clarity, A stronger empirical evidence and practical gains. Rubric no weights. Could tie? Should infer expected evaluation perhaps compare actual paper quality. I should evaluate likely B is stronger paper? I'll recall.\n\nA \"Bi-tuning of Pre-trained Representations\" by Kai? Paper at NeurIPS 2020? It may be solid but method somewhat heuristic. B \"The Intrinsic Dimension of Images and Its Impact on Learning\" by Phil Pope, Chen Zhu, Ahmed Abdelkader, Micah Goldblum, Tom Goldstein, ICLR 2021? It was ICLR 2021 poster? Interesting findings. Both published. If judging abstracts, B likely higher significance and novelty, A higher soundness evidence. Should choose.\n\nI'll examine exact wording. A claims \"It follows natural intuition that both discriminative knowledge and intrinsic structure of the downstream task can be useful for fine-tuning, however, existing fine-tuning methods mainly leverage the former and discard the latter.\" But existing fine-tuning methods don't necessarily discard latter; many regularization methods. Bi-tuning integrates two heads. Improved contrastive cross-entropy and newly designed categorical contrastive learning. Comprehensive experiments SOTA both supervised and unsupervised pretraining by large margins. Very concrete and useful. B applies existing dimension estimation tools, finds low ID and relation to learning/generalization. Novel technique validating tools on synthetic GAN data. It does not propose new learning algorithm but fundamental analysis. Soundness: ID estimation notoriously difficult, and GAN-generated data validation may not validate real datasets. Claim low-dimensional datasets easier and generalize better could be confounded by dataset complexity, size, classes etc. Abstract doesn't show causal isolation except synthetic control. A's claims are empirical and standard, comprehensive experiments, but no specifics besides one dataset. B's evidence more tentative and abstract vague. Under soundness A perhaps stronger. Novelty B perhaps"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 1,
-      "target_tokens": 3377
+      "abstains": 0,
+      "target_tokens": 3377,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -2485,7 +2683,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -2500,16 +2700,18 @@
       "winner": "a",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2214,
-        "completion_tokens": 818,
-        "total_tokens": 3032,
+        "prompt_tokens": 1941,
+        "completion_tokens": 220,
+        "total_tokens": 2161,
         "estimated": false
       },
       "failures": [],
       "debated": false,
-      "evidence_dropped": 3,
+      "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -2533,7 +2735,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3032
+      "target_tokens": 3032,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -2557,7 +2761,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -2581,7 +2787,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3032
+      "target_tokens": 3032,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -2605,7 +2813,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -2617,19 +2827,26 @@
       "kind": "position",
       "order": "ba",
       "better": "a",
-      "winner": "b",
+      "winner": "tie",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2214,
-        "completion_tokens": 870,
-        "total_tokens": 3084,
+        "prompt_tokens": 1941,
+        "completion_tokens": 207,
+        "total_tokens": 2148,
         "estimated": false
       },
-      "failures": [],
+      "failures": [
+        {
+          "turn": "blind:skeptic",
+          "raw": "{\"scores\":{\"a\":[2,3,2,4],\"b\":[4,3,4,4]},\"preferred\":\"b\",\"confidence\":4,\"evidence\":[{\"proposal\":\"b\",\"quote\":\"We demonstrate improved convergence in practice on $\\ell_2$-regularized logistic regression problems.\"}]}"
+        }
+      ],
       "debated": false,
-      "evidence_dropped": 3,
-      "abstains": 0,
-      "target_tokens": null
+      "evidence_dropped": 2,
+      "abstains": 3,
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -2653,7 +2870,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3084
+      "target_tokens": 3084,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -2677,7 +2896,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -2701,7 +2922,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3084
+      "target_tokens": 3084,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -2725,7 +2948,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -2739,22 +2964,24 @@
       "better": "b",
       "winner": "a",
       "usage": {
-        "calls": 4,
-        "prompt_tokens": 3394,
-        "completion_tokens": 1354,
-        "total_tokens": 4748,
+        "calls": 5,
+        "prompt_tokens": 2744,
+        "completion_tokens": 386,
+        "total_tokens": 3130,
         "estimated": false
       },
       "failures": [
         {
-          "turn": "blind:skeptic",
-          "raw": "{\n  \"scores\": {\n    \"a\": {\n      \"Significance\": 5,\n      \"Novelty\": 5,\n      \"Soundness\": 4,\n      \"Clarity\": 5\n    },\n    \"b\": {\n      \"Significance\": 4,\n      \"Novelty\": 5,\n      \"Soundness\": 3,\n      \"Clarity\": 4\n    }\n  },\n  \"preferred\": \"a\",\n  \"confidence\": 4,\n  \"evidence\": [\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"Given a pre-trained flow model $p(\\boldsymbol{x})$, we wish to estimate $p(\\boldsymbol{x}_2 \\mid \\boldsymbol{x}_1)$ for some arbitrary partitioning of the variables $\\boldsymbol{x} = (\\boldsymbol{x}_1, \\boldsymbol{x}_2)$.\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"We first show that this task is computationally hard for a large class of flow models.\"\n    },\n    {\n      \"proposal\": \"a\",\n      \"quote\": \"We provide an extensive empirical evidence showcasing the flexibility of our method on a variety of inference tasks with applications to inverse problems.\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"ImpFlows build on residual flows (ResFlows) with a proper balance between expressiveness and tractability.\"\n    },\n    {\n      \"proposal\": \"b\",\n      \"quote\": \"We propose a scalable algorithm to train and draw samples from ImpFlows.\"\n    }\n  ]\n}"
+          "turn": "blind:scientist",
+          "raw": "{\"scores\":{\"a\":[4,4,3,4],\"b\":[3,4,3,4]},\"preferred\":\"a\",\"confidence\":4,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Given a pre-trained flow model $p(\\boldsymbol{x})$, we wish to estimate $p(\\boldsymbol{x}_2 \\mid \\boldsymbol{x}_1)$ for some arbitrary partitioning of the variables $\\boldsymbol{x} = (\\boldsymbol{x}_1, \\boldsymbol{x}_2)$.\"}]}"
         }
       ],
-      "debated": false,
-      "evidence_dropped": 1,
+      "debated": true,
+      "evidence_dropped": 0,
       "abstains": 1,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -2778,7 +3005,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 4748
+      "target_tokens": 4748,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -2802,7 +3031,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -2826,7 +3057,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 4748
+      "target_tokens": 4748,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -2850,7 +3083,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -2864,17 +3099,19 @@
       "better": "a",
       "winner": "a",
       "usage": {
-        "calls": 4,
-        "prompt_tokens": 3397,
-        "completion_tokens": 1193,
-        "total_tokens": 4590,
+        "calls": 3,
+        "prompt_tokens": 2274,
+        "completion_tokens": 232,
+        "total_tokens": 2506,
         "estimated": false
       },
       "failures": [],
       "debated": false,
-      "evidence_dropped": 5,
+      "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -2898,7 +3135,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 4590
+      "target_tokens": 4590,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -2922,7 +3161,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -2946,7 +3187,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 4590
+      "target_tokens": 4590,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -2970,7 +3213,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -2982,19 +3227,21 @@
       "kind": "position",
       "order": "ab",
       "better": "b",
-      "winner": "a",
+      "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2133,
-        "completion_tokens": 841,
-        "total_tokens": 2974,
+        "prompt_tokens": 1860,
+        "completion_tokens": 304,
+        "total_tokens": 2164,
         "estimated": false
       },
       "failures": [],
       "debated": false,
-      "evidence_dropped": 1,
+      "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -3018,7 +3265,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2974
+      "target_tokens": 2974,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -3042,7 +3291,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -3066,7 +3317,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 2974
+      "target_tokens": 2974,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -3090,7 +3343,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -3102,19 +3357,21 @@
       "kind": "position",
       "order": "ba",
       "better": "a",
-      "winner": "a",
+      "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2133,
-        "completion_tokens": 954,
-        "total_tokens": 3087,
+        "prompt_tokens": 1860,
+        "completion_tokens": 271,
+        "total_tokens": 2131,
         "estimated": false
       },
       "failures": [],
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -3138,7 +3395,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3087
+      "target_tokens": 3087,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -3162,7 +3421,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -3182,16 +3443,13 @@
         "total_tokens": 3553,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "nvidia_nim/moonshotai/kimi-k3.1-pro:2",
-          "raw": "I need evaluate two paper proposals with rubric. Should compare A B significance novelty soundness clarity. Should probably identify actual papers? Should judge based supplied abstracts only. Should be impartial, no length tone order. Should end exactly verdict [[A]]/[[B]]/[[C]]. Should explain most important difference briefly. I need reason thoroughly to choose. I have A self-supervised visual RL with object-centric representations, compositional generative world model, goal-conditioned attention policies, discover skills and combine compositional tasks manipulation several objects. B autonomous learning object-centric abstractions high-level planning, transfer tasks same objects fewer samples, simple domain compact lifted representation generalizes across objects, Minecraft pixel tasks object types, planner complex long-term plans fewer interactions. Which better? Should infer rubric. Both significant, novel object-centric. Soundness: B more concrete empirical demonstrations and claims, A vague \"we show\" but method clear. B has stronger planning and transfer evidence, high-dimensional pixel Minecraft, long-term. A has clear problem/method and findings but less specifics. B likely stronger significance and clarity, soundness. Novelty maybe A goal-conditioned attention skill discovery vs B lifted representations and planner. Could be tie? Should choose likely B. I'll analyze context perhaps these are NeurIPS/ICLR abstracts and expected assessment. A is \"Self-supervised Visual Reinforcement Learning with Object-centric Representations\" by Kipf? Actual paper maybe NeurIPS 2021? Authors? B \"Autonomous Learning of Object-Centric Abstractions for High-Level Planning\" by ... 2021? Could be known. Should evaluate research proposals as abstracts, not external facts. B clearly claims sample efficiency and transfer with demonstrations, A claims useful skills but no metrics. B stronger evidence and concrete results. A explains motivation better and method components. B method not described how learned, but outcomes more specific. Most important difference B provides clearer empirical scope and planning/transfer payoff; A remains broader skill discovery with less substantiation. Could say both address important object-centric learning, but B more convincingly connects representation to transferable high-level planning and reports evaluations from simple domains to Minecraft; A's claims about useful/composable skills are less specific and its evidence less clear. Verdict B.\n\nMake sure not overstate evidence from abstract. \"On the abstracts alone\" maybe. Brief. End exactly one verdict. Could output 2 sentences then verdict. Should have no extra after. I'll formulate concise with rubric dimensions. \"Both propose significant, similarly novel object-centric representations, but B makes the downstream contribution—cross-task transfer, sample-efficient model learning, and long-horizon planning—more concrete and supports it with a clearer evaluation progression (a simple domain, then pixel-based Minecraft tasks). A explains its skill-discovery mechanism well, but its claims about useful and composable skills are broader and less substantiated, leaving soundness and practical impact harder to assess.\" Then [[B]]. Is that enough? Yes.\n\nBut let's consider if A perhaps more novel due self-supervised RL and object-centric world model, B relies on high-level planner and object-centric abstraction perhaps more important. Rubric no scores needed. Most important difference briefly. Good.\n\nShould not mention length/tone. End exactly verdict.Both address significant problems with similarly novel object-centric representations, but **B** presents a more concrete downstream contribution: cross-task transfer, sample-efficient learning, and long-horizon planning, evaluated from a simple domain through pixel-based Minecraft tasks. **A** explains its skill-discovery approach well, but its claims about useful, composable skills are broader and less clearly substantiated, making its soundness and practical impact harder to assess.\n\n[[B]]"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 1,
-      "target_tokens": 3087
+      "abstains": 0,
+      "target_tokens": 3087,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -3215,7 +3473,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -3230,16 +3490,18 @@
       "winner": "a",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2283,
-        "completion_tokens": 926,
-        "total_tokens": 3209,
+        "prompt_tokens": 2010,
+        "completion_tokens": 225,
+        "total_tokens": 2235,
         "estimated": false
       },
       "failures": [],
       "debated": false,
-      "evidence_dropped": 1,
+      "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -3263,7 +3525,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3209
+      "target_tokens": 3209,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -3287,7 +3551,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -3307,16 +3573,13 @@
         "total_tokens": 3353,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "nvidia_nim/moonshotai/kimi-k3.1-pro:2",
-          "raw": "I need evaluate two paper abstracts under rubric significance novelty soundness clarity. Should choose better. Should be impartial, not length tone order. Should probably have EquiDock (A) vs contrastive representation learning 3D protein structures (B). Should analyze.\n\nA: significant rigid docking, novel pairwise-independent SE(3)-equivariant graph matching network, mathematical guarantee invariance to initial positions/orientations, binding pockets approximation, keypoint matching optimal transport differentiable Kabsch, empirical significant speed and often outperform existing docking software no heavy sampling refinement templates. Clear specifics. Soundness evidence abstract-level but claims empirical \"often outperform\" vague no datasets metrics, mathematically guarantee. B: contrastive learning framework, uses annotated/unannotated PDB, tasks function structural similarity, pretraining improves performance. Novelty vague \"new representation learning framework\" no specific technical innovation; contrastive learning known. Significance broad data scarcity, useful. Soundness no experimental specifics, \"significantly improved task performance\" vague. A better novelty, clarity, perhaps soundness. B broad significance but A strong. Verdict A.\n\nShould have \"Explain most important difference briefly.\" Could say \"Proposal A presents a more clearly differentiated technical contribution—an SE(3)-equivariant docking method with an explicit invariance guarantee and concrete algorithmic components—while Proposal B leaves its contrastive-learning novelty and experimental support largely unspecified. Both address significant problems, but A gives stronger evidence of soundness and clearer methods and findings, though its empirical claims would still require quantitative validation.\" End exactly [[A]]. Should have no extra verdict. Ensure not overclaim. Could note A \"often outperform\" not full evidence. Good.\n\nShould think if any trick: Proposal A known EquiDock ICLR 2022, B perhaps Protein contrastive learning. Should judge abstract only. A strong. Could B significance broader and pretraining useful, but novelty unclear. Yes.\n\nShould respond concise.Proposal A offers the clearer and more distinctive contribution: an SE(3)-equivariant docking method with an explicit invariance guarantee, concrete algorithmic components, and comparative efficiency and accuracy claims. Proposal B addresses an important problem, but its novelty beyond existing contrastive-learning approaches and the evidence supporting its performance improvements are less specific. Both abstracts would require quantitative experimental details to fully establish soundness, but A is stronger overall in novelty, clarity, and methodological support.\n\n[[A]]"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 1,
-      "target_tokens": 3209
+      "abstains": 0,
+      "target_tokens": 3209,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -3340,7 +3603,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -3355,16 +3620,18 @@
       "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2283,
-        "completion_tokens": 865,
-        "total_tokens": 3148,
+        "prompt_tokens": 2010,
+        "completion_tokens": 225,
+        "total_tokens": 2235,
         "estimated": false
       },
       "failures": [],
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -3388,7 +3655,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3148
+      "target_tokens": 3148,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -3412,7 +3681,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -3424,7 +3695,7 @@
       "kind": "position",
       "order": "ba",
       "better": "b",
-      "winner": "tie",
+      "winner": "b",
       "usage": {
         "calls": 4,
         "prompt_tokens": 2522,
@@ -3436,16 +3707,14 @@
         {
           "turn": "nvidia_nim/poolside/laguna-xs-2.1:1",
           "raw": "**Significance**  \n- **Proposal A** addresses the fundamental bottleneck of limited 3D protein structures by proposing a representation learning framework. This tackles a core challenge in structural bioinformatics with broad applicability.  \n- **Proposal B** focuses on rigid protein-protein docking, a critical task for drug design and protein engineering. While significant, it is more specialized compared to the foundational problem of representation learning under data scarcity.  \n**Verdict**: A is more significant.\n\n**Novelty**  \n- **Proposal A** introduces unsupervised contrastive learning for 3D protein structures, leveraging both annotated and unannotated data. This approach is distinct from traditional supervised methods but overlaps with broader representation learning trends in bioinformatics.  \n- **Proposal B** presents a novel SE(3)-equivariant graph matching network (EquiDock) with mathematical guarantees of pose invariance and a streamlined pipeline using optimal transport and differentiable Kabsch. This is highly novel in structure and theoretical rigor.  \n**Verdict**: B is more novel.\n\n**Soundness**  \n- **Proposal A** claims improved performance via pre-training but lacks explicit validation details (e.g., datasets, metrics). The approach is plausible but less concrete.  \n- **Proposal B** provides mathematical guarantees, a clear methodology (keypoint matching, optimal transport), and empirical validation showing superior performance without heavy sampling/refinement. The soundness is more rigorously demonstrated.  \n**Verdict**: B is more sound.\n\n**Clarity**  \n- **Proposal A** clearly explains the problem (data scarcity), method (contrastive learning), and applications (function prediction, similarity prediction).  \n- **Proposal B** is concise but assumes familiarity with SE(3)-equivariance and graph matching, making it less accessible. The clarity of A is superior.  \n**Verdict**: A is clearer.\n\n"
-        },
-        {
-          "turn": "nvidia_nim/moonshotai/kimi-k3.1-pro:2",
-          "raw": "I need evaluate proposals A and B per rubric significance novelty soundness clarity. Should output brief most important difference and exactly verdict [[A/B/C]]. Should assess material, likely B better. Should be impartial, not length tone. Should reason. A general contrastive learning 3D protein structures, no methods detail or evidence specifics. B EquiDock known paper, clear novel independent SE(3)-equivariant model, mathematical guarantee, empirical claims. B stronger novelty soundness clarity, significance both. Perhaps note A broad significance but vague. End exactly [[B]]. I should provide concise explanation. Ensure no other verdict. Could say \"Both address important problems, but B gives a substantially more specific and technically differentiated contribution: an SE(3)-equivariant docking method with an invariance guarantee and a clear computational approach. A’s contrastive-learning framework is potentially useful, but its novelty, methodology, and supporting evidence are described only generically, making its claims harder to assess. B is stronger on novelty, soundness, and clarity.\" Then verdict. Should not overstate empirical evidence since only abstract. Good.Both proposals address significant problems, but **B presents a more specific and technically differentiated contribution**: an SE(3)-equivariant docking method with a mathematical invariance guarantee, clearly described components, and comparative empirical claims. **A’s contrastive-learning framework is promising, but its novelty, methodology, and supporting evidence remain generic**, making its claims harder to evaluate. B is therefore stronger in novelty, soundness, and clarity.\n\n[[B]]"
         }
       ],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 2,
-      "target_tokens": 3148
+      "abstains": 1,
+      "target_tokens": 3148,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -3469,7 +3738,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -3481,19 +3752,21 @@
       "kind": "position",
       "order": "ab",
       "better": "a",
-      "winner": "a",
+      "winner": "tie",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2448,
-        "completion_tokens": 670,
-        "total_tokens": 3118,
+        "prompt_tokens": 2175,
+        "completion_tokens": 317,
+        "total_tokens": 2492,
         "estimated": false
       },
       "failures": [],
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -3517,7 +3790,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3118
+      "target_tokens": 3118,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -3541,7 +3816,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -3565,7 +3842,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3118
+      "target_tokens": 3118,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -3589,7 +3868,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -3603,17 +3884,19 @@
       "better": "b",
       "winner": "b",
       "usage": {
-        "calls": 5,
-        "prompt_tokens": 4479,
-        "completion_tokens": 1151,
-        "total_tokens": 5630,
+        "calls": 3,
+        "prompt_tokens": 2175,
+        "completion_tokens": 471,
+        "total_tokens": 2646,
         "estimated": false
       },
       "failures": [],
-      "debated": true,
+      "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -3637,7 +3920,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 5630
+      "target_tokens": 5630,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -3661,7 +3946,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -3681,16 +3968,13 @@
         "total_tokens": 6284,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "nvidia_nim/moonshotai/kimi-k3.1-pro:2",
-          "raw": "I need evaluate two paper abstracts under rubric. Should compare A B significance novelty soundness clarity. Should choose. Should carefully assess likely known papers? A E/I neurons deep conv recurrent object classification, findings conditions; B head direction RNN angular velocity integration, emergence compass shifter connectivity. Should impartial no order length tone. Should have concise explanation most important difference and verdict exact. Should decide likely B stronger due clear system, task, concrete convergence structure/function and mechanistic evidence. A fundamental broad question and unification factors, but evidence vague, correlational? B clear task and biological validation, stronger soundness, novelty. A perhaps significance high but methods/results underspecified \"various\" standard tasks, necessary conditions, potentially interesting. B specific and substantiated. I'll output explanation briefly and verdict [[B]]. Ensure no extraneous after. Could say \"Proposal B makes the more convincing contribution: it specifies a biologically grounded task and circuit, identifies concrete emergent neuron classes, and reports connectivity and in-silico physiological comparisons, giving clearer support for its claims. Proposal A addresses an important general question, but its evidence and validation are described more vaguely, and its claimed necessary conditions and unifying explanation are less convincingly established from the abstract.\" End [[B]]. Should not overclaim beyond abstract. Rubric evaluate proposal not actual paper. \"most important difference briefly.\" Fine.\n\nCheck possibility A actually stronger? Let's deeply assess to ensure fair. A title Understanding functional structural differences E/I. It says salient distinctions emerge various deep conv recurrent networks standard object classification. Necessary conditions explored. Neurons projecting higher-order areas greater selectivity regardless E/I. Sparser connectivity required higher selectivity only recurrent excitatory. Findings demonstrate differences not independent and explained smaller factors. This is novel computational theory explaining E/I differences. B RNN head direction known paper by Cueva? \"Emergence of functional and structural properties of the head direction system by optimization of recurrent neural networks\" likely 2019? Goal-driven RNNs recover Compass and Shifter cells. Strong known. B clear. Soundness abstract only no quantitative results in either. B has specific validation. A broad across architectures supports generality but vague. Significance A fundamental organizational principle vs B proof ANN anatomy. Novelty B architecture unconstrained optimized and anatomical properties beyond activity, clear prior gap. A why differences exist, emergent distinction and necessary conditions, also clear. B likely better. Should have no scores requested. Respond concise.Proposal B is stronger overall because it pairs a clearly defined computational task with concrete biological validation: the emergence of Compass and Shifter neurons, plus connectivity and mechanistic comparisons to a characterized circuit. This gives its novelty and claims clearer evidentiary support. Proposal A addresses an equally fundamental question, but its architectures, analyses, and evidence for the claimed “necessary conditions” and unifying explanation are described too vaguely to assess its soundness as confidently.\n\n[[B]]"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 1,
-      "target_tokens": 5630
+      "abstains": 0,
+      "target_tokens": 5630,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -3719,7 +4003,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -3734,16 +4020,18 @@
       "winner": "a",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2451,
-        "completion_tokens": 883,
-        "total_tokens": 3334,
+        "prompt_tokens": 2178,
+        "completion_tokens": 360,
+        "total_tokens": 2538,
         "estimated": false
       },
       "failures": [],
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -3767,7 +4055,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3334
+      "target_tokens": 3334,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -3791,7 +4081,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -3815,7 +4107,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3334
+      "target_tokens": 3334,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -3839,7 +4133,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -3854,16 +4150,18 @@
       "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2451,
-        "completion_tokens": 950,
-        "total_tokens": 3401,
+        "prompt_tokens": 2178,
+        "completion_tokens": 400,
+        "total_tokens": 2578,
         "estimated": false
       },
       "failures": [],
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -3887,7 +4185,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3401
+      "target_tokens": 3401,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -3911,7 +4211,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -3931,16 +4233,13 @@
         "total_tokens": 3524,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "nvidia_nim/moonshotai/kimi-k3.1-pro:2",
-          "raw": "I need evaluate proposals A and B according rubric significance novelty soundness clarity. Should brief important difference and exact verdict. Should impartial not order length tone. Should reason. A new similar-domain black-box transfer attack and Learn2Weight weights adjustments based on domain adaptation, empirical Amazon sentiment vs standard black-box defenses. B robustness word substitutions, ASCC convex hull regularization, adversarial training, extensive experiments two tasks attacks architectures, plug-in robust vectors. B clearer technical mechanism and evidence breadth, more established important question. A novel setting but vague methods and limited empirical support. Perhaps mention B claims evidence not numbers either but stronger. Should not overdo. End exactly [[B]]. I should provide concise paragraph perhaps bullets? User asks explain most important difference briefly. I can say \"Both address important robustness questions, but B offers a more precise problem formulation and a clearer technical contribution: modeling substitutions as a regularized convex hull and using the resulting worst-case perturbations for adversarial training. Its evaluation also spans two tasks, several attacks, and multiple architectures, giving stronger support to its claims. A’s similar-domain transfer setting is potentially novel, but Learn2Weight’s weight-prediction mechanism and the connection to domain-adaptation theory are underspecified, and its evidence is limited to one sentiment dataset. B is stronger on soundness and clarity, with comparable or greater significance and novelty.\" End verdict. Should have no extraneous after. Ensure no issue B \"envision\" robust vectors not validated. Could note B's plug-in idea remains speculative but not needed. Most important difference evidence and specificity. Respond.Both proposals address significant NLP robustness problems, but **B presents a more precise and better-supported contribution**. Its convex-hull formulation, sparsity regularization, and adversarial-training procedure clearly explain how ASCC differs from prior perturbation-set defenses. Evaluation across two tasks, multiple attacks, and several architectures also provides broader support for its claims.\n\nA’s similar-domain transfer setting is potentially novel, but Learn2Weight’s weight-prediction mechanism and its connection to domain-adaptation theory are underspecified. Its empirical support is also narrower, covering only Amazon sentiment classification. Thus, B is substantially stronger in soundness and clarity, with a comparably compelling contribution.\n\n[[B]]"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 1,
-      "target_tokens": 3401
+      "abstains": 0,
+      "target_tokens": 3401,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -3964,7 +4263,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -3976,19 +4277,34 @@
       "kind": "verbosity",
       "order": "ab",
       "better": "a",
-      "winner": "b",
+      "winner": "tie",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2421,
-        "completion_tokens": 949,
-        "total_tokens": 3370,
+        "prompt_tokens": 2205,
+        "completion_tokens": 667,
+        "total_tokens": 2872,
         "estimated": false
       },
-      "failures": [],
+      "failures": [
+        {
+          "turn": "blind:judge",
+          "raw": "{\"scores\":{\"a\":[2,3,2,2],\"b\":[4,4,4,3]},\"preferred\":\"b\",\"confidence\":4,\"checks\":[[0,\"a\",0,\"Use 3 shifts for the checks\",\"25 runs / 3 shifts = 8.33 per shift, within 11; capacity met but sign-off timing after last shift violates pre-handover requirement\"],[1,\"a\",0,\"write up the results after the last shift\",\"Handover occurs immediately after the third shift, so post-shift sign-off violates the 3-shift-before-handover constraint\"],[0,\"b\",1,\"Use 2 shifts for the checks\",\"25 runs / 2 shifts = 12.5 per shift, exceeds the 11-run per-shift cap\"],[1,\"b\",0,\"then turn the last shift into a review meeting\",\"Only 2 shifts used for checks, leaving the third shift as review rather than completing all checks before handover\"]},\"evidence\":[{\"proposal\":\"b\",\"quote\":\"Track the measure weekly for 6 weeks and compare it with the preceding 6 weeks. Publish the sample size and the week-by-week trend.\"}]}"
+        },
+        {
+          "turn": "blind:skeptic",
+          "raw": "{\"scores\":{\"a\":[2,3,1,1],\"b\":[1,4,4,3],\"preferred\":\"tie\",\"confidence\":2,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Use 3 shifts for the checks\"}],\"checks\":[[0,\"a\",1,\"Use 3 shifts for the checks\",\"\"],[1,\"a\",1,\"Use 3 shifts for the checks\",\"\"],[0,\"b\",0,\"Use 2 shifts for the checks\",\"25 runs / 11 per shift = 2.27 => 3 shifts needed; plan uses 2\"],[1,\"b\",1,\"Use 2 shifts for the checks, then turn the last shift into a review meeting\",\"2 shifts + review shift = 3 staffed shifts\"]}}"
+        },
+        {
+          "turn": "blind:scientist",
+          "raw": "{\"scores\":{\"a\":[2,1,1,1],\"b\":[1,1,2,1]},\"preferred\":\"a\",\"confidence\":5,\"evidence\":[{\"proposal\":\"a\",\"quote\":\"Use 3 shifts for the checks and write up the results after the last shift.\"}],\"checks\":[[0,\"a\",1,\"Sign-off requires every one of the 25 selected delivery runs to be checked.\",\"25 runs / 3 shifts = 8.33 per shift, within the 11-per-shift cap.\"],[1,\"a\",1,\"There are 3 staffed shifts before handover.\",\"Uses exactly 3 shifts.\"],[0,\"b\",0,\"Use 2 shifts for the checks, then turn the last shift into a review meeting.\",\"25 runs / 2 shifts = 12.5 per shift, exceeding the 11-per-shift cap.\"],[1,\"b\",1,\"There are 3 staffed shifts before handover.\",\"Uses all 3 shifts (2 checks + 1 review).\"}]}"
+        }
+      ],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 0,
-      "target_tokens": null
+      "abstains": 3,
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -4012,7 +4328,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3370
+      "target_tokens": 3370,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -4036,7 +4354,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -4065,7 +4385,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 1,
-      "target_tokens": 3370
+      "target_tokens": 3370,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -4089,7 +4411,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -4103,17 +4427,19 @@
       "better": "a",
       "winner": "a",
       "usage": {
-        "calls": 4,
-        "prompt_tokens": 3689,
-        "completion_tokens": 1341,
-        "total_tokens": 5030,
+        "calls": 3,
+        "prompt_tokens": 2493,
+        "completion_tokens": 267,
+        "total_tokens": 2760,
         "estimated": false
       },
       "failures": [],
       "debated": false,
-      "evidence_dropped": 0,
-      "abstains": 0,
-      "target_tokens": null
+      "evidence_dropped": 1,
+      "abstains": 1,
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -4137,7 +4463,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 5030
+      "target_tokens": 5030,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -4161,7 +4489,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -4185,7 +4515,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 5030
+      "target_tokens": 5030,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -4209,7 +4541,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -4221,19 +4555,21 @@
       "kind": "verbosity",
       "order": "ab",
       "better": "b",
-      "winner": "tie",
+      "winner": "b",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 3210,
-        "completion_tokens": 1052,
-        "total_tokens": 4262,
+        "prompt_tokens": 2937,
+        "completion_tokens": 316,
+        "total_tokens": 3253,
         "estimated": false
       },
       "failures": [],
       "debated": false,
-      "evidence_dropped": 2,
+      "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -4257,7 +4593,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 4262
+      "target_tokens": 4262,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -4281,7 +4619,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -4301,16 +4641,13 @@
         "total_tokens": 4653,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "nvidia_nim/moonshotai/kimi-k3.1-pro:2",
-          "raw": "I need respond judge compare A B rubric paper. Should explain most important difference briefly and end exactly verdict. Should assess. A abstract approximate probabilistic inference composed flows, plus weird filler repeated. B implicit normalizing flows concise concrete theoretical separation scalable algorithm empirical. Should decide B likely better due clarity and soundness specificity. Should not be swayed length/tone/order. Should evaluate significance novelty soundness clarity. A has hardness result, novel approximate inference framework, extensive empirical evidence but vague specifics, comparable MCMC sample quality perhaps limited. B clear novelty vs ResFlows, theoretical expressivity strict richer and separation, training sampling algorithm, empirical outperformance all benchmarks. Both abstract no full details. B stronger clear supported claims, A filler hurts clarity but don't tone/length. Should mention B more precise theoretical and empirical support, A important but vague evaluation and redundant context. End [[B]]. Make sure exactly one verdict at end. Could say \"Proposal B is stronger overall: it gives a sharper novelty claim relative to ResFlows, a specific theoretical separation, and a concrete training/sampling algorithm with benchmark evidence. Proposal A addresses a significant inference problem, but its evidence and methodological details are less specific, and the added framing does not clarify the contribution. B therefore has the advantage in soundness and clarity, with at least comparable significance and novelty.\\n\\n[[B]]\" Brief. Should not overstate A filler. Good.Proposal B is stronger overall. It provides a clearer novelty claim relative to ResFlows, a specific theoretical expressivity separation, and a concrete training and sampling algorithm supported by benchmark comparisons. Proposal A addresses a significant inference problem and includes potentially valuable hardness and empirical results, but its methods and evidence are described less precisely. The main difference is therefore B’s stronger clarity and more explicit support for its claims.\n\n[[B]]"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 1,
-      "target_tokens": 4262
+      "abstains": 0,
+      "target_tokens": 4262,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -4334,7 +4671,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -4348,17 +4687,19 @@
       "better": "a",
       "winner": "b",
       "usage": {
-        "calls": 4,
-        "prompt_tokens": 2590,
-        "completion_tokens": 1479,
-        "total_tokens": 4069,
+        "calls": 3,
+        "prompt_tokens": 1671,
+        "completion_tokens": 223,
+        "total_tokens": 1894,
         "estimated": false
       },
       "failures": [],
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -4382,7 +4723,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 4069
+      "target_tokens": 4069,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -4406,7 +4749,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -4418,7 +4763,7 @@
       "kind": "tone",
       "order": "ab",
       "better": "a",
-      "winner": "tie",
+      "winner": "a",
       "usage": {
         "calls": 6,
         "prompt_tokens": 3102,
@@ -4426,20 +4771,13 @@
         "total_tokens": 4554,
         "estimated": false
       },
-      "failures": [
-        {
-          "turn": "nvidia_nim/moonshotai/kimi-k3.1-pro:2",
-          "raw": "Proposal A: 140 + 46*15 = 830 <= 845. B: 140 + 46*18 = 968 > 845. B violates hard budget. A fits constraints and basic evidence plan. B adds scorecard but infeasible. Verdict A. Need explain most important difference briefly and end exactly [[A]]. Ensure no extra after. Could mention A leaves $15, B over by $123. Evidence B stronger but cannot overcome. Respond concise.The decisive difference is feasibility under the hard spending limit. Proposal A costs $140 + (46 × $15) = **$830**, leaving $15 within the $845 cap. Proposal B costs $140 + (46 × $18) = **$968**, exceeding the cap by $123. Although B provides a clearer evaluation window and dashboard, its plan is not feasible as stated; A satisfies the constraints and includes a reasonable outcome comparison.\n\n[[A]]"
-        },
-        {
-          "turn": "nvidia_nim/moonshotai/kimi-k3.1-pro:5",
-          "raw": "I need evaluate proposals A B rubric. Should carefully parse constraints. Should decide better. Should explain most important difference briefly and end exactly verdict. Should analyze numbers.\n\n46 laptops, budget 845, fixed 140 setup before checks. A standard check 15/unit: 140+46*15=140+690=830 <=845. B priority 18/unit: 140+46*18=140+828=968 >845. B infeasible violates hard budget. A fits. B has more evidence scorecard 2-week pilot vs preceding 2 weeks weekly dashboard numerator denominator. A says use timestamps queue compare requests waiting after day baseline, standard check log result. A last plain readout. Both same interventions. B priority result before next check begins perhaps sequential latency, but irrelevant. Main difference budget: A 830 within, B 968 over by123. A better despite B stronger evaluation detail. Should mention evidence B advantage perhaps concise. Problem fit A. Tradeoffs both limited? A walk-in reserve etc. I should not let tone. Should output likely 1 paragraph and verdict. \"Proposal A is better because it is the only one that respects the hard budget: $140 + 46 × $15 = $830, versus Proposal B’s $140 + 46 × $18 = $968. B offers a clearer readout plan, but that does not offset its infeasible cost; both otherwise use the same waiting-time metric and lending changes.\" End [[A]]. Ensure exactly one verdict. Could note A leaves $15. Good. No need extensive. Should judge impartial. Respond.Proposal A is better because it respects the hard spending limit: $140 + (46 × $15) = **$830**. Proposal B costs $140 + (46 × $18) = **$968**, exceeding the budget by $123 and making its plan infeasible. B provides a stronger evaluation plan with its two-week scorecard and dashboard, but that advantage cannot offset the budget violation.\n\n[[A]]"
-        }
-      ],
+      "failures": [],
       "debated": false,
       "evidence_dropped": 0,
-      "abstains": 2,
-      "target_tokens": 4069
+      "abstains": 0,
+      "target_tokens": 4069,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -4463,7 +4801,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -4478,16 +4818,18 @@
       "winner": "a",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2526,
-        "completion_tokens": 816,
-        "total_tokens": 3342,
+        "prompt_tokens": 2253,
+        "completion_tokens": 248,
+        "total_tokens": 2501,
         "estimated": false
       },
       "failures": [],
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -4511,7 +4853,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3342
+      "target_tokens": 3342,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -4535,7 +4879,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -4559,7 +4905,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3342
+      "target_tokens": 3342,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -4583,7 +4931,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "committee",
@@ -4598,16 +4948,18 @@
       "winner": "a",
       "usage": {
         "calls": 3,
-        "prompt_tokens": 2280,
-        "completion_tokens": 848,
-        "total_tokens": 3128,
+        "prompt_tokens": 2007,
+        "completion_tokens": 244,
+        "total_tokens": 2251,
         "estimated": false
       },
       "failures": [],
       "debated": false,
-      "evidence_dropped": 3,
+      "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge",
@@ -4631,7 +4983,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3128
+      "target_tokens": 3128,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "judge_1call",
@@ -4655,7 +5009,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "jury",
@@ -4679,7 +5035,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": 3128
+      "target_tokens": 3128,
+      "violations_kept": 0,
+      "violations_dropped": 0
     },
     {
       "method": "chateval",
@@ -4703,7 +5061,9 @@
       "debated": false,
       "evidence_dropped": 0,
       "abstains": 0,
-      "target_tokens": null
+      "target_tokens": null,
+      "violations_kept": 0,
+      "violations_dropped": 0
     }
   ]
 }

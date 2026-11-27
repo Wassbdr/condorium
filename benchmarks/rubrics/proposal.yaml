@@ -1,0 +1,10 @@
+name: Proposal
+criteria:
+  - name: Problem fit
+    description: Addresses the stated problem and respects its operating constraints.
+  - name: Feasibility
+    description: Has a credible plan with the resources, access, and time available.
+  - name: Evidence
+    description: Supports its main claims and defines how to test the expected outcome.
+  - name: Trade-offs
+    description: Accounts for material risks and relevant existing alternatives.

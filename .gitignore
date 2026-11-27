@@ -12,6 +12,7 @@ knowledge/checkpoints.sqlite
 *.sqlite
 .env
 uv.lock
+/benchmarks/data/.cache/
 
 CLAUDE.md
 AGENTS.md

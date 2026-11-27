@@ -29,6 +29,8 @@ You can also pass quoted inline text. Use `--text` when that text resembles
 a path, such as a sentence that ends in `.md`. Omit `--rubric` to use
 the default proposal rubric. To paste proposals and edit a rubric in a
 browser, install the `ui` extra and open the Compare tab in `panel ui`.
+Use `--brief 'The pilot must cost no more than $500.'` (or the optional shared
+problem field in the Compare tab) to give both proposals the same constraints.
 
 The winner is A, B, or a tie. Read the blind votes and their quotes to
 see why reviewers preferred each item. Quotes that cannot be matched

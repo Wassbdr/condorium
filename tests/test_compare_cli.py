@@ -16,6 +16,9 @@ RUBRIC = {"name": "Delivery", "criteria": [{"name": "cost", "description": "Chec
 def fake_reviews(monkeypatch):
     def complete(*, model, messages, timeout, **kwargs):
         user = messages[1]["content"]
+        if "at most five" in messages[0]["content"]:
+            assert user.startswith("Brief:\nThe pilot must cost no more than $500.")
+            return '[{"quote":"no more than $500","kind":"max","limit":500,"unit":"USD"}]'
         criteria = json.loads(user.split("Rubric: ", 1)[1].splitlines()[1])
         slot = "a" if "Reuse existing equipment." in user.split("Proposal B\n", 1)[0] else "b"
         return json.dumps({
@@ -59,6 +62,17 @@ def test_compare_long_inline_text():
     output = runner.invoke(app, ["compare", "Reuse existing equipment. " * 30, "Buy new."])
     assert output.exit_code == 0, output.output
     assert "Winner: Proposal A" in output.stdout
+
+
+def test_compare_brief_option_and_ui_field():
+    brief = "The pilot must cost no more than $500."
+    output = runner.invoke(app, ["compare", "Reuse existing equipment.", "Buy new.",
+                                 "--brief", brief, "--json"])
+    assert output.exit_code == 0, output.output
+    assert json.loads(output.stdout)["requirements"] == ["no more than $500"]
+    assert "Winner: Proposal A" in run_comparison(
+        "Reuse existing equipment.", "Buy new.", json.dumps(RUBRIC), brief,
+    )
 
 
 def test_compare_api_and_rubric_formats(tmp_path):

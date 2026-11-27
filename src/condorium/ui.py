@@ -109,11 +109,11 @@ def live(title: str, text: str, mode: str = "general") -> Iterator[str]:
     yield render(rec, note, "evaluation finished")
 
 
-def run_comparison(a: str, b: str, rubric_text: str) -> str:
+def run_comparison(a: str, b: str, rubric_text: str, brief: str = "") -> str:
     model = comparison_model()
     try:
         criteria = Rubric.from_yaml(rubric_text)
-        return format_comparison(compare(a, b, criteria, model=model))
+        return format_comparison(compare(a, b, criteria, model=model, brief=brief))
     except Exception as exc:
         error = comparison_error(exc, model)
         if error is None:
@@ -155,9 +155,10 @@ def build_app():
         with gr.Tab("Compare"):
             first = gr.Textbox(label="Proposal A", lines=5)
             second = gr.Textbox(label="Proposal B", lines=5)
+            brief = gr.Textbox(label="Shared problem or constraints (optional)", lines=2)
             rubric = gr.Code(label="Rubric", language="yaml", interactive=True,
                              value=default_rubric_path().read_text(encoding="utf-8"))
             compare_button = gr.Button("Compare proposals", variant="primary")
             result = gr.Textbox(label="Comparison result", lines=12, interactive=False)
-            compare_button.click(run_comparison, [first, second, rubric], result)
+            compare_button.click(run_comparison, [first, second, rubric, brief], result)
     return app

@@ -73,6 +73,7 @@ def compare_command(
     json_output: Annotated[bool, typer.Option("--json", help="Emit JSON (JSON Lines in batch).")] = False,
     batch: Annotated[Path | None, typer.Option(help="JSON Lines file with a and b items per line.")] = None,
     text: Annotated[bool, typer.Option("--text", help="Treat both arguments as literal text.")] = False,
+    brief: Annotated[str, typer.Option(help="Shared problem or constraints as text.")] = "",
 ) -> None:
     """Compare two proposals against a rubric, or evaluate a batch of pairs."""
     selected_model = comparison_model(model)
@@ -87,7 +88,7 @@ def compare_command(
             pairs = [(None, _argument(a, "A", literal=text), _argument(b, "B", literal=text))]
         criteria = Rubric.default() if rubric is None else Rubric.load(rubric)
         for index, (pair_id, first, second) in enumerate(pairs, 1):
-            result = compare(first, second, criteria, model=selected_model)
+            result = compare(first, second, criteria, model=selected_model, brief=brief)
             if json_output:
                 data = asdict(result)
                 data["debated"] = bool(result.debate)
